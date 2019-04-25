@@ -9,6 +9,7 @@
   "dependencies": {
     "firebase": "^5.10.1",
     "lodash": "^4.17.11",
+    "native-base": "^2.12.1",
     "react": "16.8.3",
     "react-native": "0.59.5",
     "react-native-geocoding": "^0.3.0",
