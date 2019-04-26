@@ -1,5 +1,6 @@
 import React, { Component } from  'react'
 import { Platform, TouchableOpacity, Text, Alert } from 'react-native'
+import { setUser } from '../../redux/action/auth'
 import { connect } from 'react-redux'
 import { Spinner } from 'native-base'
 import * as firebase from 'firebase'
@@ -11,12 +12,16 @@ class Active extends Component {
 	}
 
 	changeStatus = async () => {
-		this.setState({ loading: true, status: !this.state.status},  async () => {
+		this.setState({ loading: true },  async () => {
 			await firebase.database().ref(`register/commerce/motoboyPartner/${this.props.user.id}`).update({
-				rideStatus: this.state.status
+				rideStatus: !this.state.status
 			})
 				.then(() => {
-					this.setState({ loading: false })
+					this.props.setUser({
+						...this.props.user,
+						rideStatus: !this.state.status
+					})
+					this.setState({ loading: false, status: !this.state.status })
 				})
 				.catch(error => {
 					Alert.alert('Atenção', 'Houve um erro interno. Tente novamente em alguns instantes')
@@ -76,4 +81,4 @@ const styles = {
 	}
 }
 
-export default connect(mapStateToProps)(Active)
+export default connect(mapStateToProps, { setUser })(Active)
