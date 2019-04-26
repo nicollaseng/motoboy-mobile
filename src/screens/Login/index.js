@@ -77,11 +77,12 @@ class Login extends Component {
 			if(data){
 				let dataJson = data.toJSON()
 				let user = _.filter(Object.values(dataJson), e => e.email === this.state.email)
+				console.log('user', user)
 				if(user.length > 0){
 					if(user[0].status === 'Aprovado'){
-						user = user[0]
+						console.log('passou por aqui e user', user[0])
 						this.props.setUser(user[0])
-						this.props.navigation.navigate('Map')
+						this.props.navigation.navigate('DrawerComponent')
 						this.setState({ loading: false })
 						console.log('user', user)
 					} else {
@@ -120,11 +121,11 @@ class Login extends Component {
 								onChangeText={(password) => this.setState({password})}/>
 					</View>
 
-				{loading ? <Spinner /> : (
-						<TouchableHighlight style={[styles.buttonContainer, styles.loginButton]} onPress={this.login}>
-							<Text style={styles.loginText}>Login</Text>
-						</TouchableHighlight>
-				)}
+					{loading ? <Spinner /> : (
+							<TouchableHighlight style={[styles.buttonContainer, styles.loginButton]} onPress={this.login}>
+								<Text style={styles.loginText}>Login</Text>
+							</TouchableHighlight>
+					)}
 				</View>
 				{/* <View style={{ height: 100 }} /> */}
       </View>

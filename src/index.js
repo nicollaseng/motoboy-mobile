@@ -11,7 +11,7 @@ class App extends Component {
 	componentWillMount() {
 		!firebase.apps.length ? firebase.initializeApp(firebaseConfig()) : firebase.app();
 	}
-	
+
 	render(){
 		return (
 			<Provider store={Store}>

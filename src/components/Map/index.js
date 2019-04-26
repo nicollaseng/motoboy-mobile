@@ -9,9 +9,10 @@ import { getPixelSize } from '../../utils'
 
 import markerImage from '../../assets/marker.png'
 import backImage from '../../assets/back.png'
+import menuImage from '../../assets/menu.png'
 
 
-import { LocationBox, LocationText, LocationTimeText, LocationTimeBox, LocationTimeTextSmall, Back } from './styles'
+import { LocationBox, LocationText, LocationTimeText, LocationTimeBox, LocationTimeTextSmall, Back, Menu } from './styles'
 import Geocoder from 'react-native-geocoding';
 
 Geocoder.init("AIzaSyBionuXtSnhN7kKXD8Y2tms-Dx43GI4W6g")
@@ -62,6 +63,10 @@ class Map extends Component {
 
 	handleBack = () => {
 		this.setState({ destination: null })
+	}
+
+	handleMenu = () => {
+		this.props.openDrawer()
 	}
 
 	render(){
@@ -141,9 +146,12 @@ class Map extends Component {
 					)
 					: 
 					<Fragment>
-						<Search
+						<Menu onPress={this.handleMenu}>
+							<Image source={menuImage} style={{ width: 30, height: 30, resizeMode: 'contain'}} />
+						</Menu>
+						{/* <Search
 							onLocationSelected={this.handleLocationSelected}
-						/>
+						/> */}
 						<Active />
 					</Fragment>
 					}

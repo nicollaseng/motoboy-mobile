@@ -52,3 +52,12 @@ export const Back = styled.TouchableOpacity`
     })};
     left: 20px;
 `
+
+export const Menu = styled.TouchableOpacity`
+    position: absolute;
+    top: ${Platform.select({
+        ios: 60,
+        android: 40
+    })};
+    left: 20px;
+`

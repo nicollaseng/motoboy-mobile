@@ -9,6 +9,9 @@ const AppNavigator = createStackNavigator({
 	},
 	Map: {
 		screen: screens.Map
+    },
+    DrawerComponent: {
+		screen: screens.DrawerComponent
 	},
 },
 {
