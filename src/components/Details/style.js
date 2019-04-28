@@ -17,6 +17,7 @@ export const Container = styled.View`
 `
 
 export const TypeTitle = styled.Text`
+   text-align: center;
    font-size: 20px;
    color: #222;
 `
@@ -32,7 +33,7 @@ export const TypeImage = styled.Image`
 `
 
 export const RequestButton = styled.TouchableOpacity`
-   background: #222;
+   background: red;
    justify-content: center;
    align-items: center;
    height: 44px;
@@ -44,4 +45,12 @@ export const RequestButtonText = styled.Text`
    color: #FFF;
    font-weight: bold;
    font-size: 18px;
+`
+export const RestaurantButton = styled.TouchableOpacity`
+   background: green;
+   justify-content: center;
+   align-items: center;
+   height: 44px;
+   align-self: stretch;
+   margin-top: 10px;
 `

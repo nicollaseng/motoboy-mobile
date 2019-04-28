@@ -11,6 +11,12 @@ class Active extends Component {
 		loading: false
 	}
 
+	componentDidMount(){
+		this.setState({
+			status: this.props.user.rideStatus
+		})
+	}
+
 	changeStatus = async () => {
 		this.setState({ loading: true },  async () => {
 			await firebase.database().ref(`register/commerce/motoboyPartner/${this.props.user.id}`).update({

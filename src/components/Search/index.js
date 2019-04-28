@@ -1,8 +1,6 @@
 import React, { Component } from  'react'
 import { Platform } from 'react-native'
 import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete'
-import { View } from 'react-native'
-import MapView from 'react-native-maps'
 
 class Map extends Component {
 	state = {
