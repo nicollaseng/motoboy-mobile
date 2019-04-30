@@ -5,6 +5,7 @@ import Search from '../Search'
 import Directions from '../Directions'
 import Details from '../Details'
 import Active from '../Active'
+import EarningBar from '../EarningBar'
 
 import { connect } from 'react-redux'
 import * as firebase from 'firebase'
@@ -14,6 +15,8 @@ import { getPixelSize } from '../../utils'
 import markerImage from '../../assets/marker.png'
 import backImage from '../../assets/back.png'
 import menuImage from '../../assets/menu.png'
+
+import { setUser } from '../../redux/action/auth'
 
 import { LocationBox, LocationText, LocationTimeText, LocationTimeBox, LocationTimeTextSmall, Back, Menu } from './styles'
 
@@ -47,6 +50,7 @@ class Map extends Component {
 			const location = address.substring(0, address.indexOf(','))
 			firebase.database().ref(`register/commerce/motoboyPartner/${this.props.user.id}`).on('value', snapshot => {
 				let motoboy = snapshot.val()
+				this.props.setUser(motoboy)
 				console.log('motoboy', motoboy)
 				if(motoboy.rideStatus){
 					firebase.database().ref(`rides`).on('value', rideshot => {
@@ -59,13 +63,18 @@ class Map extends Component {
 							})
 							if(nearRide.length > 0){
 								let ride = _.sample(nearRide)
+								console.log('motoboy ride refused', motoboy.rideRefused)
 								let rideRefused = _.filter(motoboy.rideRefused, e => e.id === ride.id)
 								console.log('ride', ride, rideRefused)
-								if(rideRefused.length === 0){
-									this.setState({ isRide: true, ride })
-								} else {
-									this.setState({ isRide: false, ride: false })
-								}
+								// if(rideRefused.length === 0){
+									if(rideRefused.length > 0 ){
+										this.setState({ isRide: false })
+									} else if(rideRefused.length === 0) {
+										this.setState({ isRide: true, ride })
+									}
+								// } else {
+								// 	this.setState({ isRide: false, ride: false })
+								// }
 								// let rideDistance = geolib.getDistance(
 								// 	{ latitude: ride.latitude, longitude: ride.longitude },
 								// 	{ latitude, longitude }
@@ -107,7 +116,8 @@ class Map extends Component {
 						latitude: ride.delivery.latitude,
 						longitude: ride.delivery.longitude,
 						title: 'Destino Cliente',
-					}
+					},
+					isRide: true
 				})
 			} else if (
 				ride.status === 'onWay' ||
@@ -118,7 +128,8 @@ class Map extends Component {
 						latitude: ride.restaurant.latitude,
 						longitude: ride.restaurant.longitude,
 						title: 'Restaurante',
-					}
+					},
+					isRide: true
 				})
 			} else if(
 				ride.status === 'canceled'
@@ -129,11 +140,16 @@ class Map extends Component {
 					destination: null
 				})
 			}
-		} else {
+		} else if(ride.status === 'finished'){
 			this.setState({
+				isRide: true,
+				destination: null
+			})
+		} else { 
+			this.setState({
+				destination: null,
 				isRide: false,
 				ride: null,
-				destination: null
 			})
 		}
 	}
@@ -239,6 +255,7 @@ class Map extends Component {
 							<Menu onPress={this.handleMenu}>
 								<Image source={menuImage} style={{ width: 30, height: 30, resizeMode: 'contain'}} />
 							</Menu>
+							<EarningBar />
 							{/* <Search
 								onLocationSelected={this.handleLocationSelected}
 							/> */}
@@ -276,4 +293,4 @@ mapStateToProps = state => ({
 	ride: state.ride.ride
 })
 
-export default connect(mapStateToProps)(Map)
+export default connect(mapStateToProps, { setUser })(Map)
