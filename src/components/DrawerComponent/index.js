@@ -14,7 +14,11 @@ class DrawerComponent extends Component {
 
   openDrawer = () => {
     this.drawer._root.open();
-  };
+	};
+	
+	handleUserButton = () => {
+		this.props.navigation.navigate('Profile')
+	}
 
     render(){
         return (

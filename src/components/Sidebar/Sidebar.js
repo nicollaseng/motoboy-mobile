@@ -19,7 +19,7 @@ import {
 
 import PropTypes from "prop-types";
 import IconAwesome from "react-native-vector-icons/FontAwesome5";
-import { colors } from "../../themes";
+import { colors } from "../../themes"
 import { connect } from "react-redux"
 import _ from "lodash"
 

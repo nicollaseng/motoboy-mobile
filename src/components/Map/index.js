@@ -302,7 +302,7 @@ class Map extends Component {
 	}	
 }
 
-mapStateToProps = state => ({
+const mapStateToProps = state => ({
 	user: state.user.user,
 	ride: state.ride.ride
 })

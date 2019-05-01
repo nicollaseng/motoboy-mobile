@@ -40,7 +40,7 @@ class Active extends Component {
 	render(){
 		console.log('status do usuario', this.props.user)
 		return (
-			<TouchableOpacity style={[styles.container, { backgroundColor: this.state.status ? "green" : "red"}]} onPress={this.changeStatus}>
+			<TouchableOpacity style={[styles.container, { backgroundColor: this.state.status ? "#54fa2a" : "#363777"}]} onPress={this.changeStatus}>
 				{this.state.loading ? <Spinner /> : <Text style={styles.text}>{this.state.status ? "ONLINE" : "OFFLINE"}</Text>}
 			</TouchableOpacity>
     )

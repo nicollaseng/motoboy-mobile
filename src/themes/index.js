@@ -3,10 +3,10 @@ const colors = {
 		input: '#e60000'
 	},
 	primary: '#861d1a',
-	standardButton: '#03a9f4',
+	standardButton: '#363777',
 	button: {
 			second: '#861d1a',
-			primary: '#861d1a',
+			primary: '#363777',
 			text: {
 				primary: "#fff"
 			},

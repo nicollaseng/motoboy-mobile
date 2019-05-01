@@ -12,6 +12,9 @@ const AppNavigator = createStackNavigator({
     },
     DrawerComponent: {
 		screen: screens.DrawerComponent
+    },
+    Profile: {
+		screen: screens.Profile
 	},
 },
 {
