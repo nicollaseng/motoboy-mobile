@@ -12,7 +12,7 @@ function getSideBarItems (context, currentUser) {
 		title: 'Minhas Entregas',
 		icon: 'motorcycle',
 		useAwesome: true,
-		action: context.handleAddressButton
+		action: context.handleDeliveryButton
 	}
 	// help = {
 	// 	title: 'Ajuda',

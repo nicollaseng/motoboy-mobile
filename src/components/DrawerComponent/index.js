@@ -20,6 +20,10 @@ class DrawerComponent extends Component {
 		this.props.navigation.navigate('Profile')
 	}
 
+	handleDeliveryButton = () => {
+		this.props.navigation.navigate('Delivery')
+	}
+
     render(){
         return (
 					<Drawer

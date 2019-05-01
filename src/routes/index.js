@@ -15,6 +15,9 @@ const AppNavigator = createStackNavigator({
     },
     Profile: {
 		screen: screens.Profile
+    },
+    Delivery: {
+		screen: screens.Delivery
 	},
 },
 {
