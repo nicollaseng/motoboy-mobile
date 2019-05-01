@@ -197,6 +197,7 @@ class Delivery extends Component {
 		if(rides.length > 0){
 			return rides.map(ride => {
 				let date = ride.createdAt.substring(0,10)
+				console.log('valor', ride.tax, ride.tax -0.12*ride.tax)
 				return (
 					<View style={{
 						flex: 1,
@@ -230,8 +231,8 @@ class Delivery extends Component {
 							<Text>
 								Retorno: <Text>{ride.retorno ? 'Sim' : 'Não'}</Text>
 							</Text>
-							<Text>
-								Ganhos: <Text> R$ {VMasker.toMoney((ride.tax - 0.12*ride.tax))}</Text>
+							<Text style={{ color: '#fff', fontWeight: 'bold', textAlign: 'right', color: '#54fa2a' }}>
+								Ganhos: <Text> R$ {VMasker.toMoney((Math.round((ride.tax - 0.12*ride.tax)*100)/10)*10)}</Text>
 							</Text>
 						</View>
 					</View>
