@@ -8,10 +8,14 @@ import * as firebase from 'firebase'
 import { connect } from 'react-redux'
 import { setRide } from '../../redux/action/ride'
 import { setUser } from '../../redux/action/auth'
+
 import _ from 'lodash'
+import moment from 'moment'
 
 import Sound from 'react-native-sound'
 import PushNotification from 'react-native-push-notification'
+
+const today = moment().format('DD/MM/YYYY')
 
 PushNotification.configure({
 
@@ -44,12 +48,16 @@ var alert = new Sound('alert.mp3', Sound.MAIN_BUNDLE, (error) => {
 class Details extends Component {
 	state = {
 		loading: false,
+		timeout: null
 	}
 
+
 	componentDidMount(){
-		// let timeOut = setTimeout(() => this.refuseRide(), 10*1200);
 		console.log('testando time', !this.props.user.onRide && this.props.isRide)
 		if(!this.props.user.onRide && this.props.isRide){
+
+		const timeout = setTimeout(() => this.refuseRide(), 10*1200);
+			this.setState({ timeout })
 			alert.play((success) => {
 				if (success) {
 					console.log('successfully finished playing');
@@ -81,21 +89,19 @@ class Details extends Component {
 				message: "Olá uma nova Entrega surgiu. Você tem 10s para aceitar", // (required)
 				playSound: true, // (optional) default: true
 		});
-			// return timeOut
+			return timeout
 		}
 		// } else { 
 		// 	return clearTimeout(timeOut)
 		// }
 	}
 
-
 	handleAcceptRide = async () => {
+		clearTimeout(this.state.timeout)
 		this.setState({ loading: true })
 		await firebase.database().ref(`register/commerce/motoboyPartner/${this.props.user.id}`).update({
 			onRide: true,
 			activeRide: this.props.ride,
-			earnings: this.props.user.earnings ? [ ...Object.values(this.props.user.earnings) ,{ date: this.props.ride.createdAt, tax: this.props.ride.tax }] : [{ date: this.props.ride.createdAt, tax: this.props.ride.tax }],
-			rides: this.props.user.rides ? [...Object.values(this.props.user.rides), this.props.ride] : [this.props.ride]
 		})
 			.then(async () => {
 				await firebase.database().ref(`rides/${this.props.ride.id}`).update({
@@ -381,12 +387,22 @@ class Details extends Component {
 		await firebase.database().ref(`rides/${this.props.ride.id}`).update({
 			status: 'finished'
 		})
-			.then(() => {
+			.then(async () => {
 				this.props.setRide({
 					...this.props.ride,
 					status: 'finished'
 				})
 				this.setState({ loading: false})
+				await firebase.database().ref(`register/commerce/motoboyPartner/${this.props.user.id}`).update({
+					earnings: this.props.user.earnings ? [ ...Object.values(this.props.user.earnings) ,{ date: today, tax: this.props.ride.tax }] : [{ date: today, tax: this.props.ride.tax }],
+					rides: this.props.user.rides ? [...Object.values(this.props.user.rides), this.props.ride] : [this.props.ride]
+				})
+					.then(() => {
+						console.log('successfully set earning and rite for motoboy')
+					})
+					.catch(error => {
+						console.log('error set earning and rite for motoboy', error)
+					})
 			})
 			.catch(error => {
 				this.setState({ loading: false})

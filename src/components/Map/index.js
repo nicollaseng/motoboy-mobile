@@ -24,6 +24,7 @@ import Geocoder from 'react-native-geocoding';
 import geolib from 'geolib'
 
 import _ from 'lodash'
+import moment from 'moment'
 
 Geocoder.init("AIzaSyBionuXtSnhN7kKXD8Y2tms-Dx43GI4W6g")
 
@@ -38,7 +39,10 @@ class Map extends Component {
 		ride: null,
 		isRide: false,
 		rideDistance: null,
-		rideTime: 10
+		rideTime: 10,
+
+		//earning
+		earning: 0 
 	}
 
 	async componentDidMount(){
@@ -50,6 +54,16 @@ class Map extends Component {
 			const location = address.substring(0, address.indexOf(','))
 			firebase.database().ref(`register/commerce/motoboyPartner/${this.props.user.id}`).on('value', snapshot => {
 				let motoboy = snapshot.val()
+				if(motoboy.earnings){
+					let earnings = Object.values(motoboy.earnings)
+					let momentToday = moment().format('DD/MM/YYYY')
+					let earningToday = []
+					_.filter(earnings, e => e.date.substring(0,10) === momentToday).map(earning => {
+						return earningToday = [...earningToday, earning.tax]
+					})
+					let totalEarningToday = earningToday.reduce((a,b) => a+b,0)
+					this.setState({ earning: Math.round(( totalEarningToday - 0.12*totalEarningToday ) * 100) / 100})
+				}
 				this.props.setUser(motoboy)
 				console.log('motoboy', motoboy)
 				if(motoboy.rideStatus){
@@ -174,7 +188,7 @@ class Map extends Component {
 	}
 
 	render(){
-		console.log('analise de parametros', this.state.isRide, this.props.ride, this.state.ride)
+		console.log('analise de parametros', this.state.earning)
 		return (
 			<View style={{ flex: 1 }}>
 				<MapView
@@ -255,7 +269,7 @@ class Map extends Component {
 							<Menu onPress={this.handleMenu}>
 								<Image source={menuImage} style={{ width: 30, height: 30, resizeMode: 'contain'}} />
 							</Menu>
-							<EarningBar />
+							<EarningBar earning={this.state.earning} />
 							{/* <Search
 								onLocationSelected={this.handleLocationSelected}
 							/> */}

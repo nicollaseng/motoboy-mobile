@@ -3,14 +3,14 @@ function getSideBarItems (context, currentUser) {
 	let help
 
 	users = {
-		title: 'Minha Conta',
+		title: 'Meus dados',
 		icon: 'user',
 		useAwesome: true,
 		action: context.handleUserButton
 	}
 	payment = {
-		title: 'Meu endereço',
-		icon: 'home',
+		title: 'Minhas Entregas',
+		icon: 'motorcycle',
 		useAwesome: true,
 		action: context.handleAddressButton
 	}

@@ -24,7 +24,7 @@ const colors = {
 			free: "#29a329"
 		},
 		header: {
-			primary: '#861d1a'
+			primary: '#363777'
 		},
 		footer: '#861d1a',
 		icon: {
@@ -32,7 +32,7 @@ const colors = {
 			desactivated: "#ccc"
 		},
 		drawer: {
-			header: '#861d1a',
+			header: '#363777',
 			text: "#fff"
 		},
 		popup: {

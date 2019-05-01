@@ -4,7 +4,9 @@ import SideBar from '../Sidebar/Sidebar'
 import getSideBarItems from '../Sidebar/SidebarItems'
 import Map from '../Map'
 
-export default class DrawerComponent extends Component {
+import { connect } from "react-redux"
+
+class DrawerComponent extends Component {
 
 	closeDrawer = () => {
     this.drawer._root.close();
@@ -22,7 +24,7 @@ export default class DrawerComponent extends Component {
 							this.drawer = ref;
 						}}
 						onClose={() => this.closeDrawer}
-						content={<SideBar sideBarItems={getSideBarItems(this)} />}
+						content={<SideBar user={this.props.user ? this.props.user : {}} sideBarItems={getSideBarItems(this)} />}
 					>
 						<Map
 							openDrawer={this.openDrawer}
@@ -32,3 +34,9 @@ export default class DrawerComponent extends Component {
         )
     }
 }
+
+mapStateToProps = state => ({
+	user: state.user.user
+})
+
+export default connect(mapStateToProps)(DrawerComponent)

@@ -1,6 +1,6 @@
 import React from "react";
 
-import { TouchableOpacity, Text, Platform } from "react-native";
+import { TouchableOpacity, Text, Platform, Image } from "react-native";
 
 import {
   Container,
@@ -41,7 +41,13 @@ const SideBar = props => {
 						/>
 					</View>
 					<View style={{ margin: 7}}>
-						<Text style={styles.headerText}>{props.user.nome}</Text>
+						<View style={{ flexDirection: 'row', alignItems: 'center'}}>
+							<Text style={styles.headerText}>{props.user.nome}</Text>
+							<View style={{ flexDirection: 'row', alignItems: 'center'}}>
+								<Text>{props.user ? props.user.rating : 'Carregando...'}</Text>
+								<Image source={require('../../assets/rating.png')} style={{ width: 15, height: 15, resizeMode: 'contain' }} />
+							</View>
+						</View>
 						<Text style={[styles.headerText, { fontWeight: '200'}]}>{props.user.email}</Text>
 					</View>
 			</View>
@@ -153,8 +159,4 @@ SideBar.propTypes = {
   sideBarItems: PropTypes.array.isRequired
 };
 
-const mapStateToProps = state => ({
-  user: state.user.user
-})
-
-export default connect(mapStateToProps)(SideBar);
+export default SideBar
