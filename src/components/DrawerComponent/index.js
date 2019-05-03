@@ -24,6 +24,10 @@ class DrawerComponent extends Component {
 		this.props.navigation.navigate('Delivery')
 	}
 
+	handlePaymentButton = () => {
+		this.props.navigation.navigate('Payment')
+	}
+
     render(){
         return (
 					<Drawer

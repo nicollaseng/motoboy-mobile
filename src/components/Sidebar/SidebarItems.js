@@ -1,5 +1,6 @@
 function getSideBarItems (context, currentUser) {
 	let users
+	let payment
 	let help
 
 	users = {
@@ -8,11 +9,17 @@ function getSideBarItems (context, currentUser) {
 		useAwesome: true,
 		action: context.handleUserButton
 	}
-	payment = {
+	delivery = {
 		title: 'Minhas Entregas',
 		icon: 'motorcycle',
 		useAwesome: true,
 		action: context.handleDeliveryButton
+	}
+	payment = {
+		title: 'Pagamento',
+		icon: 'money-check-alt',
+		useAwesome: true,
+		action: context.handlePaymentButton
 	}
 	// help = {
 	// 	title: 'Ajuda',
@@ -23,6 +30,7 @@ function getSideBarItems (context, currentUser) {
 
 	const sideBarItems = [
 		users,
+		delivery,
 		payment,
 		// help,
 		{

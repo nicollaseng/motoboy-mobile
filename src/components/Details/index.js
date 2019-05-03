@@ -392,17 +392,10 @@ class Details extends Component {
 					...this.props.ride,
 					status: 'finished'
 				})
-				this.setState({ loading: false})
-				await firebase.database().ref(`register/commerce/motoboyPartner/${this.props.user.id}`).update({
-					earnings: this.props.user.earnings ? [ ...Object.values(this.props.user.earnings) ,{ date: today, tax: this.props.ride.tax }] : [{ date: today, tax: this.props.ride.tax }],
-					rides: this.props.user.rides ? [...Object.values(this.props.user.rides), this.props.ride] : [this.props.ride]
-				})
-					.then(() => {
-						console.log('successfully set earning and rite for motoboy')
-					})
-					.catch(error => {
-						console.log('error set earning and rite for motoboy', error)
-					})
+				// .update({
+				// 	earnings: this.props.user.earnings ? [ ...Object.values(this.props.user.earnings) , { date: today, tax: this.props.ride.tax }] : [{ date: today, tax: this.props.ride.tax }],
+				// 	rides: this.props.user.rides ? [...Object.values(this.props.user.rides), this.props.ride] : [this.props.ride]
+				// })
 			})
 			.catch(error => {
 				this.setState({ loading: false})
@@ -412,18 +405,52 @@ class Details extends Component {
 
 	dismiss = async () => {
 		this.setState({ loading: true })
-		await firebase.database().ref(`register/commerce/motoboyPartner/${this.props.user.id}`).update({
-			onRide: false,
-			activeRide: false,
+		await firebase.database().ref(`register/commerce/motoboyPartner/${this.props.user.id}`).once('value', async snap => {
+			let motoboy = snap.val()
+			console.log('motoboyyyyyy', motoboy, this.props.ride.tax, this.props.ride)
+			let index;
+			let earnings;
+				if(this.props.user.earnings){
+					index = _.findIndex(motoboy.earnings, e => e.date === today)
+				}
+				if(motoboy.earnings){
+					index = _.findIndex(motoboy.earnings, e => e.date === today)
+					if(index !== -1){
+						motoboy.earnings[index] = { date: today, tax: [...motoboy.earnings[index].tax, this.props.ride.tax]}
+					} else {
+						motoboy.earnings[-1] = { date: today, tax: [this.props.ride.tax] } 
+					}
+				} else {
+					earnings = [ { date: today, tax: [this.props.ride.tax]} ]
+				}
+				await firebase.database().ref(`register/commerce/motoboyPartner/${this.props.user.id}`).update({
+					earnings: motoboy.earnings ? motoboy.earnings : earnings,
+					rides: this.props.user.rides ? [...Object.values(this.props.user.rides), this.props.ride] : [this.props.ride],
+					onRide: false,
+					activeRide: false,
+				})
+					.then(() => {
+						this.setState({ loading: false})
+						console.log('successfully set earning and rite for motoboy')
+						return this.props.setRide(false)
+					})
+					.catch(error => {
+						this.setState({ loading: false})
+						console.log('error set earning and rite for motoboy', error)
+					})
 		})
-			.then(() => {
-				this.setState({ loading: false })
-				return this.props.setRide(false)
-			})
-			.catch(error => {
-				this.setState({ loading: false })
-				console.log('error dimiss ride', error)
-			})
+		// await firebase.database().ref(`register/commerce/motoboyPartner/${this.props.user.id}`).update({
+		// 	onRide: false,
+		// 	activeRide: false,
+		// })
+			// .then(() => {
+			// 	this.setState({ loading: false })
+			// 	return this.props.setRide(false)
+			// })
+			// .catch(error => {
+			// 	this.setState({ loading: false })
+			// 	console.log('error dimiss ride', error)
+			// })
 	}
 
 	render(){

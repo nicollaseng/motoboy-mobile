@@ -15,7 +15,7 @@ const HeaderView = ({ title, hasTabs, onBack }) => (
   <Header hasTabs={hasTabs} style={{ backgroundColor: colors.drawer.header }}>
     <Left>
       <Button transparent onPress={() => onBack()}>
-        <Icon name="arrow-back" />
+        <Icon name="arrow-back" style={{ color: "#fff"}} />
       </Button>
     </Left>
     <Body style={{ flex: 3 }}>

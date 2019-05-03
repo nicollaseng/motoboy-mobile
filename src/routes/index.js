@@ -18,6 +18,9 @@ const AppNavigator = createStackNavigator({
     },
     Delivery: {
 		screen: screens.Delivery
+    },
+    Payment: {
+		screen: screens.Payment
 	},
 },
 {
