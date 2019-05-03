@@ -23,6 +23,8 @@ import { colors } from "../../themes"
 import { connect } from "react-redux"
 import _ from "lodash"
 
+import VMasker from 'vanilla-masker'
+
 const SideBar = props => {
 	console.log('sidebar', props)
 	return (
@@ -42,10 +44,15 @@ const SideBar = props => {
 					</View>
 					<View style={{ margin: 7}}>
 						<View style={{ flexDirection: 'row', alignItems: 'center'}}>
-							<Text style={styles.headerText}>{props.user.nome}</Text>
+							<Text style={styles.headerText}>{props.user.nome.split(' ').slice(0, -1).join(' ')}</Text>
 							<View style={{ flexDirection: 'row', alignItems: 'center'}}>
-								<Text>{props.user ? props.user.rating : 'Carregando...'}</Text>
-								<Image source={require('../../assets/rating.png')} style={{ width: 15, height: 15, resizeMode: 'contain' }} />
+								<Image source={require('../../assets/rating.png')} style={{ width: 15, height: 15, resizeMode: 'contain', marginLeft: 3 }} />
+								<Text style={{
+									color: '#fff',
+									fontWeight: '700',
+									marginLeft: 1,
+									fontSize: 14
+								}}>{props.user.rating ? VMasker.toNumber((Object.values(props.user.rating).reduce((a,b) => a+b,0))/(Object.values(props.user.rating).length))  : 'Carregando...'}</Text>
 							</View>
 						</View>
 						<Text style={[styles.headerText, { fontWeight: '200'}]}>{props.user.email}</Text>

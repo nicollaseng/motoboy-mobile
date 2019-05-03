@@ -64,7 +64,7 @@ class Map extends Component {
 							return earningToday = [...earningToday, earn]
 						})
 					})
-					console.log('earnings modulos', earningToday, earningToday.length, earningToday.length % 2, earningToday.length % 2 ===0)
+					console.log('earnings modulos', earningToday, earningToday.length, earningToday.length % 10, earningToday.length % 2 ===0)
 					if(earningToday.length % 10 === 0){
 						earningToday.push(5) //add 5 reais each 10 rides on a day locally
 						let index = _.findIndex(earnings, e => e === earningFiltered[0])
@@ -73,6 +73,8 @@ class Map extends Component {
 						console.log('earnings', earnings)
 						await firebase.database().ref(`register/commerce/motoboyPartner/${this.props.user.id}`).update({
 							earnings,
+							rating: motoboy.isRated ? motoboy.rating : [5],
+							isRated: true
 						})
 					}
 					let totalEarningToday = earningToday.reduce((a,b) => a+b,0)

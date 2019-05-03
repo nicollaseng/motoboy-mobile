@@ -12,13 +12,23 @@ class Active extends Component {
 	}
 
 	componentDidMount(){
+		const { user } = this.props
 		this.setState({
 			status: this.props.user.rideStatus
+		})
+		if(user.rideRefused && Object.values(user.rideRefused).length % 5 === 0){
+
+		}
+	}
+
+	blockUnblock = async () => {
+		await firebase.database().ref(`register/commerce/motoboyPartner/${this.props.user.id}`).update({
+			rideStatus: !this.state.status
 		})
 	}
 
 	changeStatus = async () => {
-		this.setState({ loading: true },  async () => {
+		this.setState({ loading: true }, async () => {
 			await firebase.database().ref(`register/commerce/motoboyPartner/${this.props.user.id}`).update({
 				rideStatus: !this.state.status
 			})

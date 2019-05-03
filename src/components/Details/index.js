@@ -105,7 +105,12 @@ class Details extends Component {
 		})
 			.then(async () => {
 				await firebase.database().ref(`rides/${this.props.ride.id}`).update({
-					status: 'onWay'
+					status: 'onWay',
+					motoboy: {
+						nome: this.props.user.nome,
+						telefone: this.props.user.telefone,
+						id: this.props.user.id
+					}
 				})
 					.then(() => {
 						this.props.setRide({
