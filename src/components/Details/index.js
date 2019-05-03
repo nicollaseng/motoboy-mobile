@@ -135,6 +135,11 @@ class Details extends Component {
 
 	handleRide = (ride) => {
 		console.log(ride.status)
+		let restaurantLat = ride.restaurant.latitude
+		let restaurantLong = ride.restaurant.longitude
+		let deliveryLat = ride.delivery.latitude
+		let deliveryLong = ride.delivery.longitude 
+
 			if(ride.status === 'pending'){
 				return (
 					<Fragment>
@@ -162,7 +167,7 @@ class Details extends Component {
 						<TypeDescription>Clique no mapa para abrir</TypeDescription>
 							<Fragment>
 								<View style={{ flexDirection: 'row', justifyContent: 'space-around'}}>
-									<TouchableOpacity onPress={this.openGoogleMaps}>
+									<TouchableOpacity onPress={() => this.openGoogleMaps(restaurantLat, restaurantLong)}>
 										<Thumbnail large source={require('../../assets/google.png')} />
 									</TouchableOpacity>
 								</View>
@@ -179,7 +184,7 @@ class Details extends Component {
 						<TypeDescription>Clique no mapa para abrir</TypeDescription>
 							<Fragment>
 								<View style={{ flexDirection: 'row', justifyContent: 'space-around'}}>
-									<TouchableOpacity onPress={this.openGoogleMaps}>
+									<TouchableOpacity onPress={() => this.openGoogleMaps(deliveryLat, deliveryLong)}>
 										<Thumbnail large source={require('../../assets/google.png')} />
 									</TouchableOpacity>
 								</View>
@@ -196,7 +201,7 @@ class Details extends Component {
 						<TypeDescription>Clique no mapa para abrir</TypeDescription>
 							<Fragment>
 								<View style={{ flexDirection: 'row', justifyContent: 'space-around'}}>
-									<TouchableOpacity onPress={this.openGoogleMaps}>
+									<TouchableOpacity onPress={() => this.openGoogleMaps(restaurantLat, restaurantLong)}>
 										<Thumbnail large source={require('../../assets/google.png')} />
 									</TouchableOpacity>
 								</View>
@@ -258,10 +263,11 @@ class Details extends Component {
 			// )
 	}
 
-	openGoogleMaps = () => {
+	openGoogleMaps = (lat , lng ) => {
 		const { ride } = this.props
 		const scheme = Platform.select({ ios: 'maps:0,0?q=', android: 'geo:0,0?q=' });
-		const latLng = `${ride.restaurant.latitude},${ride.restaurant.longitude}`;
+		const latLng = `${lat},${lng}`;
+		console.log('latitude longitude maps', latLng)
 		const label = 'Rotas para restaurante';
 		const url = Platform.select({
 			ios: `${scheme}${label}@${latLng}`,
@@ -274,57 +280,65 @@ class Details extends Component {
 		this.setState({ loading: true })
 		await firebase.database().ref(`register/commerce/motoboyPartner/${this.props.user.id}`).once('value', async snapshot => {
 			let user = snapshot.val()
-			if(user.rideRefused){
-			let rideRefused = _.filter(Object.values(user.rideRefused), e  => e.id === this.props.ride.id)
-			console.log('ride refused', rideRefused)
-			if(rideRefused.length === 0){
-				await firebase.database().ref(`register/commerce/motoboyPartner/${this.props.user.id}`).update({
-					rideRefused: [...Object.values(user.rideRefused), this.props.ride],
-						onRide: false,
-						activeRide: false,
+			await firebase.database().ref(`rides/${this.props.ride.id}`).update({
+				refusedBy: [this.props.user.id]
+			})
+				.then(async () => {
+					if(user.rideRefused){
+						let rideRefused = _.filter(Object.values(user.rideRefused), e  => e.id === this.props.ride.id)
+						console.log('ride refused', rideRefused)
+						if(rideRefused.length === 0){
+							await firebase.database().ref(`register/commerce/motoboyPartner/${this.props.user.id}`).update({
+								rideRefused: [...Object.values(user.rideRefused), this.props.ride],
+									onRide: false,
+									activeRide: false,
+							})
+								.then(() => {
+									this.props.setUser({
+										...this.props.user,
+										onRide: false,
+										activeRide: false,
+									})
+									this.setState({ loading: false })
+									return this.props.setRide(false)
+								})
+								.catch(error => {
+									this.setState({ loading: false })
+									console.log('error refusing ride', error)
+								})
+							} else {
+								this.props.setUser({
+									...this.props.user,
+									onRide: false,
+									activeRide: false,
+								})
+								this.setState({ loading: false })
+								return this.props.setRide(false)
+							}
+						} else {
+							await firebase.database().ref(`register/commerce/motoboyPartner/${this.props.user.id}`).update({
+								rideRefused: [this.props.ride],
+									onRide: false,
+									activeRide: false,
+							})
+								.then(() => {
+									this.props.setUser({
+										...this.props.user,
+										onRide: false,
+										activeRide: false,
+									})
+									this.setState({ loading: false })
+									return this.props.setRide(false)
+								})
+								.catch(error => {
+									this.setState({ loading: false })
+									console.log('error refusing ride', error)
+								})
+						}
 				})
-					.then(() => {
-						this.props.setUser({
-							...this.props.user,
-							onRide: false,
-							activeRide: false,
-						})
-						this.setState({ loading: false })
-						return this.props.setRide(false)
-					})
-					.catch(error => {
-						this.setState({ loading: false })
-						console.log('error refusing ride', error)
-					})
-				} else {
-					this.props.setUser({
-						...this.props.user,
-						onRide: false,
-						activeRide: false,
-					})
-					this.setState({ loading: false })
-					return this.props.setRide(false)
-				}
-			} else {
-				await firebase.database().ref(`register/commerce/motoboyPartner/${this.props.user.id}`).update({
-					rideRefused: [this.props.ride],
-						onRide: false,
-						activeRide: false,
+				.catch(error => {
+					console.log('error updating ride with refused id', error)
 				})
-					.then(() => {
-						this.props.setUser({
-							...this.props.user,
-							onRide: false,
-							activeRide: false,
-						})
-						this.setState({ loading: false })
-						return this.props.setRide(false)
-					})
-					.catch(error => {
-						this.setState({ loading: false })
-						console.log('error refusing ride', error)
-					})
-			}
 		})
 	}
 
@@ -464,7 +478,7 @@ class Details extends Component {
 }
 
 const mapStateToProps = state => ({
-	user: state.user.user
+	user: state.user.user,
 })
 
 export default connect(mapStateToProps, { setRide, setUser })(Details)

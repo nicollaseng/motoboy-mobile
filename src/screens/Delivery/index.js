@@ -134,7 +134,7 @@ class Delivery extends Component {
     };
 	}
 	
-  componentWillMount(nextProps){
+  componentWillMount(){
     const { user } = this.props
     console.log('current user do will', user)
     if(user){

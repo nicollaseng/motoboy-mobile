@@ -26,8 +26,6 @@ import geolib from 'geolib'
 import _ from 'lodash'
 import moment from 'moment'
 
-let date = moment().format('DD/MM/YYYY')
-
 Geocoder.init("AIzaSyBionuXtSnhN7kKXD8Y2tms-Dx43GI4W6g")
 
 class Map extends Component {
@@ -66,7 +64,7 @@ class Map extends Component {
 						})
 					})
 					let totalEarningToday = earningToday.reduce((a,b) => a+b,0)
-					this.setState({ earning: (Math.round(( totalEarningToday - 0.12*totalEarningToday ) * 100) / 10)*10})
+					this.setState({ earning: ((Math.round(( totalEarningToday - 0.12*totalEarningToday ) * 100) / 10)*10)})
 				}
 				this.props.setUser(motoboy)
 				console.log('motoboy', motoboy)
@@ -192,8 +190,7 @@ class Map extends Component {
 	}
 
 	render(){
-		console.log('analise de parametros', date, moment([date.substring(6,10),date.substring(3,5), 	date.substring(0,2),]
-		).add(7, 'days').format('DD/MM/YYYY'))
+		console.log('analise de parametros', this.state.earning)
 		return (
 			<View style={{ flex: 1 }}>
 				<MapView
