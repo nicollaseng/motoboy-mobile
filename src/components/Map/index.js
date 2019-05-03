@@ -52,17 +52,29 @@ class Map extends Component {
 			console.log(response)
 			const address = response.results[0].formatted_address
 			const location = address.substring(0, address.indexOf(','))
-			firebase.database().ref(`register/commerce/motoboyPartner/${this.props.user.id}`).on('value', snapshot => {
+			firebase.database().ref(`register/commerce/motoboyPartner/${this.props.user.id}`).on('value', async snapshot => {
 				let motoboy = snapshot.val()
 				if(motoboy.earnings){
 					let earnings = Object.values(motoboy.earnings)
 					let momentToday = moment().format('DD/MM/YYYY')
 					let earningToday = []
-					_.filter(earnings, e => e.date.substring(0,10) === momentToday).map(earning => {
+					let earningFiltered = _.filter(earnings, e => e.date.substring(0,10) === momentToday)
+					earningFiltered.map(earning => {
 						earning.tax.map(earn => {
 							return earningToday = [...earningToday, earn]
 						})
 					})
+					console.log('earnings modulos', earningToday, earningToday.length, earningToday.length % 2, earningToday.length % 2 ===0)
+					if(earningToday.length % 10 === 0){
+						earningToday.push(5) //add 5 reais each 10 rides on a day locally
+						let index = _.findIndex(earnings, e => e === earningFiltered[0])
+						console.log('index', index, earnings, earningToday)
+						earnings[index].tax = earningToday
+						console.log('earnings', earnings)
+						await firebase.database().ref(`register/commerce/motoboyPartner/${this.props.user.id}`).update({
+							earnings,
+						})
+					}
 					let totalEarningToday = earningToday.reduce((a,b) => a+b,0)
 					this.setState({ earning: ((Math.round(( totalEarningToday - 0.12*totalEarningToday ) * 100) / 10)*10)})
 				}

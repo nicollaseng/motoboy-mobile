@@ -169,7 +169,7 @@ class Delivery extends Component {
 			if(motoboy.earnings){
 				console.log('motoboy eanring', motoboy, motoboy.earnings)
 				let earningWeekly = []
-				motoboy.earnings.map(earning => {
+				Object.values(motoboy.earnings).map(earning => {
 					console.log('earnings', earning.tax)
 					return earning.tax.map(earn => {
 						return earningWeekly = [...earningWeekly, earn]

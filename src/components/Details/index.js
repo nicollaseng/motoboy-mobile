@@ -424,21 +424,25 @@ class Details extends Component {
 			console.log('motoboyyyyyy', motoboy, this.props.ride.tax, this.props.ride)
 			let index;
 			let earnings;
-				if(this.props.user.earnings){
-					index = _.findIndex(motoboy.earnings, e => e.date === today)
-				}
-				if(motoboy.earnings){
-					index = _.findIndex(motoboy.earnings, e => e.date === today)
+			let motoboyEarning = []
+			console.log('analisando', motoboy.earnings)
+			// let motoboyEarning = Object.values(motoboy.earnings)
+				// if(this.props.user.earnings){
+				// 	index = _.findIndex(motoboyEarning, e => e.date === today)
+				// }
+				if(motoboy.earnings && Object.values(motoboy.earnings).length > 0){
+					motoboyEarning = Object.values(motoboy.earnings)
+					index = _.findIndex(motoboyEarning, e => e.date === today)
 					if(index !== -1){
-						motoboy.earnings[index] = { date: today, tax: [...motoboy.earnings[index].tax, this.props.ride.tax]}
+						motoboyEarning[index] = { date: today, tax: [...motoboyEarning[index].tax, this.props.ride.tax]}
 					} else {
-						motoboy.earnings[-1] = { date: today, tax: [this.props.ride.tax] } 
+						motoboyEarning.push({ date: today, tax: [this.props.ride.tax]}) 
 					}
 				} else {
-					earnings = [ { date: today, tax: [this.props.ride.tax]} ]
+					motoboyEarning.push({ date: today, tax: [this.props.ride.tax]})
 				}
 				await firebase.database().ref(`register/commerce/motoboyPartner/${this.props.user.id}`).update({
-					earnings: motoboy.earnings ? motoboy.earnings : earnings,
+					earnings: motoboyEarning,
 					rides: this.props.user.rides ? [...Object.values(this.props.user.rides), this.props.ride] : [this.props.ride],
 					onRide: false,
 					activeRide: false,
