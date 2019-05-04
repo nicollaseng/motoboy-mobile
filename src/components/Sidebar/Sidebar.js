@@ -52,7 +52,7 @@ const SideBar = props => {
 									fontWeight: '700',
 									marginLeft: 1,
 									fontSize: 14
-								}}>{props.user.rating ? VMasker.toNumber((Object.values(props.user.rating).reduce((a,b) => a+b,0))/(Object.values(props.user.rating).length))  : 'Carregando...'}</Text>
+								}}>{props.user.rating ? ((Object.values(props.user.rating).reduce((a,b) => a+b,0))/(Object.values(props.user.rating).length)).toFixed(2) : 'Carregando...'}</Text>
 							</View>
 						</View>
 						<Text style={[styles.headerText, { fontWeight: '200'}]}>{props.user.email}</Text>

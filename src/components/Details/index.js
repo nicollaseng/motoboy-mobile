@@ -11,6 +11,7 @@ import { setUser } from '../../redux/action/auth'
 
 import _ from 'lodash'
 import moment from 'moment'
+import VMasker from 'vanilla-masker'
 
 import Sound from 'react-native-sound'
 import PushNotification from 'react-native-push-notification'
@@ -48,14 +49,17 @@ var alert = new Sound('alert.mp3', Sound.MAIN_BUNDLE, (error) => {
 class Details extends Component {
 	state = {
 		loading: false,
-		timeout: null
+		timeout: null,
+
+		//ride canceled
+		ride: {},
+		isRideCanceled: false,
+		taxCanceled: 0,
 	}
 
 
-	componentDidMount(){
-		console.log('testando time', !this.props.user.onRide && this.props.isRide)
+	async componentDidMount(){
 		if(!this.props.user.onRide && this.props.isRide){
-
 		const timeout = setTimeout(() => this.refuseRide(), 10*1200);
 			this.setState({ timeout })
 			alert.play((success) => {
@@ -91,9 +95,13 @@ class Details extends Component {
 		});
 			return timeout
 		}
-		// } else { 
-		// 	return clearTimeout(timeOut)
-		// }
+		await firebase.database().ref(`rides/${this.props.ride.id}`).on('value', snapRide => {
+			let ride = snapRide.val()
+			console.log('ride status canceled', ride.status)
+			if(ride.status === 'canceled'){
+				this.setState({ isRideCanceled: true, taxCanceled: ride.taxCanceled, ride })
+			}
+		})
 	}
 
 	handleAcceptRide = async () => {
@@ -193,7 +201,7 @@ class Details extends Component {
 										<Thumbnail large source={require('../../assets/google.png')} />
 									</TouchableOpacity>
 								</View>
-								<RestaurantButton onPress={this.startDelivery}>
+								<RestaurantButton onPress={() => !this.state.isRideCanceled ? this.startDelivery() : false}>
 									<RequestButtonText>Iniciar entrega</RequestButtonText>
 								</RestaurantButton>
 							</Fragment>
@@ -210,7 +218,7 @@ class Details extends Component {
 										<Thumbnail large source={require('../../assets/google.png')} />
 									</TouchableOpacity>
 								</View>
-								<RestaurantButton onPress={ride.retorno ? this.wayBack : this.finishDelivery}>
+								<RestaurantButton onPress={() => !this.state.isRideCanceled ? ride.retorno ? this.wayBack() : this.finishDelivery() : false}>
 									<RequestButtonText>{ride.retorno ? 'Retornar Restaurante' : 'Finalizar'}</RequestButtonText>
 								</RestaurantButton>
 							</Fragment>
@@ -223,7 +231,7 @@ class Details extends Component {
 						<TypeDescription>Clique em finalizar somente após retornar ao restaurante</TypeDescription>
 							<Fragment>
 								<View style={{ flexDirection: 'row', justifyContent: 'space-around'}} />
-								<RestaurantButton onPress={this.finishDelivery}>
+								<RestaurantButton onPress={() => !this.state.isRideCanceled ? this.finishDelivery() : false}>
 									<RequestButtonText>{'Finalizar'}</RequestButtonText>
 								</RestaurantButton>
 							</Fragment>
@@ -245,6 +253,23 @@ class Details extends Component {
 							</Fragment>
 					</Fragment>
 				)		
+			} else if (ride.status === 'canceled') {
+				const { taxCanceled } = this.state
+				return (
+					<Fragment>
+						<TypeTitle>Viagem cancelada pelo estabelecimento</TypeTitle>
+						<TypeDescription>Você será pago pelo seu deslocamento. Confira em seus pagamentos.</TypeDescription>
+						<View style={{ flex: 0.8, justifyContent: 'center', alignItems: 'center'}}>
+							<TypeTitle>R$ {VMasker.toMoney(taxCanceled - 0.12*taxCanceled)}</TypeTitle>
+						</View>
+							<Fragment>
+								<View style={{ flexDirection: 'row', justifyContent: 'space-around'}} />
+								<RestaurantButton onPress={this.dismiss}>
+									<RequestButtonText>{'Entendido'}</RequestButtonText>
+								</RestaurantButton>
+							</Fragment>
+					</Fragment>	
+				)
 			}
 			// default:
 			// return (
@@ -349,20 +374,24 @@ class Details extends Component {
 
 	onRestaurant = async () => {
 		this.setState({ loading: true })
-		await firebase.database().ref(`rides/${this.props.ride.id}`).update({
-			status: 'onRestaurant'
-		})
-			.then(() => {
-				this.props.setRide({
-					...this.props.ride,
-					status: 'onRestaurant'
+		if(!this.state.isRideCanceled){
+			await firebase.database().ref(`rides/${this.props.ride.id}`).update({
+				status: 'onRestaurant'
+			})
+				.then(() => {
+					this.props.setRide({
+						...this.props.ride,
+						status: 'onRestaurant'
+					})
+					this.setState({ loading: false})
 				})
-				this.setState({ loading: false})
-			})
-			.catch(error => {
-				this.setState({ loading: false})
-				console.log('error updating ride status', error)
-			})
+				.catch(error => {
+					this.setState({ loading: false})
+					console.log('error updating ride status', error)
+				})
+		} else {
+			this.setState({ loading: false })
+		}
 	}
 
 	startDelivery = async () => {
@@ -423,6 +452,7 @@ class Details extends Component {
 	}
 
 	dismiss = async () => {
+		const { taxCanceled, isRideCanceled, ride } = this.state
 		this.setState({ loading: true })
 		await firebase.database().ref(`register/commerce/motoboyPartner/${this.props.user.id}`).once('value', async snap => {
 			let motoboy = snap.val()
@@ -431,24 +461,20 @@ class Details extends Component {
 			let earnings;
 			let motoboyEarning = []
 			console.log('analisando', motoboy.earnings)
-			// let motoboyEarning = Object.values(motoboy.earnings)
-				// if(this.props.user.earnings){
-				// 	index = _.findIndex(motoboyEarning, e => e.date === today)
-				// }
 				if(motoboy.earnings && Object.values(motoboy.earnings).length > 0){
 					motoboyEarning = Object.values(motoboy.earnings)
 					index = _.findIndex(motoboyEarning, e => e.date === today)
 					if(index !== -1){
-						motoboyEarning[index] = { date: today, tax: [...motoboyEarning[index].tax, this.props.ride.tax]}
+						motoboyEarning[index] = { date: today, tax: [...motoboyEarning[index].tax, taxCanceled ? taxCanceled : this.props.ride.tax]}
 					} else {
-						motoboyEarning.push({ date: today, tax: [this.props.ride.tax]}) 
+						motoboyEarning.push({ date: today, tax: [taxCanceled ? taxCanceled : this.props.ride.tax]}) 
 					}
 				} else {
-					motoboyEarning.push({ date: today, tax: [this.props.ride.tax]})
+					motoboyEarning.push({ date: today, tax: [taxCanceled ? taxCanceled : this.props.ride.tax]})
 				}
 				await firebase.database().ref(`register/commerce/motoboyPartner/${this.props.user.id}`).update({
 					earnings: motoboyEarning,
-					rides: this.props.user.rides ? [...Object.values(this.props.user.rides), this.props.ride] : [this.props.ride],
+					rides: this.props.user.rides ? [...Object.values(this.props.user.rides), isRideCanceled ? ride : this.props.ride] : [isRideCanceled ? ride : this.props.ride],
 					onRide: false,
 					activeRide: false,
 				})
@@ -462,25 +488,14 @@ class Details extends Component {
 						console.log('error set earning and rite for motoboy', error)
 					})
 		})
-		// await firebase.database().ref(`register/commerce/motoboyPartner/${this.props.user.id}`).update({
-		// 	onRide: false,
-		// 	activeRide: false,
-		// })
-			// .then(() => {
-			// 	this.setState({ loading: false })
-			// 	return this.props.setRide(false)
-			// })
-			// .catch(error => {
-			// 	this.setState({ loading: false })
-			// 	console.log('error dimiss ride', error)
-			// })
 	}
 
 	render(){
 		const { ride } = this.props
+		console.log('is ride canceled', this.state.isRideCanceled)
 		return (
 			<Container>
-				{this.handleRide(ride)}
+				{this.handleRide(this.state.isRideCanceled ? this.state.ride : ride)}
 			</Container>
     )
 	}	

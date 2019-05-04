@@ -1,5 +1,5 @@
 import React, { Component, Fragment } from  'react'
-import { View, Image } from 'react-native'
+import { View, Image, Text } from 'react-native'
 import MapView, { Marker } from 'react-native-maps'
 import Search from '../Search'
 import Directions from '../Directions'
@@ -26,6 +26,9 @@ import geolib from 'geolib'
 import _ from 'lodash'
 import moment from 'moment'
 
+import OneSignal from 'react-native-onesignal'; // Import package from node modules
+import { ONE_SIGNAL_ID } from '../../utils/constants'
+
 Geocoder.init("AIzaSyBionuXtSnhN7kKXD8Y2tms-Dx43GI4W6g")
 
 class Map extends Component {
@@ -45,6 +48,31 @@ class Map extends Component {
 		earning: 0 
 	}
 
+	async componentWillMount(){
+
+		let userDeviceId;
+
+			OneSignal.init(ONE_SIGNAL_ID, {
+				kOSSettingsKeyAutoPrompt: true,
+			});
+			OneSignal.getPermissionSubscriptionState( (status) => {
+				userDeviceId =  status.userId;
+				if(!this.props.user.userDeviceId){
+					firebase.database().ref(`register/commerce/motoboyPartner/${this.props.user.id}`).update({
+						userDeviceId
+					})
+						.then(() => {
+							console.log('successfully update userDeviceId')
+						})
+						.catch((error) => {
+							console.log('error update userDeviceId', error)
+						})
+				}
+				this.setState({ userDeviceId })
+			});
+	}
+
+
 	async componentDidMount(){
 		navigator.geolocation.getCurrentPosition(
 		async	({ coords: { latitude, longitude } }) => {
@@ -54,8 +82,10 @@ class Map extends Component {
 			const location = address.substring(0, address.indexOf(','))
 			firebase.database().ref(`register/commerce/motoboyPartner/${this.props.user.id}`).on('value', async snapshot => {
 				let motoboy = snapshot.val()
+				console.log('motoboy earnings', motoboy.earnigns)
 				if(motoboy.earnings){
 					let earnings = Object.values(motoboy.earnings)
+					console.log('earnings', earnings)
 					let momentToday = moment().format('DD/MM/YYYY')
 					let earningToday = []
 					let earningFiltered = _.filter(earnings, e => e.date.substring(0,10) === momentToday)
@@ -65,7 +95,7 @@ class Map extends Component {
 						})
 					})
 					console.log('earnings modulos', earningToday, earningToday.length, earningToday.length % 10, earningToday.length % 2 ===0)
-					if(earningToday.length % 10 === 0){
+					if(earningToday.length > 0 && earningToday.length % 10 === 0){
 						earningToday.push(5) //add 5 reais each 10 rides on a day locally
 						let index = _.findIndex(earnings, e => e === earningFiltered[0])
 						console.log('index', index, earnings, earningToday)
@@ -205,6 +235,7 @@ class Map extends Component {
 
 	render(){
 		console.log('analise de parametros', this.state.earning)
+		// return <Text>Oi</Text>
 		return (
 			<View style={{ flex: 1 }}>
 				<MapView

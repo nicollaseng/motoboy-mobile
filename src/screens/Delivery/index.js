@@ -195,9 +195,9 @@ class Delivery extends Component {
 
 	renderDelivery = (rides) => {
 		if(rides.length > 0){
-			return rides.map(ride => {
+			let ridesFiltered = _.orderBy(rides, ['createdAt'], ['desc'])
+			return ridesFiltered.map(ride => {
 				let date = ride.createdAt.substring(0,10)
-				console.log('valor', ride.tax, ride.tax -0.12*ride.tax)
 				return (
 					<View style={{
 						flex: 1,
@@ -232,7 +232,10 @@ class Delivery extends Component {
 								Retorno: <Text>{ride.retorno ? 'Sim' : 'Não'}</Text>
 							</Text>
 							<Text style={{ color: '#fff', fontWeight: 'bold', textAlign: 'right', color: '#54fa2a' }}>
-								Ganhos: <Text> R$ {VMasker.toMoney((Math.round((ride.tax - 0.12*ride.tax)*100)/10)*10)}</Text>
+								Ganhos: 
+								<Text> 
+									{ride.status === 'canceled' ? `R$ ${VMasker.toMoney(ride.taxCanceled - 0.12*ride.taxCanceled)}` : `R$ ${VMasker.toMoney((Math.round((ride.tax - 0.12*ride.tax)*100)/10)*10)}`}
+								</Text>
 							</Text>
 						</View>
 					</View>
