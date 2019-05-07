@@ -1,5 +1,5 @@
 import React, { Component, Fragment } from  'react'
-import { View, TouchableOpacity, Platform, Linking, PushNotificationIOS} from 'react-native'
+import { View, TouchableOpacity, Platform, Linking, PushNotificationIOS, Image} from 'react-native'
 import { Thumbnail, Spinner } from 'native-base'
 import { 
 	Container, TypeTitle, TypeDescription, TypeImage, RequestButton, RequestButtonText, RestaurantButton
@@ -60,7 +60,7 @@ class Details extends Component {
 
 	async componentDidMount(){
 		if(!this.props.user.onRide && this.props.isRide){
-		const timeout = setTimeout(() => this.refuseRide(), 10*1200);
+		const timeout = setTimeout(() => this.refuseRide(), 10*2000);
 			this.setState({ timeout })
 			alert.play((success) => {
 				if (success) {
@@ -101,49 +101,72 @@ class Details extends Component {
 			if(ride.status === 'canceled'){
 				this.setState({ isRideCanceled: true, taxCanceled: ride.taxCanceled, ride })
 			}
+			if(ride.motoboy && Object.values(ride.motoboy).length > 0 && ride.motoboy.id !== this.props.user.id){
+				this.props.setUser({
+					...this.props.user,
+					onRide: false,
+					activeRide: false,
+				})
+				this.setState({ loading: false })
+				return this.props.setRide(false)
+			}
 		})
 	}
 
 	handleAcceptRide = async () => {
 		clearTimeout(this.state.timeout)
 		this.setState({ loading: true })
-		await firebase.database().ref(`register/commerce/motoboyPartner/${this.props.user.id}`).update({
-			onRide: true,
-			activeRide: this.props.ride,
-		})
-			.then(async () => {
-				await firebase.database().ref(`rides/${this.props.ride.id}`).update({
-					status: 'onWay',
-					motoboy: {
-						nome: this.props.user.nome,
-						telefone: this.props.user.telefone,
-						id: this.props.user.id
-					}
+		// 1 - check if there is motoboy record at ride choosed if true refuse ride not on server
+		await firebase.database().ref(`rides/${this.props.ride.id}`).once('value', async snapRide => {
+			console.log('analise profunda',snapRide, snapRide.motoboy, snapRide.motoboy && Object.values(snapRide.motoboy).length > 0 )
+			if(snapRide.val().motoboy && Object.values(snapRide.val().motoboy).length > 0){
+				this.props.setUser({
+					...this.props.user,
+					onRide: false,
+					activeRide: false,
 				})
-					.then(() => {
-						this.props.setRide({
-							...this.props.ride,
-							status: 'onWay'
+				this.setState({ loading: false })
+				return this.props.setRide(false)
+			} else { // if not motoboy then proceed to accept ride
+				await firebase.database().ref(`register/commerce/motoboyPartner/${this.props.user.id}`).update({
+					onRide: true,
+					activeRide: this.props.ride,
+				})
+					.then(async () => {
+						await firebase.database().ref(`rides/${this.props.ride.id}`).update({
+							status: 'onWay',
+							motoboy: {
+								nome: this.props.user.nome,
+								telefone: this.props.user.telefone,
+								id: this.props.user.id
+							}
 						})
-						this.props.setUser({
-							...this.props.user,
-							onRide: true,
-							activeRide: this.props.ride,
-							earnings: this.props.user.earnings ? [ ...Object.values(this.props.user.earnings) ,{ date: this.props.ride.createdAt, tax: this.props.ride.tax }] : [{ date: this.props.ride.createdAt, tax: this.props.ride.tax }],
-							rides: this.props.user.rides ? [...Object.values(this.props.user.rides), this.props.ride] : [this.props.ride]
-						})
-						this.setState({ loading: false })
+							.then(() => {
+								this.props.setRide({
+									...this.props.ride,
+									status: 'onWay'
+								})
+								this.props.setUser({
+									...this.props.user,
+									onRide: true,
+									activeRide: this.props.ride,
+									earnings: this.props.user.earnings ? [ ...Object.values(this.props.user.earnings) ,{ date: this.props.ride.createdAt, tax: this.props.ride.tax }] : [{ date: this.props.ride.createdAt, tax: this.props.ride.tax }],
+									rides: this.props.user.rides ? [...Object.values(this.props.user.rides), this.props.ride] : [this.props.ride]
+								})
+								this.setState({ loading: false })
+							})
+							.catch(error => {
+								this.setState({ loading: false })
+								console.log('error updating ride status', error)
+							})
 					})
 					.catch(error => {
+						console.log('error updating motoboy', error)
+						Alert.alert('Atenção', 'Houve uma falha, favor tente novamente em instantes')
 						this.setState({ loading: false })
-						console.log('error updating ride status', error)
 					})
-			})
-			.catch(error => {
-				console.log('error updating motoboy', error)
-				Alert.alert('Atenção', 'Houve uma falha, favor tente novamente em instantes')
-				this.setState({ loading: false })
-			})
+			}
+		})
 	}
 
 	handleRide = (ride) => {
@@ -177,11 +200,11 @@ class Details extends Component {
 				return (
 					<Fragment>
 						<TypeTitle>Escolha um mapa abaixo para iniciar a navegação</TypeTitle>
-						<TypeDescription>Clique no mapa para abrir</TypeDescription>
+						{/* <TypeDescription>Clique no mapa para abrir</TypeDescription> */}
 							<Fragment>
-								<View style={{ flexDirection: 'row', justifyContent: 'space-around'}}>
+								<View style={{ flexDirection: 'row', justifyContent: 'space-around', marginVertical: 18 }}>
 									<TouchableOpacity onPress={() => this.openGoogleMaps(restaurantLat, restaurantLong)}>
-										<Thumbnail large source={require('../../assets/google.png')} />
+										<Thumbnail square large source={require('../../assets/google.png')} />
 									</TouchableOpacity>
 								</View>
 								<RestaurantButton onPress={this.onRestaurant}>
@@ -194,11 +217,11 @@ class Details extends Component {
 				return (
 					<Fragment>
 						<TypeTitle>Escolha um mapa abaixo para iniciar a navegação</TypeTitle>
-						<TypeDescription>Clique no mapa para abrir</TypeDescription>
+						{/* <TypeDescription>Clique no mapa para abrir</TypeDescription> */}
 							<Fragment>
-								<View style={{ flexDirection: 'row', justifyContent: 'space-around'}}>
+								<View style={{ flexDirection: 'row', justifyContent: 'space-around',  marginVertical: 18 }}>
 									<TouchableOpacity onPress={() => this.openGoogleMaps(deliveryLat, deliveryLong)}>
-										<Thumbnail large source={require('../../assets/google.png')} />
+										<Thumbnail square large source={require('../../assets/google.png')} />
 									</TouchableOpacity>
 								</View>
 								<RestaurantButton onPress={() => !this.state.isRideCanceled ? this.startDelivery() : false}>
@@ -211,11 +234,11 @@ class Details extends Component {
 				return (
 					<Fragment>
 						<TypeTitle>Escolha um mapa abaixo para iniciar a navegação</TypeTitle>
-						<TypeDescription>Clique no mapa para abrir</TypeDescription>
+						{/* <TypeDescription>Clique no mapa para abrir</TypeDescription> */}
 							<Fragment>
-								<View style={{ flexDirection: 'row', justifyContent: 'space-around'}}>
+								<View style={{ flexDirection: 'row', justifyContent: 'space-around',  marginVertical: 18 }}>
 									<TouchableOpacity onPress={() => this.openGoogleMaps(restaurantLat, restaurantLong)}>
-										<Thumbnail large source={require('../../assets/google.png')} />
+										<Thumbnail square large source={require('../../assets/google.png')} />
 									</TouchableOpacity>
 								</View>
 								<RestaurantButton onPress={() => !this.state.isRideCanceled ? ride.retorno ? this.wayBack() : this.finishDelivery() : false}>
@@ -230,7 +253,11 @@ class Details extends Component {
 						<TypeTitle>Favor retorne ao restaurante com troco/maquineta</TypeTitle>
 						<TypeDescription>Clique em finalizar somente após retornar ao restaurante</TypeDescription>
 							<Fragment>
-								<View style={{ flexDirection: 'row', justifyContent: 'space-around'}} />
+								<View style={{ flexDirection: 'row', justifyContent: 'space-around',  marginVertical: 18 }}>
+									<TouchableOpacity onPress={() => this.openGoogleMaps(restaurantLat, restaurantLong)}>
+										<Thumbnail square large source={require('../../assets/google.png')} />
+									</TouchableOpacity>
+								</View>
 								<RestaurantButton onPress={() => !this.state.isRideCanceled ? this.finishDelivery() : false}>
 									<RequestButtonText>{'Finalizar'}</RequestButtonText>
 								</RestaurantButton>
@@ -271,26 +298,6 @@ class Details extends Component {
 					</Fragment>	
 				)
 			}
-			// default:
-			// return (
-			// 	<Fragment>
-			// 		<TypeTitle>Você tem uma entrega disponível</TypeTitle>
-			// 		<TypeDescription>Clique abaixo para aceitar</TypeDescription>
-			// 		{this.state.loading ? <Spinner /> : (
-			// 			<Fragment>
-			// 				<TouchableOpacity onPress={this.handleAcceptRide}>
-			// 					<Thumbnail large source={require('../../assets/motoboy.png')} />
-			// 				</TouchableOpacity>
-			// 				<TypeTitle>{this.props.ride.name}</TypeTitle>
-			// 				<TypeDescription>{this.props.rideDistance/1000} km</TypeDescription>
-			
-			// 				<RequestButton onPress={() => {}}>
-			// 					<RequestButtonText>Recusar</RequestButtonText>
-			// 				</RequestButton>
-			// 			</Fragment>
-			// 		)}
-			// 	</Fragment>
-			// )
 	}
 
 	openGoogleMaps = (lat , lng ) => {
@@ -316,7 +323,6 @@ class Details extends Component {
 				.then(async () => {
 					if(user.rideRefused){
 						let rideRefused = _.filter(Object.values(user.rideRefused), e  => e.id === this.props.ride.id)
-						console.log('ride refused', rideRefused)
 						if(rideRefused.length === 0){
 							await firebase.database().ref(`register/commerce/motoboyPartner/${this.props.user.id}`).update({
 								rideRefused: [...Object.values(user.rideRefused), this.props.ride],

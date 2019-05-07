@@ -85,6 +85,9 @@ class Login extends Component {
 						this.props.navigation.navigate('DrawerComponent')
 						this.setState({ loading: false })
 						console.log('user', user)
+					} else if(user[0].status === 'Bloqueado')  {
+						Alert.alert('Atenção', 'Sua conta encontra-se temporariamente bloqueada. Entre em contato com nosso suporte')
+						this.setState({ loading: false })
 					} else {
 						Alert.alert('Atenção', 'Seu cadastro ainda está em análise')
 						this.setState({ loading: false })

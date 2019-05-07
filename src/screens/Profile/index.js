@@ -135,7 +135,8 @@ class RegisterScreen extends Component {
       photo64: '',
 			password: '',
 			cpf: '',
-			birthday: '',
+      birthday: '',
+      phone: '',
 			telefone: '',
 			email: '',
 			dddphone: '',
@@ -167,20 +168,21 @@ class RegisterScreen extends Component {
       this.setState({
         oldUser: true,
 				name: user.nome,
-				dddphone: user.dddCelular,
-        phone:  user.telefone,
+        dddphone: user.dddCelular,
+        birthday: user.birthday,
+        telefone:  user.telefone,
         email: user.email,
-        enderecoNumero: user.enderecoNumero,
-				enderecoLogradouro: user.endereco,
-				enderecoLocalidade: user.cidade,
-				enderecoBairro: user.bairro,
-				enderecoComplemento: user.enderecoComplemento,
+        enderecoNumero: user.enderecoNumero ? user.enderecoNumero : '',
+				enderecoLogradouro: user.endereco ? user.endereco  : '',
+				enderecoLocalidade: user.cidade ? user.cidade : '',
+				enderecoBairro: user.bairro ?  user.bairro : '',
+				enderecoComplemento: user.enderecoComplemento ? user.enderecoComplemento : '',
 				profilePhoto: user.photo64 && user.photo64.length > 0 ? `data:image/png;base64,${u.photo64}` : '',
-				bank: user.bank,
-				bankAgency: user.bankAgency,
-				bankAgencyDigit: user.bankAgencyDigit,
-				bankAccount: user.bankAccount,
-				bankAccountDigit: user.bankAccountDigit,
+				bank: user.bank ? user.bank : '',
+				bankAgency: user.bankAgency ? user.bankAgency : '',
+				bankAgencyDigit: user.bankAgencyDigit ? user.bankAgencyDigit : '',
+				bankAccount: user.bankAccount ? user.bankAccount : '',
+				bankAccountDigit: user.bankAccountDigit ? user.bankAccountDigit : '',
 				cpf: user.cpf,
       })
     }
@@ -219,6 +221,8 @@ class RegisterScreen extends Component {
       enderecoLocalidade,
     } = this.state;
 
+    console.log('procurando undefined', this.state)
+
 		let validPhone = false;
 		
     if (telefone.length >= 14) {
@@ -236,7 +240,7 @@ class RegisterScreen extends Component {
     }
 
     if (validEmail) {
-      if (!validPhone && phone.length > 0) {
+      if (!validPhone) {
         this.showWarningAlert('Telefone inválido');
         return;
       }
@@ -248,7 +252,6 @@ class RegisterScreen extends Component {
         return;
       }
     }
-
     
     //validate only if old user
     if(this.state.oldUser){
@@ -420,7 +423,7 @@ class RegisterScreen extends Component {
   }
 
   render() {
-    console.log('dados do usuario minha conta', this.props.user)
+    console.log('user', this.props.user)
     const { isLoading } = this.state;
     const { user } = this.props
     return (
@@ -435,7 +438,7 @@ class RegisterScreen extends Component {
           <Content style={styles.holder} keyboardShouldPersistTaps="handled">
 					<View style={{ alignItems: 'center'}}> 
 						<Label style={styles.logoText}>Perfil</Label>
-						<TouchableWithoutFeedback onPress={this.selectPhoto}>
+						<TouchableWithoutFeedback onPress={() => {}}>
               <Thumbnail
                 large
                 source={this.state.profilePhoto && Object.keys(this.state.profilePhoto).length > 0 ? this.state.profilePhoto : require('../../assets/avatar.png')} />
@@ -489,7 +492,7 @@ class RegisterScreen extends Component {
                 <Label>Data de nascimento</Label>
                 <Input
                   ref={(c) => { this.birthday = c; }}
-                  onSubmitEditing={() => this.focusInput('passwordInput')}
+                  onSubmitEditing={() => this.focusInput('cepInput')}
                   returnKeyType="next"
                   autoCapitalize="none"
                   onChangeText={birthday => this.handleBirthday(birthday)}
@@ -556,7 +559,7 @@ class RegisterScreen extends Component {
                     onSubmitEditing={() => this.focusInput('enderecoBairroInput')}
                     returnKeyType="next"
                     onChangeText={enderecoNumero => this.setState({ enderecoNumero })}
-                    value={this.state.enderecoNumero}
+                    value={this.state.enderecoNumero || ''}
                   />
                 </Item>
               </Col>
@@ -611,7 +614,7 @@ class RegisterScreen extends Component {
                 onSubmitEditing={() => this.focusInput('bankAgency')}
                 returnKeyType="next"
                 onChangeText={bank => this.setState({ bank })}
-                value={this.state.bank}
+                value={this.state.bank || ''}
               />
             </Item>
 						<Grid>
@@ -625,7 +628,7 @@ class RegisterScreen extends Component {
                     onSubmitEditing={() => this.focusInput('bankAgencyDigit')}
                     returnKeyType="next"
                     onChangeText={bankAgency => this.setState({ bankAgency })}
-                    value={this.state.bankAgency}
+                    value={this.state.bankAgency || ''}
                   />
                 </Item>
               </Col>
@@ -639,7 +642,7 @@ class RegisterScreen extends Component {
                     onSubmitEditing={() => this.focusInput('bankAccount')}
                     returnKeyType="next"
                     onChangeText={bankAgencyDigit => this.setState({ bankAgencyDigit })}
-                    value={this.state.bankAgencyDigit}
+                    value={this.state.bankAgencyDigit || ''}
                   />
                 </Item>
               </Col>
@@ -655,7 +658,7 @@ class RegisterScreen extends Component {
                     onSubmitEditing={() => this.focusInput('bankAccountDigit')}
                     returnKeyType="next"
                     onChangeText={bankAccount => this.setState({ bankAccount })}
-                    value={this.state.bankAccount}
+                    value={this.state.bankAccount || ''}
                   />
                 </Item>
               </Col>
@@ -668,7 +671,7 @@ class RegisterScreen extends Component {
                     ref={(c) => { this.bankAccountDigit = c; }}
                     returnKeyType="done"
                     onChangeText={bankAccountDigit => this.setState({ bankAccountDigit })}
-                    value={this.state.bankAccountDigit}
+                    value={this.state.bankAccountDigit || ''} 
                   />
                 </Item>
               </Col>

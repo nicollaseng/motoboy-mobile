@@ -28,7 +28,7 @@ export const TypeDescription = styled.Text`
 `
 
 export const TypeImage = styled.Image`
-   height: 80px;
+   height: 120px;
    margin: 10px 0;
 `
 
@@ -38,7 +38,7 @@ export const RequestButton = styled.TouchableOpacity`
    align-items: center;
    height: 44px;
    align-self: stretch;
-   margin-top: 10px;
+   margin-top: 30px;
 `
 
 export const RequestButtonText = styled.Text`
@@ -52,5 +52,5 @@ export const RestaurantButton = styled.TouchableOpacity`
    align-items: center;
    height: 44px;
    align-self: stretch;
-   margin-top: 10px;
+   margin-top: 30px;
 `

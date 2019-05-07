@@ -8,6 +8,7 @@ import { Store }  from './redux/store';
 import { ONE_SIGNAL_ID } from './utils/constants'
 import OneSignal from 'react-native-onesignal'; // Import package from node modules
 
+console.disableYellowBox = true;
 
 class App extends Component {
 
@@ -39,7 +40,7 @@ class App extends Component {
 	  onIds(device) {
 		console.log('Device info: ', device);
 	  }
-	  
+
 	render(){
 		return (
 			<Provider store={Store}>

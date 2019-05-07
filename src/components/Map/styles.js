@@ -13,11 +13,11 @@ export const LocationBox = styled.View`
 
     ${Platform.select({
         ios: css`
-            margin-top: 20px
+            margin-top: 20px;
         `,
         android: css`
-            margin-top: 10px,
-            margin-left: 10px
+            margin-top: 10px;
+            margin-left: 10px;
         `
     })}
 `;

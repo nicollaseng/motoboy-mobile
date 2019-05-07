@@ -244,7 +244,7 @@ class Delivery extends Component {
 
 	if(this.state.earning){
 		earningWeeklyOff = VMasker.toMoney(this.state.earning - 0.12*this.state.earning)
-		earningWeeklyTotal = VMasker.toMoney(this.state.earning)
+		earningWeeklyTotal = VMasker.toMoney(this.state.earning*10)
 		off = VMasker.toMoney(0.12*this.state.earning)
 	} else {
 		earningWeeklyOff = 0

@@ -1,11 +1,14 @@
 import React, { Component, Fragment } from  'react'
 import { View, Image, Text } from 'react-native'
 import MapView, { Marker } from 'react-native-maps'
+import { withNavigation } from 'react-navigation'
+
 import Search from '../Search'
 import Directions from '../Directions'
 import Details from '../Details'
 import Active from '../Active'
 import EarningBar from '../EarningBar'
+import Info from '../Info'
 
 import { connect } from 'react-redux'
 import * as firebase from 'firebase'
@@ -17,6 +20,7 @@ import backImage from '../../assets/back.png'
 import menuImage from '../../assets/menu.png'
 
 import { setUser } from '../../redux/action/auth'
+import { setRide } from '../../redux/action/ride'
 
 import { LocationBox, LocationText, LocationTimeText, LocationTimeBox, LocationTimeTextSmall, Back, Menu } from './styles'
 
@@ -58,15 +62,15 @@ class Map extends Component {
 			OneSignal.getPermissionSubscriptionState( (status) => {
 				userDeviceId =  status.userId;
 				if(!this.props.user.userDeviceId){
-					firebase.database().ref(`register/commerce/motoboyPartner/${this.props.user.id}`).update({
-						userDeviceId
+				firebase.database().ref(`register/commerce/motoboyPartner/${this.props.user.id}`).update({
+					userDeviceId
+				})
+					.then(() => {
+						console.log('successfully update userDeviceId')
 					})
-						.then(() => {
-							console.log('successfully update userDeviceId')
-						})
-						.catch((error) => {
-							console.log('error update userDeviceId', error)
-						})
+					.catch((error) => {
+						console.log('error update userDeviceId', error)
+					})
 				}
 				this.setState({ userDeviceId })
 			});
@@ -77,15 +81,12 @@ class Map extends Component {
 		navigator.geolocation.getCurrentPosition(
 		async	({ coords: { latitude, longitude } }) => {
 			const response = await Geocoder.from({ latitude, longitude })
-			console.log(response)
 			const address = response.results[0].formatted_address
 			const location = address.substring(0, address.indexOf(','))
 			firebase.database().ref(`register/commerce/motoboyPartner/${this.props.user.id}`).on('value', async snapshot => {
 				let motoboy = snapshot.val()
-				console.log('motoboy earnings', motoboy.earnigns)
 				if(motoboy.earnings){
 					let earnings = Object.values(motoboy.earnings)
-					console.log('earnings', earnings)
 					let momentToday = moment().format('DD/MM/YYYY')
 					let earningToday = []
 					let earningFiltered = _.filter(earnings, e => e.date.substring(0,10) === momentToday)
@@ -94,13 +95,10 @@ class Map extends Component {
 							return earningToday = [...earningToday, earn]
 						})
 					})
-					console.log('earnings modulos', earningToday, earningToday.length, earningToday.length % 10, earningToday.length % 2 ===0)
 					if(earningToday.length > 0 && earningToday.length % 10 === 0){
 						earningToday.push(5) //add 5 reais each 10 rides on a day locally
 						let index = _.findIndex(earnings, e => e === earningFiltered[0])
-						console.log('index', index, earnings, earningToday)
 						earnings[index].tax = earningToday
-						console.log('earnings', earnings)
 						await firebase.database().ref(`register/commerce/motoboyPartner/${this.props.user.id}`).update({
 							earnings,
 							rating: motoboy.isRated ? motoboy.rating : [5],
@@ -111,38 +109,41 @@ class Map extends Component {
 					this.setState({ earning: ((Math.round(( totalEarningToday - 0.12*totalEarningToday ) * 100) / 10)*10)})
 				}
 				this.props.setUser(motoboy)
-				console.log('motoboy', motoboy)
-				if(motoboy.rideStatus){
+				console.log('RIDE STATUS DO MOTOBOY', motoboy.rideStatus)
+				if(motoboy.rideStatus){ 
 					firebase.database().ref(`rides`).on('value', rideshot => {
 						if(rideshot.val() !== null){
 							let nearRide = _.filter(Object.values(rideshot.val()), e => {
 								return geolib.getDistance(
 									{ latitude: e.restaurant.latitude, longitude: e.restaurant.longitude },
 									{ latitude, longitude }
-								 ) <= 8000 && e.status === 'pending'
+								 ) <= 5000 && e.status === 'pending' && !e.motoboy //if another motoboy has accept nothing must happen
 							})
 							if(nearRide.length > 0){
 								let ride = _.sample(nearRide)
-								console.log('motoboy ride refused', motoboy.rideRefused)
 								let rideRefused = _.filter(motoboy.rideRefused, e => e.id === ride.id)
-								console.log('ride', ride, rideRefused)
-								// if(rideRefused.length === 0){
 									if(rideRefused.length > 0 ){
 										this.setState({ isRide: false })
 									} else if(rideRefused.length === 0) {
 										this.setState({ isRide: true, ride })
 									}
-								// } else {
-								// 	this.setState({ isRide: false, ride: false })
-								// }
-								// let rideDistance = geolib.getDistance(
-								// 	{ latitude: ride.latitude, longitude: ride.longitude },
-								// 	{ latitude, longitude }
-								// )
 							}
 						}
 					})
+				} else {
+					this.setState({ isRide: false })
 				}
+				if(((Object.values(motoboy.rating).reduce((a,b) => a+b,0))/(Object.values(motoboy.rating).length)).toFixed(2) < 4.5){
+					firebase.database().ref(`register/commerce/motoboyPartner/${this.props.user.id}`).update({
+						status: 'Bloqueado'
+					})
+						.then(() => {
+							return this.signOut()
+						})
+						.catch(error => {
+							console.log('error updating status to Bloqueado', error)
+						})
+					}
 			})
 				this.setState({
 					location,
@@ -214,6 +215,16 @@ class Map extends Component {
 		}
 	}
 
+	signOut = async () => {
+		await firebase.auth().signOut()
+			.then(() => {
+				this.props.navigation.navigate('Login')
+			})
+			.catch(error => {
+				console.log('error signout', error)
+			})
+	}
+
 	handleLocationSelected = (data, { geometry }) => {
 		const { location: { lat: latitude, lng: longitude }} = geometry
 		this.setState({
@@ -265,7 +276,7 @@ class Map extends Component {
 										})
 										this.mapView.fitToCoordinates(result.coordinates, {
 											edgePadding: {
-												rigth: getPixelSize(50),
+												right: getPixelSize(50),
 												left: getPixelSize(50),
 												top: getPixelSize(50),
 												bottom: getPixelSize(350)
@@ -305,6 +316,9 @@ class Map extends Component {
 
 					{this.state.isRide ? (
 						<Fragment>
+							<Info
+								pedido={this.props.ride ? this.props.ride : this.state.ride}
+							/>
 							<Details
 								 isRide={true}
 								 ride={this.props.ride ? this.props.ride : this.state.ride}
@@ -354,4 +368,4 @@ const mapStateToProps = state => ({
 	ride: state.ride.ride
 })
 
-export default connect(mapStateToProps, { setUser })(Map)
+export default connect(mapStateToProps, { setUser, setRide })(withNavigation(Map))
