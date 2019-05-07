@@ -7,6 +7,9 @@ import * as firebase from 'firebase'
 
 import { connect } from "react-redux"
 
+import { setUser } from '../../redux/action/auth'
+
+
 class DrawerComponent extends Component {
 
 	closeDrawer = () => {
@@ -34,12 +37,21 @@ class DrawerComponent extends Component {
 	}
 
 	signOut = async () => {
-		await firebase.auth().signOut()
-			.then(() => {
-				this.props.navigation.navigate('Login')
+		await firebase.database().ref(`register/commerce/motoboyPartner/${this.props.user.id}`).update({
+			rideStatus: false
+		})
+			.then( async () => {
+					await firebase.auth().signOut()
+						.then(() => {
+							this.props.navigation.navigate('Login')
+						})
+						.catch(error => {
+							console.log('error signout', error)
+						})
 			})
 			.catch(error => {
-				console.log('error signout', error)
+				Alert.alert('Atenção', 'Houve um erro interno. Tente novamente em alguns instantes')
+				console.log('error updating ridestatus', error)
 			})
 	}
 
@@ -66,4 +78,4 @@ mapStateToProps = state => ({
 	user: state.user.user
 })
 
-export default connect(mapStateToProps)(DrawerComponent)
+export default connect(mapStateToProps, { setUser })(DrawerComponent)
