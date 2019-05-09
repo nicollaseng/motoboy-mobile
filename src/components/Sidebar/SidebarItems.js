@@ -16,7 +16,7 @@ function getSideBarItems (context, currentUser) {
 		action: context.handleDeliveryButton
 	}
 	payment = {
-		title: 'Pagamento',
+		title: 'Ganhos',
 		icon: 'money-check-alt',
 		useAwesome: true,
 		action: context.handlePaymentButton

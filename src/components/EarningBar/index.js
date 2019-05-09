@@ -12,7 +12,7 @@ class EarningBar extends Component {
 				<View style={styles.container}>
 					<View style={styles.subContainer}>
 						<Text style={styles.title}>Total de hoje:</Text>
-						<Text style={styles.description}>R$ {VMasker.toMoney(this.props.earning)}</Text>
+						<Text style={styles.description}>R$ {VMasker.toMoney(this.props.earning*100)}</Text>
 					</View>
 				</View>
     )

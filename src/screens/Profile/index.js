@@ -605,7 +605,7 @@ class RegisterScreen extends Component {
                 </View>
               </Col>
             </Grid>
-						<Item
+						{/* <Item
               stackedLabel
             >
               <Label>Banco</Label>
@@ -675,7 +675,7 @@ class RegisterScreen extends Component {
                   />
                 </Item>
               </Col>
-            </Grid>
+            </Grid> */}
               <Item
                 stackedLabel
               >

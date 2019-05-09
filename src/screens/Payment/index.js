@@ -143,17 +143,6 @@ class Delivery extends Component {
     const { user } = this.props
 		console.log('current user do will', user)
 
-
-		// let earnings = Object.values(motoboy.earnings)
-		// let momentToday = moment().format('DD/MM/YYYY')
-		// let earningToday = []
-		// _.filter(earnings, e => e.date.substring(0,10) === momentToday).map(earning => {
-		// 	return earningToday = [...earningToday, earning.tax]
-		// })
-		// let totalEarningToday = earningToday.reduce((a,b) => a+b,0)
-		// this.setState({ earning: Math.round(( totalEarningToday - 0.12*totalEarningToday ) * 100) / 100})
-
-
     if(user){
       this.setState({
 				nome: user.nome,
@@ -166,21 +155,30 @@ class Delivery extends Component {
 			let motoboy = snapshot.val()
 			console.log('motoboy eanring', motoboy)
 
-			if(motoboy.earnings){
+			if(motoboy.earnings && motoboy.earningsManutencao){
 				console.log('motoboy eanring', motoboy, motoboy.earnings)
 				let earningWeekly = []
+				let earningManutencao = []
 				Object.values(motoboy.earnings).map(earning => {
 					console.log('earnings', earning.tax)
 					return earning.tax.map(earn => {
 						return earningWeekly = [...earningWeekly, earn]
 					})
 				})
+				Object.values(motoboy.earningsManutencao).map(earning => {
+					console.log('earnings', earning.tax)
+					return earning.tax.map(earn => {
+						return earningManutencao = [...earningManutencao, earn]
+					})
+				})
 				let totalEarningWeekly = earningWeekly.reduce((a,b) => a+b,0)
-				console.log('total ', earningWeekly )
+				let totalManutencao = earningManutencao.reduce((a,b) => a+b,0)
 
-				console.log('total earning weekly', motoboy.earnings[0].date.substring(6,10),motoboy.earnings[0].date.substring(3,5), motoboy.earnings[0].date.substring(0,2) )
+				console.log('GANHOS DO MOTOBOYS',totalEarningWeekly,totalManutencao)
+
 				this.setState({ 
 					earning: (Math.round(( totalEarningWeekly) * 100) / 10)*10,
+					earningManutencao: (Math.round(( totalManutencao) * 100) / 10)*10,
 					startDate: motoboy.earnings[0].date,
 					endDate: moment(motoboy.earnings[0].date, "DD-MM-YYYY").add(7, 'days').format('DD/MM/YYYY'),
 					paymentDate: moment(motoboy.earnings[0].date, "DD-MM-YYYY").add(10, 'days').format('DD/MM/YYYY'),
@@ -239,17 +237,20 @@ class Delivery extends Component {
 	renderDelivery = (rides) => {
 
 		let earningWeeklyOff;
+		let earningManutencao;
 		let earningWeeklyTotal;
 		let off;
 
 	if(this.state.earning){
-		earningWeeklyOff = VMasker.toMoney(this.state.earning - 0.12*this.state.earning)
-		earningWeeklyTotal = VMasker.toMoney(this.state.earning*10)
-		off = VMasker.toMoney(0.12*this.state.earning)
+		earningWeeklyOff = VMasker.toMoney(this.state.earning)
+		earningManutencao = VMasker.toMoney(this.state.earningManutencao)
+		// earningWeeklyTotal = VMasker.toMoney(this.state.earning*10)
+		// off = VMasker.toMoney(0.12*this.state.earning)
 	} else {
-		earningWeeklyOff = 0
-		earningWeeklyTotal = 0
-		off = 0
+		earningManutencao = '0,00'
+		earningWeeklyOff = '0,00'
+		earningWeeklyTotal = '0,00'
+		off = '0,00'
 	}
 		
 				return (
@@ -293,15 +294,15 @@ class Delivery extends Component {
 									<Text style={{ fontWeight: 'bold', color: 'grey'}}>	R$ {earningWeeklyOff}</Text>
 								</View>
 								<View style={{ flexDirection: 'row', justifyContent: 'space-between'}}>
-									<Text style={{ color: 'grey'}}>Ganhos totais</Text>
-									<Text style={{ color: 'grey'}}>	R$ {earningWeeklyTotal}</Text>
+									<Text style={{ color: 'grey'}}>Taxa de manutenção</Text>
+									<Text style={{ color: 'grey'}}>	R$ {earningManutencao}</Text>
 								</View>
-								<View style={{ flexDirection: 'row', justifyContent: 'space-between'}}>
+								{/* <View style={{ flexDirection: 'row', justifyContent: 'space-between'}}>
 									<Text style={{ color: 'grey'}}>Taxa de serviço</Text>
 									<Text style={{ color: 'grey'}}>R$ {off}</Text>
-								</View>
+								</View> */}
 							</View>
-							<View>
+							{/* <View>
 							<Text style={{
 								paddingVertical: 15,
 								fontSize: 11,
@@ -330,11 +331,11 @@ class Delivery extends Component {
 										<Text style={{ }}>Data do fechamento</Text>
 										<Text style={{ color: 'grey'}}>{this.state.endDate}</Text>
 									</View>
-								</View>
-								<View style={{ flexDirection: 'row', justifyContent: 'space-between'}}>
+								</View> */}
+								{/* <View style={{ flexDirection: 'row', justifyContent: 'space-between'}}>
 										<Text style={{ }}>Próximo pagamento</Text>
 										<Text style={{ color: 'grey'}}>{this.state.paymentDate}</Text>
-									</View>
+									</View> */}
 						</View>
 					</View>
 				)
@@ -361,7 +362,7 @@ class Delivery extends Component {
 				flex: 1,
 			}} pointerEvents={isLoading ? 'none' : 'auto'}>
         <HeaderView
-          title={'Pagamento' }
+          title={'Ganhos' }
           onBack={this.onClickBackButton}
         />
         {isLoading ? (

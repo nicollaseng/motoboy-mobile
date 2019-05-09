@@ -85,18 +85,37 @@ class Map extends Component {
 			const location = address.substring(0, address.indexOf(','))
 			firebase.database().ref(`register/commerce/motoboyPartner/${this.props.user.id}`).on('value', async snapshot => {
 				let motoboy = snapshot.val()
-				if(motoboy.earnings){
+				console.log('dados do motoboy', motoboy, motoboy.earnings)
+				if(motoboy.earnings && Object.values(motoboy.earnings).length > 0){
 					let earnings = Object.values(motoboy.earnings)
 					let momentToday = moment().format('DD/MM/YYYY')
 					let earningToday = []
+					let toPay = []
+					let payToday = []
+
 					let earningFiltered = _.filter(earnings, e => e.date.substring(0,10) === momentToday)
+
 					earningFiltered.map(earning => {
 						earning.tax.map(earn => {
 							return earningToday = [...earningToday, earn]
 						})
 					})
+
+
+					// let toPay = []
+					// let payment = 0
+
+					
+					// payment = toPay.reduce((a,b) => a+b,0) - 0.12*(toPay.reduce((a,b) => a+b,0))
+
+					// await firebase.database().ref(`register/commerce/motoboyPartner/${this.props.user.id}`).update({
+					// 	toPay: payment
+					// })
+
+					//add 5 reais each 10 rides on a day locally
+
 					if(earningToday.length > 0 && earningToday.length % 10 === 0){
-						earningToday.push(5) //add 5 reais each 10 rides on a day locally
+						earningToday.push(5) 
 						let index = _.findIndex(earnings, e => e === earningFiltered[0])
 						earnings[index].tax = earningToday
 						await firebase.database().ref(`register/commerce/motoboyPartner/${this.props.user.id}`).update({
@@ -104,12 +123,35 @@ class Map extends Component {
 							rating: motoboy.isRated ? motoboy.rating : [5],
 							isRated: true
 						})
+					} else if(earningToday.length > 0 && earningToday.length % 10 !== 0){
+							this.setState({ earning: earningToday.reduce((a,b) => a+b, 0) })
 					}
-					let totalEarningToday = earningToday.reduce((a,b) => a+b,0)
-					this.setState({ earning: ((Math.round(( totalEarningToday - 0.12*totalEarningToday ) * 100) / 10)*10)})
+
+					// when complete 7 days do below
+
+					// if(Object.values(motoboy.earnings).length === 7){ 
+						
+					// 	payment = toPay.reduce((a,b) => a+b,0) - 0.12*(toPay.reduce((a,b) => a+b,0))
+
+					// 	await firebase.database().ref(`register/commerce/motoboyPartner/${this.props.user.id}`).update({
+					// 		earnings: [],
+					// 		cyclePayment: payment
+					// 	})
+					// }
+
+					// let totalEarningToday = earningToday.reduce((a,b) => a+b,0)
+					// this.setState({ earning: ((Math.round(( totalEarningToday - 0.12*totalEarningToday ) * 100) / 10)*10)})
 				}
+
+				console.log('motoboy ta no ride', motoboy.onRide, motoboy.activeRide )
+				if(motoboy.onRide){
+				 firebase.database().ref(`rides/${motoboy.activeRide.id}`).once('value', snap => {
+					 console.log('CORRIDA PERDIDA', snap.val())
+					this.setState({ isRide: true, ride: snap.val()})
+				 })
+				}
+
 				this.props.setUser(motoboy)
-				console.log('RIDE STATUS DO MOTOBOY', motoboy.rideStatus)
 				if(motoboy.rideStatus){ 
 					firebase.database().ref(`rides`).on('value', rideshot => {
 						if(rideshot.val() !== null){
@@ -117,7 +159,7 @@ class Map extends Component {
 								return geolib.getDistance(
 									{ latitude: e.restaurant.latitude, longitude: e.restaurant.longitude },
 									{ latitude, longitude }
-								 ) <= 5000 && e.status === 'pending' && !e.motoboy //if another motoboy has accept nothing must happen
+								 ) <= 4000 && e.status === 'pending' && !e.motoboy //if another motoboy has accept nothing must happen
 							})
 							if(nearRide.length > 0){
 								let ride = _.sample(nearRide)
@@ -133,17 +175,17 @@ class Map extends Component {
 				} else {
 					this.setState({ isRide: false })
 				}
-				if(((Object.values(motoboy.rating).reduce((a,b) => a+b,0))/(Object.values(motoboy.rating).length)).toFixed(2) < 4.5){
-					firebase.database().ref(`register/commerce/motoboyPartner/${this.props.user.id}`).update({
-						status: 'Bloqueado'
-					})
-						.then(() => {
-							return this.signOut()
-						})
-						.catch(error => {
-							console.log('error updating status to Bloqueado', error)
-						})
-					}
+				// if(((Object.values(motoboy.rating).reduce((a,b) => a+b,0))/(Object.values(motoboy.rating).length)).toFixed(2) < 4.5){
+				// 	firebase.database().ref(`register/commerce/motoboyPartner/${this.props.user.id}`).update({
+				// 		status: 'Bloqueado'
+				// 	})
+				// 		.then(() => {
+				// 			return this.signOut()
+				// 		})
+				// 		.catch(error => {
+				// 			console.log('error updating status to Bloqueado', error)
+				// 		})
+				// 	}
 			})
 				this.setState({
 					location,
@@ -245,7 +287,7 @@ class Map extends Component {
 	}
 
 	render(){
-		console.log('analise de parametros', this.state.earning)
+		console.log('analise de parametros', this.state.isRide, this.state.ride)
 		// return <Text>Oi</Text>
 		return (
 			<View style={{ flex: 1 }}>

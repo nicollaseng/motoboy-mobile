@@ -8,13 +8,17 @@ import {
   Button,
   TouchableHighlight,
   Image,
-  Alert
+	Alert,
+	TouchableOpacity
 } from 'react-native';
 import { Spinner } from 'native-base'
 import { connect } from 'react-redux'
 import * as firebase from 'firebase'
 import _ from 'lodash'
 import { setUser } from '../../redux/action/auth'
+
+import IconAwesome from "react-native-vector-icons/FontAwesome5";
+
 
 class Login extends Component {
 
@@ -30,14 +34,6 @@ class Login extends Component {
   }
 
 	componentWillMount(){
-		// let userId;
-		// OneSignal.init(ONE_SIGNAL_ID, {
-		// 	kOSSettingsKeyAutoPrompt: true,
-		// });
-		// OneSignal.getPermissionSubscriptionState( (status) => {
-		// 	userId =  status.userId;
-		// 	this.setState({ userId })
-		// });
 		firebase.auth().onAuthStateChanged(user => {
 			console.log('user', user)
 			if(user){
@@ -47,7 +43,6 @@ class Login extends Component {
 				this.setState({ email: user.toJSON().email })
 				this._setUserInfo()
 			}
-			// this.props.navigation.navigate(user ? 'DashBoard' : 'Login')
 		})
 	}
 
@@ -61,13 +56,13 @@ class Login extends Component {
 					this._setUserInfo()
 				})
 				.catch(err => {
-					Alert.alert('Ops :(','E-mail ou senha inválidos')
+					Alert.alert('Atenção','E-mail ou senha inválidos')
 					console.log('Erro while login firebase', err)
 					this.setState({ loading: false })
 				})
 		}	catch (err) {	
 			this.setState({ loading: false })
-			Alert.alert('Ops :(','Algo de errado aconteceu. Tente novamente em alguns instantes')
+			Alert.alert('Atenção','Algo de errado aconteceu. Tente novamente em alguns instantes. Cód: login0002')
 			console.log('Error before login firebase', err)
 		}
 	}
@@ -76,7 +71,7 @@ class Login extends Component {
 		await firebase.database().ref(`register/commerce/motoboyPartner`).once('value', data => {
 			if(data){
 				let dataJson = data.toJSON()
-				let user = _.filter(Object.values(dataJson), e => e.email === this.state.email)
+				let user = _.filter(Object.values(dataJson), e => e.email.toLowerCase() == this.state.email.toLowerCase())
 				console.log('user', user)
 				if(user.length > 0){
 					if(user[0].status === 'Aprovado'){
@@ -89,14 +84,24 @@ class Login extends Component {
 						Alert.alert('Atenção', 'Sua conta encontra-se temporariamente bloqueada. Entre em contato com nosso suporte')
 						this.setState({ loading: false })
 					} else {
-						Alert.alert('Atenção', 'Seu cadastro ainda está em análise')
+						Alert.alert('Atenção', 'Seu cadastro está em análise')
 						this.setState({ loading: false })
 					}
+				} else {
+					alert('Atenção, estamos enfrentando problemas técnicos na sua conta. Tente novamente em instantes')
+					this.setState({ loading: false })
 				}
 			}
 		})
 	}
 
+	register = () => {
+		this.props.navigation.navigate('Register')
+	}
+
+	recoverPassword = () => {
+		this.props.navigation.navigate('RecoverPassword')
+	}
 
   render() {
 		const { loading } = this.state
@@ -107,21 +112,35 @@ class Login extends Component {
 				</Fragment>
         <View>
 					<View style={styles.inputContainer}>
-						<Image style={styles.inputIcon} source={{uri: 'https://png.icons8.com/message/ultraviolet/50/3498db'}}/>
+					<IconAwesome
+							size={22}
+							style={styles.inputIcon}
+							name="envelope"
+						/>
+						{/* <Image style={styles.inputIcon} source={{uri: 'https://png.icons8.com/message/ultraviolet/50/3498db'}}/> */}
 						<TextInput style={styles.inputs}
 								placeholder="Email"
 								keyboardType="email-address"
 								underlineColorAndroid='transparent'
-								onChangeText={(email) => this.setState({email})}/>
+								onChangeText={(email) => this.setState({email: email.replace(/^\s+|\s+$|\s+(?=\s)/g, "")})}
+								value={this.state.email}
+							/>
 					</View>
 					
 					<View style={styles.inputContainer}>
-						<Image style={styles.inputIcon} source={{uri: 'https://png.icons8.com/key-2/ultraviolet/50/3498db'}}/>
+						<IconAwesome
+							size={22}
+							style={styles.inputIcon}
+							name={"key"}
+						/>
+						{/* <Image style={styles.inputIcon} source={{uri: 'https://png.icons8.com/key-2/ultraviolet/50/3498db'}}/> */}
 						<TextInput style={styles.inputs}
-								placeholder="Password"
+								placeholder="Senha"
 								secureTextEntry={true}
 								underlineColorAndroid='transparent'
-								onChangeText={(password) => this.setState({password})}/>
+								onChangeText={(password) => this.setState({password})}
+								value={this.state.password}
+						/>
 					</View>
 
 					{loading ? <Spinner /> : (
@@ -129,6 +148,13 @@ class Login extends Component {
 								<Text style={styles.loginText}>Login</Text>
 							</TouchableHighlight>
 					)}
+					<TouchableOpacity onPress={this.register}>
+						<Text style={styles.register}>Cadastre-se</Text>
+					</TouchableOpacity>
+					<TouchableOpacity onPress={this.recoverPassword}>
+						<Text style={styles.register}>Esqueceu sua senha?</Text>
+					</TouchableOpacity>
+						<Text style={[styles.register, { textAlign: 'right'}]}>1.3.0</Text>
 				</View>
 				{/* <View style={{ height: 100 }} /> */}
       </View>
@@ -138,7 +164,7 @@ class Login extends Component {
 
 export default connect(null, { setUser })(Login)
 
-const styles = StyleSheet.create({
+const styles = {
   container: {
     flex: 1,
     justifyContent: 'space-around',
@@ -163,10 +189,9 @@ const styles = StyleSheet.create({
       flex:1,
   },
   inputIcon:{
-    width:30,
-    height:30,
     marginLeft:15,
-    justifyContent: 'center'
+		justifyContent: 'center',
+		color: '#54fa2a'
   },
   buttonContainer: {
     height:45,
@@ -183,6 +208,13 @@ const styles = StyleSheet.create({
   loginText: {
 		color: 'white',
 		fontSize: 18,
-		fontWeight: 'bold'
-  }
-});
+		fontWeight: '400'
+	},
+	register: {
+		textAlign: 'center',
+		color: '#fff',
+		fontWeigth: 'bold',
+		fontSize: 16,
+		padding: 10
+	}
+}

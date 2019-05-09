@@ -22,6 +22,12 @@ const AppNavigator = createStackNavigator({
     Payment: {
 		screen: screens.Payment
 	},
+	Register: {
+		screen: screens.Register
+	},
+	RecoverPassword: {
+		screen: screens.RecoverPassword
+	},
 },
 {
 	initialRouteName: 'Login',

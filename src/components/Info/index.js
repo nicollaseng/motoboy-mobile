@@ -14,6 +14,8 @@ class Info extends Component {
 					<Text style={styles.description}>Detalhes do destino</Text>
 					<Text style={styles.title}>Restaurante: {pedido.restaurant.nome}</Text>
 					<Text style={styles.title}>Endereço: {pedido.restaurant.endereco}</Text>
+					<Text style={styles.title}>Telefone: {pedido.restaurant.telefone}</Text>
+					<Text style={styles.title}>Celular: {pedido.restaurant.celular}</Text>
 					<Text style={styles.title}>Pedido: {pedido.numeroPedido}</Text>
 				</Fragment>
 			)
@@ -21,9 +23,9 @@ class Info extends Component {
 			return (
 				<Fragment>
 					<Text style={styles.description}>Detalhes do destino</Text>
-					<Text style={styles.title}>Entrega: {pedido.destinatario}</Text>
+					<Text style={styles.title}>Entrega: {pedido.delivery.destinatario}</Text>
 					<Text style={styles.title}>Endereço: {pedido.delivery.endereco}</Text>
-					<Text style={styles.title}>Complemento: {pedido.enderecoComplemento}</Text>
+					<Text style={styles.title}>Complemento: {pedido.delivery.enderecoComplemento}</Text>
 				</Fragment>
 			)
 		} 

@@ -60,8 +60,8 @@ class Details extends Component {
 
 	async componentDidMount(){
 		if(!this.props.user.onRide && this.props.isRide){
-		const timeout = setTimeout(() => this.refuseRide(), 10*2000);
-			this.setState({ timeout })
+		// const timeout = setTimeout(() => this.refuseRide(), 10*2000);
+			// this.setState({ timeout })
 			alert.play((success) => {
 				if (success) {
 					console.log('successfully finished playing');
@@ -76,7 +76,7 @@ class Details extends Component {
 				autoCancel: true, // (optional) default: true
 				largeIcon: "ic_launcher", // (optional) default: "ic_launcher"
 				smallIcon: "ic_notification", // (optional) default: "ic_notification" with fallback for "ic_launcher"
-				bigText: "Olá uma nova Entrega surgiu. Você tem 10s para aceitar", // (optional) default: "message" prop
+				bigText: "Olá uma nova Entrega surgiu", // (optional) default: "message" prop
 				subText: "Entrega para você", // (optional) default: none
 				color: "red", // (optional) default: system default
 				vibrate: true, // (optional) default: true
@@ -90,10 +90,10 @@ class Details extends Component {
 		
 				/* iOS and Android properties */
 				title: "Uma nova entrega para você", // (optional)
-				message: "Olá uma nova Entrega surgiu. Você tem 10s para aceitar", // (required)
+				message: "Olá uma nova Entrega surgiu", // (required)
 				playSound: true, // (optional) default: true
 		});
-			return timeout
+			// return timeout
 		}
 		await firebase.database().ref(`rides/${this.props.ride.id}`).on('value', snapRide => {
 			let ride = snapRide.val()
@@ -150,7 +150,8 @@ class Details extends Component {
 									...this.props.user,
 									onRide: true,
 									activeRide: this.props.ride,
-									earnings: this.props.user.earnings ? [ ...Object.values(this.props.user.earnings) ,{ date: this.props.ride.createdAt, tax: this.props.ride.tax }] : [{ date: this.props.ride.createdAt, tax: this.props.ride.tax }],
+									earnings: this.props.user.earnings ? [ ...Object.values(this.props.user.earnings) ,{ date: this.props.ride.createdAt, tax: this.props.ride.taxMotoboy }] : [{ date: this.props.ride.createdAt, tax: this.props.ride.taxMotoboy }],
+									earningsManutencao: this.props.user.earnings ? [ ...Object.values(this.props.user.earnings) ,{ date: this.props.ride.createdAt, tax: this.props.ride.taxManutencao }] : [{ date: this.props.ride.createdAt, tax: this.props.ride.taxManutencao }],
 									rides: this.props.user.rides ? [...Object.values(this.props.user.rides), this.props.ride] : [this.props.ride]
 								})
 								this.setState({ loading: false })
@@ -270,7 +271,7 @@ class Details extends Component {
 						<TypeTitle>Obrigado por essa viagem</TypeTitle>
 						<TypeDescription>Confira abaixo o seu pagamento</TypeDescription>
 						<View style={{ flex: 0.8, justifyContent: 'center', alignItems: 'center'}}>
-							<TypeTitle>R$ {ride.tax - 0.12*ride.tax}</TypeTitle>
+							<TypeTitle>R$ {ride.taxMotoboy.toString().replace('.',',')}</TypeTitle>
 						</View>
 							<Fragment>
 								<View style={{ flexDirection: 'row', justifyContent: 'space-around'}} />
@@ -287,7 +288,7 @@ class Details extends Component {
 						<TypeTitle>Viagem cancelada pelo estabelecimento</TypeTitle>
 						<TypeDescription>Você será pago pelo seu deslocamento. Confira em seus pagamentos.</TypeDescription>
 						<View style={{ flex: 0.8, justifyContent: 'center', alignItems: 'center'}}>
-							<TypeTitle>R$ {VMasker.toMoney(taxCanceled - 0.12*taxCanceled)}</TypeTitle>
+							<TypeTitle>R$ {VMasker.toMoney(taxCanceled)}</TypeTitle>
 						</View>
 							<Fragment>
 								<View style={{ flexDirection: 'row', justifyContent: 'space-around'}} />
@@ -462,24 +463,37 @@ class Details extends Component {
 		this.setState({ loading: true })
 		await firebase.database().ref(`register/commerce/motoboyPartner/${this.props.user.id}`).once('value', async snap => {
 			let motoboy = snap.val()
-			console.log('motoboyyyyyy', motoboy, this.props.ride.tax, this.props.ride)
 			let index;
 			let earnings;
 			let motoboyEarning = []
-			console.log('analisando', motoboy.earnings)
+			let motoboyEarningManutencao = []
 				if(motoboy.earnings && Object.values(motoboy.earnings).length > 0){
 					motoboyEarning = Object.values(motoboy.earnings)
 					index = _.findIndex(motoboyEarning, e => e.date === today)
 					if(index !== -1){
-						motoboyEarning[index] = { date: today, tax: [...motoboyEarning[index].tax, taxCanceled ? taxCanceled : this.props.ride.tax]}
+						motoboyEarning[index] = { date: today, tax: [...motoboyEarning[index].tax, isRideCanceled ? taxCanceled : this.props.ride.taxMotoboy]}
 					} else {
-						motoboyEarning.push({ date: today, tax: [taxCanceled ? taxCanceled : this.props.ride.tax]}) 
+						motoboyEarning.push({ date: today, tax: [isRideCanceled ? taxCanceled : this.props.ride.taxMotoboy]}) 
 					}
 				} else {
-					motoboyEarning.push({ date: today, tax: [taxCanceled ? taxCanceled : this.props.ride.tax]})
+					motoboyEarning.push({ date: today, tax: [isRideCanceled ? taxCanceled : this.props.ride.taxMotoboy]})
 				}
+
+				if(motoboy.earningsManutencao && Object.values(motoboy.earningsManutencao).length > 0){
+					motoboyEarningManutencao = Object.values(motoboy.earningsManutencao)
+					index = _.findIndex(motoboyEarningManutencao, e => e.date === today)
+					if(index !== -1){
+						motoboyEarningManutencao[index] = { date: today, tax: [...motoboyEarningManutencao[index].tax, isRideCanceled ? taxCanceled : this.props.ride.taxManutencao]}
+					} else {
+						motoboyEarningManutencao.push({ date: today, tax: [isRideCanceled ? taxCanceled : this.props.ride.taxManutencao]}) 
+					}
+				} else {
+					motoboyEarningManutencao.push({ date: today, tax: [isRideCanceled ? taxCanceled : this.props.ride.taxManutencao]})
+				}
+
 				await firebase.database().ref(`register/commerce/motoboyPartner/${this.props.user.id}`).update({
 					earnings: motoboyEarning,
+					earningsManutencao: motoboyEarningManutencao,
 					rides: this.props.user.rides ? [...Object.values(this.props.user.rides), isRideCanceled ? ride : this.props.ride] : [isRideCanceled ? ride : this.props.ride],
 					onRide: false,
 					activeRide: false,

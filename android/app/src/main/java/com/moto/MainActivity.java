@@ -1,4 +1,4 @@
-package com.moto;
+package com.xdev.motoboysdeplantaodriver;
 
 import com.facebook.react.ReactActivity;
 import com.facebook.react.ReactActivityDelegate;
