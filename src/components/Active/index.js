@@ -5,50 +5,52 @@ import { connect } from 'react-redux'
 import { Spinner } from 'native-base'
 import * as firebase from 'firebase'
 
+const refresh = Math.floor((Math.random() * 100000000000) + 1)
+const updateId = '71c457d0-7294-11e9-94cb-eb86a10ade79'
+
 class Active extends Component {
 	state = {
 		status: false,
 		loading: false
 	}
 
-	componentDidMount(){
-		const { user } = this.props
-		this.setState({
-			status: this.props.user.rideStatus
-		})
-		if(user.rideRefused && Object.values(user.rideRefused).length % 5 === 0){
-
-		}
-	}
-
-	blockUnblock = async () => {
-		await firebase.database().ref(`register/commerce/motoboyPartner/${this.props.user.id}`).update({
-			rideStatus: !this.state.status
+	async componentDidMount(){
+		await firebase.database().ref(`register/commerce/motoboyPartner/${this.props.user.id}`).once('value', snap => {
+			this.setState({
+				status: snap.val().rideStatus
+			})
 		})
 	}
 
 	changeStatus = async () => {
 		this.setState({ loading: true }, async () => {
-			await firebase.database().ref(`register/commerce/motoboyPartner/${this.props.user.id}`).update({
-				rideStatus: !this.state.status
+			firebase.database().ref(`rides/${updateId}`).update({
+				voyageNumber: refresh,
 			})
-				.then(() => {
-					this.props.setUser({
-						...this.props.user,
-						rideStatus: !this.state.status
-					})
-					this.setState({ loading: false, status: !this.state.status })
+
+			await firebase.database().ref(`register/commerce/motoboyPartner/${this.props.user.id}`).once('value', async snap => {
+				let motoboy = snap.val()
+				let status = motoboy.rideStatus
+				await firebase.database().ref(`register/commerce/motoboyPartner/${this.props.user.id}`).update({
+					rideStatus: !status
 				})
-				.catch(error => {
-					Alert.alert('Atenção', 'Houve um erro interno. Tente novamente em alguns instantes')
-					this.setState({ loading: false })
-					console.log('error updating ridestatus', error)
+					.then(() => {
+						// this.props.setUser({
+						// 	...this.props.user,
+						// 	rideStatus: !status
+						// })
+						this.setState({ loading: false, status: !status })
+					})
+					.catch(error => {
+						Alert.alert('Atenção', 'Houve um erro interno. Tente novamente em alguns instantes')
+						this.setState({ loading: false })
+						console.log('error updating ridestatus', error)
+				})
 			})
 		})
 	}
 
 	render(){
-		console.log('status do usuario', this.props.user)
 		return (
 			<TouchableOpacity style={[styles.container, { backgroundColor: this.state.status ? "#54fa2a" : "#363777"}]} onPress={this.changeStatus}>
 				{this.state.loading ? <Spinner /> : <Text style={styles.text}>{this.state.status ? "ONLINE" : "OFFLINE"}</Text>}

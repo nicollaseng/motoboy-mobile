@@ -14,7 +14,11 @@ class App extends Component {
 
 	constructor(properties) {
 		super(properties);
-		OneSignal.init(ONE_SIGNAL_ID);
+		
+		OneSignal.init(ONE_SIGNAL_ID, {
+			kOSSettingsKeyAutoPrompt: true,
+			kOSSettingsKeyInFocusDisplayOption:2,
+		});
 	
 		OneSignal.addEventListener('received', this.onReceived);
 		OneSignal.addEventListener('opened', this.onOpened);

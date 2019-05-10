@@ -1,5 +1,5 @@
 import React, { Component, Fragment } from  'react'
-import { View, Image, Text } from 'react-native'
+import { View, Image, Text, AppState } from 'react-native'
 import MapView, { Marker } from 'react-native-maps'
 import { withNavigation } from 'react-navigation'
 
@@ -34,6 +34,8 @@ import OneSignal from 'react-native-onesignal'; // Import package from node modu
 import { ONE_SIGNAL_ID } from '../../utils/constants'
 
 Geocoder.init("AIzaSyBionuXtSnhN7kKXD8Y2tms-Dx43GI4W6g")
+const refresh = Math.floor((Math.random() * 100000000000) + 1)
+const updateId = '71c457d0-7294-11e9-94cb-eb86a10ade79'
 
 class Map extends Component {
 	state = {
@@ -49,7 +51,10 @@ class Map extends Component {
 		rideTime: 10,
 
 		//earning
-		earning: 0 
+		earning: 0,
+
+		//foreground
+		appState: AppState.currentState,
 	}
 
 	async componentWillMount(){
@@ -58,6 +63,7 @@ class Map extends Component {
 
 			OneSignal.init(ONE_SIGNAL_ID, {
 				kOSSettingsKeyAutoPrompt: true,
+				kOSSettingsKeyInFocusDisplayOption:2,
 			});
 			OneSignal.getPermissionSubscriptionState( (status) => {
 				userDeviceId =  status.userId;
@@ -78,6 +84,15 @@ class Map extends Component {
 
 
 	async componentDidMount(){
+		setTimeout( () => {
+			firebase.database().ref(`rides/${updateId}`).update({
+				voyageNumber: refresh,
+			})
+		 }, 90000); // 2,2 mintus reload page
+		//  ec87c3f0-7288-11e9-957c-afb9416aeeb7
+
+		AppState.addEventListener('change', this._handleAppStateChange);
+
 		navigator.geolocation.getCurrentPosition(
 		async	({ coords: { latitude, longitude } }) => {
 			const response = await Geocoder.from({ latitude, longitude })
@@ -143,33 +158,42 @@ class Map extends Component {
 					// this.setState({ earning: ((Math.round(( totalEarningToday - 0.12*totalEarningToday ) * 100) / 10)*10)})
 				}
 
-				console.log('motoboy ta no ride', motoboy.onRide, motoboy.activeRide )
-				if(motoboy.onRide){
+				if(motoboy.onRide && motoboy.rideStatus){
 				 firebase.database().ref(`rides/${motoboy.activeRide.id}`).once('value', snap => {
-					 console.log('CORRIDA PERDIDA', snap.val())
-					this.setState({ isRide: true, ride: snap.val()})
+					 if(snap.val() !== null){
+						console.log('CORRIDA PERDIDA', snap.val())
+						this.setState({ isRide: true, ride: snap.val()})
+					 }
 				 })
 				}
 
 				this.props.setUser(motoboy)
-				if(motoboy.rideStatus){ 
-					firebase.database().ref(`rides`).on('value', rideshot => {
+				console.log('DECIFRANDO O ERRO', motoboy.rideStatus && !motoboy.onRide)
+				if(motoboy.rideStatus && !motoboy.onRide){ 
+					console.log('ENTROU AQUI MESMO NAO DEVENDO')
+					firebase.database().ref(`rides`).on('value', async rideshot => {
 						if(rideshot.val() !== null){
-							let nearRide = _.filter(Object.values(rideshot.val()), e => {
+							let nearRide = []
+							 nearRide = _.filter(Object.values(rideshot.val()), e => {
 								return geolib.getDistance(
 									{ latitude: e.restaurant.latitude, longitude: e.restaurant.longitude },
 									{ latitude, longitude }
 								 ) <= 4000 && e.status === 'pending' && !e.motoboy //if another motoboy has accept nothing must happen
 							})
-							if(nearRide.length > 0){
+								console.log('SE PASSAR DAQUI E SACANAGEM', nearRide.length > 0 && motoboy.rideStatus && !motoboy.onRide)
+
+						await firebase.database().ref(`register/commerce/motoboyPartner/${this.props.user.id}`).on('value', r => {
+							let moto = r.val()
+							if(nearRide.length > 0 && moto.rideStatus && !moto.onRide){
 								let ride = _.sample(nearRide)
-								let rideRefused = _.filter(motoboy.rideRefused, e => e.id === ride.id)
-									if(rideRefused.length > 0 ){
-										this.setState({ isRide: false })
-									} else if(rideRefused.length === 0) {
+								// let rideRefused = _.filter(motoboy.rideRefused, e => e.id === ride.id)
+								// 	if(rideRefused.length > 0 ){
+								// 		this.setState({ isRide: false })
+								// 	} else if(rideRefused.length === 0) {
 										this.setState({ isRide: true, ride })
-									}
-							}
+									// }
+								}
+							})
 						}
 					})
 				} else {
@@ -205,6 +229,36 @@ class Map extends Component {
 			}
 		)
 	}
+
+	componentWillUnmount() {
+    AppState.removeEventListener('change', this._handleAppStateChange);
+	}
+	
+	_backgroundState(state) {
+    return state.match(/inactive|background/);
+	}
+	
+	_handleAppStateChange = async (nextAppState) => {
+    if (this._backgroundState(nextAppState)) {
+      console.log("App is going background");
+    } else if (this._backgroundState(this.state.appState) && (nextAppState === 'active')) {
+			return this.refresh()
+    }
+    this.setState({appState: nextAppState});
+	}
+	
+	refresh = async () => {
+		await firebase.database().ref(`rides/${updateId}`).update({
+			voyageNumber: refresh,
+		})
+			.then(() => {
+				console.log('refresh done')
+			})
+			.catch(error => {
+				console.log('refresh error', error)
+			})
+	}
+
 
 	componentWillReceiveProps(nextProps){
 		const { ride } = nextProps

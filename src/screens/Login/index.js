@@ -33,17 +33,23 @@ class Login extends Component {
     }
   }
 
-	componentWillMount(){
-		firebase.auth().onAuthStateChanged(user => {
-			console.log('user', user)
-			if(user){
-				this.setState({ loading: true })
-				console.log('USER ON AUTH STATE CHANGE', user.toJSON())
-				let userJson = user.toJSON()
-				this.setState({ email: user.toJSON().email })
-				this._setUserInfo()
-			}
-		})
+	 componentWillMount(){
+		// this.setState({ loading: true })
+		// try {
+		// 	 firebase.auth().onAuthStateChanged(user => {
+		// 		console.log('user', user)
+		// 		if(user){
+		// 			console.log('USER ON AUTH STATE CHANGE', user.toJSON())
+		// 			this.setState({ email: user.toJSON().email })
+		// 			this._setUserInfo()
+		// 		} else {
+		// 			this.setState({ loading: false })
+		// 		}
+		// 	})
+		// } catch( error ) {
+		// 	this.setState({ loading: false })
+		// 	console.log(error)
+		// }
 	}
 
 	login = async () => {
@@ -71,7 +77,7 @@ class Login extends Component {
 		await firebase.database().ref(`register/commerce/motoboyPartner`).once('value', data => {
 			if(data){
 				let dataJson = data.toJSON()
-				let user = _.filter(Object.values(dataJson), e => e.email.toLowerCase() == this.state.email.toLowerCase())
+				let user = _.filter(Object.values(dataJson), e => e.email.toLowerCase().includes(this.state.email.toLowerCase()))
 				console.log('user', user)
 				if(user.length > 0){
 					if(user[0].status === 'Aprovado'){
@@ -111,50 +117,51 @@ class Login extends Component {
 					<Image source={require('../../assets/logo.png')} style={{ width: 200, height: 200, resizeMode: 'contain'}} />
 				</Fragment>
         <View>
-					<View style={styles.inputContainer}>
-					<IconAwesome
-							size={22}
-							style={styles.inputIcon}
-							name="envelope"
-						/>
-						{/* <Image style={styles.inputIcon} source={{uri: 'https://png.icons8.com/message/ultraviolet/50/3498db'}}/> */}
-						<TextInput style={styles.inputs}
-								placeholder="Email"
-								keyboardType="email-address"
-								underlineColorAndroid='transparent'
-								onChangeText={(email) => this.setState({email: email.replace(/^\s+|\s+$|\s+(?=\s)/g, "")})}
-								value={this.state.email}
-							/>
-					</View>
-					
-					<View style={styles.inputContainer}>
-						<IconAwesome
-							size={22}
-							style={styles.inputIcon}
-							name={"key"}
-						/>
-						{/* <Image style={styles.inputIcon} source={{uri: 'https://png.icons8.com/key-2/ultraviolet/50/3498db'}}/> */}
-						<TextInput style={styles.inputs}
-								placeholder="Senha"
-								secureTextEntry={true}
-								underlineColorAndroid='transparent'
-								onChangeText={(password) => this.setState({password})}
-								value={this.state.password}
-						/>
-					</View>
-
-					{loading ? <Spinner /> : (
-							<TouchableHighlight style={[styles.buttonContainer, styles.loginButton]} onPress={this.login}>
-								<Text style={styles.loginText}>Login</Text>
-							</TouchableHighlight>
-					)}
-					<TouchableOpacity onPress={this.register}>
-						<Text style={styles.register}>Cadastre-se</Text>
-					</TouchableOpacity>
-					<TouchableOpacity onPress={this.recoverPassword}>
-						<Text style={styles.register}>Esqueceu sua senha?</Text>
-					</TouchableOpacity>
-						<Text style={[styles.register, { textAlign: 'right'}]}>1.3.0</Text>
+						<Fragment>
+							<View style={styles.inputContainer}>
+							<IconAwesome
+									size={22}
+									style={styles.inputIcon}
+									name="envelope"
+								/>
+								{/* <Image style={styles.inputIcon} source={{uri: 'https://png.icons8.com/message/ultraviolet/50/3498db'}}/> */}
+								<TextInput style={styles.inputs}
+										placeholder="Email"
+										keyboardType="email-address"
+										underlineColorAndroid='transparent'
+										onChangeText={(email) => this.state.blocked ? '': this.setState({email: email.replace(/^\s+|\s+$|\s+(?=\s)/g, "")})}
+										value={this.state.email}
+									/>
+							</View>
+							
+							<View style={styles.inputContainer}>
+								<IconAwesome
+									size={22}
+									style={styles.inputIcon}
+									name={"key"}
+								/>
+								{/* <Image style={styles.inputIcon} source={{uri: 'https://png.icons8.com/key-2/ultraviolet/50/3498db'}}/> */}
+								<TextInput style={styles.inputs}
+										placeholder="Senha"
+										secureTextEntry={true}
+										underlineColorAndroid='transparent'
+										onChangeText={(password) =>this.state.blocked ? '' : this.setState({password})}
+										value={this.state.password}
+								/>
+							</View>
+							{this.state.loading ? <Spinner /> : (
+								<TouchableHighlight style={[styles.buttonContainer, styles.loginButton]} onPress={this.login}>
+									<Text style={styles.loginText}>Login</Text>
+								</TouchableHighlight>
+							)}
+							<TouchableOpacity onPress={this.register}>
+								<Text style={styles.register}>Cadastre-se</Text>
+							</TouchableOpacity>
+							<TouchableOpacity onPress={this.recoverPassword}>
+								<Text style={styles.register}>Esqueceu sua senha?</Text>
+							</TouchableOpacity>
+							<Text style={[styles.register, { textAlign: 'right'}]}>1.4.1</Text>
+						</Fragment>
 				</View>
 				{/* <View style={{ height: 100 }} /> */}
       </View>

@@ -234,7 +234,7 @@ class Delivery extends Component {
 							<Text style={{ color: '#fff', fontWeight: 'bold', textAlign: 'right', color: '#54fa2a' }}>
 								Ganhos: 
 								<Text> 
-									{ride.status === 'canceled' ? `R$ ${VMasker.toMoney(ride.taxCanceled - 0.12*ride.taxCanceled)}` : `R$ ${VMasker.toMoney((Math.round((ride.tax - 0.12*ride.tax)*100)/10)*10)}`}
+									{ride.status === 'canceled' ? `R$ ${VMasker.toMoney(ride.taxCanceled - 0.12*ride.taxCanceled)}` : `R$ ${VMasker.toMoney((Math.round((ride.taxMotoboy)*100)/10)*10)}`}
 								</Text>
 							</Text>
 						</View>
@@ -259,12 +259,14 @@ class Delivery extends Component {
 
 	filterDelivery = param => {
 		const { rides } = this.state
-		let datefiltered = param.format('DD/MM/YYYY')
-		let ridesFiltered = _.filter(rides, e => {
-			return e.createdAt.substring(0,10) === datefiltered
-		})
-		console.log('rides filtered', ridesFiltered)
-		this.setState({ ridesFiltered, date: datefiltered })
+		if(rides.length > 0){
+			let datefiltered = param.format('DD/MM/YYYY')
+			let ridesFiltered = _.filter(rides, e => {
+				return e.createdAt.substring(0,10) === datefiltered
+			})
+			console.log('rides filtered', ridesFiltered)
+			this.setState({ ridesFiltered, date: datefiltered })
+		}	
 	}
 
 
