@@ -1,5 +1,5 @@
 import React, { Component, Fragment } from  'react'
-import { View, TouchableOpacity, Platform, Linking, PushNotificationIOS, Image} from 'react-native'
+import { View, TouchableOpacity, Platform, Linking, PushNotificationIOS, Image, Alert} from 'react-native'
 import { Thumbnail, Spinner } from 'native-base'
 import { 
 	Container, TypeTitle, TypeDescription, TypeImage, RequestButton, RequestButtonText, RestaurantButton
@@ -138,7 +138,7 @@ class Details extends Component {
 							status: 'onWay',
 							motoboy: {
 								nome: this.props.user.nome,
-								telefone: this.props.user.telefone,
+								telefone: this.props.user.celular,
 								id: this.props.user.id
 							}
 						})
@@ -189,7 +189,7 @@ class Details extends Component {
 									<Thumbnail large source={require('../../assets/motoboy.png')} />
 								</TouchableOpacity>
 								<TypeTitle>{this.props.ride.name}</TypeTitle>
-								<TypeDescription>{this.props.rideDistance/1000} km</TypeDescription>
+								{/* <TypeDescription>{this.props.rideDistance/1000} km</TypeDescription> */}
 				
 								<RequestButton onPress={this.refuseRide}>
 									<RequestButtonText>Recusar</RequestButtonText>
@@ -303,16 +303,40 @@ class Details extends Component {
 	}
 
 	openGoogleMaps = (lat , lng ) => {
+		console.log('latitude and longitude passing', lat, lng)
 		const { ride } = this.props
+		// const scheme = Platform.select({ ios: 'maps:0,0?q=', android: 'geo:0,0?q=' });
+		// const latLng = `${lat},${lng}`;
+		// console.log('latitude longitude maps', latLng)
+		// const label = 'Rotas para restaurante';
+		// const url = Platform.select({
+		// 	ios: `${scheme}${label}@${latLng}`,
+		// 	android: `${scheme}${latLng}(${label})`
+		// });
+		// Linking.openURL(url); 
 		const scheme = Platform.select({ ios: 'maps:0,0?q=', android: 'geo:0,0?q=' });
-		const latLng = `${lat},${lng}`;
-		console.log('latitude longitude maps', latLng)
-		const label = 'Rotas para restaurante';
-		const url = Platform.select({
-			ios: `${scheme}${label}@${latLng}`,
-			android: `${scheme}${latLng}(${label})`
-		});
-		Linking.openURL(url); 
+    const latLng = `${lat},${lng}`;
+    const label = 'Destino';
+    const url = Platform.select({
+      ios: `https://www.google.com/maps/search/?api=1&query=${label}&center=${lat},${lng}`,
+      android: `${scheme}${latLng}(${label})`
+    });
+    Linking.canOpenURL(url)
+    .then((supported) => {
+        if (!supported) {
+            browser_url =`http://maps.google.com/maps?daddr=${lat},${lng}`
+            // "https://www.google.de/maps/@" +
+            // lat +
+            // "," +
+            // lng +
+            // "?q=" +
+            // label;
+            return Linking.openURL(browser_url);
+        } else {
+            return Linking.openURL(url);
+        }
+    })
+    .catch((err) => console.log('error', err));
 	}
 
 	refuseRide = async () => {

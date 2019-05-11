@@ -38,33 +38,52 @@ const refresh = Math.floor((Math.random() * 100000000000) + 1)
 const updateId = '71c457d0-7294-11e9-94cb-eb86a10ade79'
 
 class Map extends Component {
-	state = {
-		region: null,
-		destination: null,
-		duration: null,
-		location: null,
-		
-		//ride
-		ride: null,
-		isRide: false,
-		rideDistance: null,
-		rideTime: 10,
 
-		//earning
-		earning: 0,
-
-		//foreground
-		appState: AppState.currentState,
+	constructor(props){
+		super(props)
+		this.state = {
+			region: null,
+			destination: null,
+			duration: null,
+			location: null,
+			
+			//ride
+			ride: null,
+			isRide: false,
+			rideDistance: null,
+			rideTime: 10,
+	
+			//earning
+			earning: 0,
+	
+			//foreground
+			appState: AppState.currentState,
+		}
+	
 	}
 
+		onReceived(notification) {
+			console.log("Notification received: ", notification);
+	  }
+	
+	  onOpened(openResult) {
+			console.log('Message: ', openResult.notification.payload.body);
+			console.log('Data: ', openResult.notification.payload.additionalData);
+			console.log('isActive: ', openResult.notification.isAppInFocus);
+			console.log('openResult: ', openResult);
+	  }
+	
+	  onIds(device) {
+			console.log('Device info: ', device);
+	  }
+
+
 	async componentWillMount(){
-
 		let userDeviceId;
-
-			OneSignal.init(ONE_SIGNAL_ID, {
-				kOSSettingsKeyAutoPrompt: true,
-				kOSSettingsKeyInFocusDisplayOption:2,
-			});
+			// OneSignal.init(ONE_SIGNAL_ID, {
+			// 	kOSSettingsKeyAutoPrompt: true,
+			// 	kOSSettingsKeyInFocusDisplayOption:2,
+			// });
 			OneSignal.getPermissionSubscriptionState( (status) => {
 				userDeviceId =  status.userId;
 				if(!this.props.user.userDeviceId){
@@ -84,6 +103,13 @@ class Map extends Component {
 
 
 	async componentDidMount(){
+		OneSignal.init(ONE_SIGNAL_ID, {
+			kOSSettingsKeyAutoPrompt: true,
+			kOSSettingsKeyInFocusDisplayOption:2,
+		});
+			OneSignal.addEventListener('received', this.onReceived);
+			OneSignal.addEventListener('opened', this.onOpened);
+			OneSignal.addEventListener('ids', this.onIds);
 		setTimeout( () => {
 			firebase.database().ref(`rides/${updateId}`).update({
 				voyageNumber: refresh,
@@ -92,15 +118,19 @@ class Map extends Component {
 		//  ec87c3f0-7288-11e9-957c-afb9416aeeb7
 
 		AppState.addEventListener('change', this._handleAppStateChange);
+		 console.log('antes da dando certo')
 
 		navigator.geolocation.getCurrentPosition(
 		async	({ coords: { latitude, longitude } }) => {
 			const response = await Geocoder.from({ latitude, longitude })
 			const address = response.results[0].formatted_address
 			const location = address.substring(0, address.indexOf(','))
+			console.log('dados melhores', response, address, location)
 			firebase.database().ref(`register/commerce/motoboyPartner/${this.props.user.id}`).on('value', async snapshot => {
 				let motoboy = snapshot.val()
 				console.log('dados do motoboy', motoboy, motoboy.earnings)
+
+				
 				if(motoboy.earnings && Object.values(motoboy.earnings).length > 0){
 					let earnings = Object.values(motoboy.earnings)
 					let momentToday = moment().format('DD/MM/YYYY')
@@ -178,9 +208,9 @@ class Map extends Component {
 								return geolib.getDistance(
 									{ latitude: e.restaurant.latitude, longitude: e.restaurant.longitude },
 									{ latitude, longitude }
-								 ) <= 4000 && e.status === 'pending' && !e.motoboy //if another motoboy has accept nothing must happen
+								 ) <= 7000 && e.status === 'pending' && !e.motoboy //if another motoboy has accept nothing must happen
 							})
-								console.log('SE PASSAR DAQUI E SACANAGEM', nearRide.length > 0 && motoboy.rideStatus && !motoboy.onRide)
+								console.log('DISTANCIAS', nearRide)
 
 						await firebase.database().ref(`register/commerce/motoboyPartner/${this.props.user.id}`).on('value', r => {
 							let moto = r.val()
@@ -223,8 +253,8 @@ class Map extends Component {
 			}, //success,
 			() => {}, //error
 			{
-				timeout: 2000,
-				enableHighAccuracy: true,
+				timeout: 50000,
+				enableHighAccuracy: false,
 				maximumAge: 1000,
 			}
 		)
