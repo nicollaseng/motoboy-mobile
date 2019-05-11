@@ -119,16 +119,36 @@ class Details extends Component {
 		this.setState({ loading: true })
 		// 1 - check if there is motoboy record at ride choosed if true refuse ride not on server
 		await firebase.database().ref(`rides/${this.props.ride.id}`).once('value', async snapRide => {
-			console.log('analise profunda',snapRide, snapRide.motoboy, snapRide.motoboy && Object.values(snapRide.motoboy).length > 0 )
 			if(snapRide.val().motoboy && Object.values(snapRide.val().motoboy).length > 0){
 				this.props.setUser({
 					...this.props.user,
 					onRide: false,
 					activeRide: false,
 				})
+				console.log('safando a onça', this.props.ride.awaiting && this.props.ride.awaiting.length > 0, this.props.ride.awaiting)
+
+				if(this.props.ride.awaiting && this.props.ride.awaiting.length > 0){
+					this.props.ride.awaiting.map(async motoboyId => {
+						await firebase.database().ref(`register/commerce/motoboyPartner/${motoboyId}`).update({
+							awaiting: false,
+							onRide: false,
+							activeRide: false,
+						})
+					})
+				}
+
 				this.setState({ loading: false })
 				return this.props.setRide(false)
 			} else { // if not motoboy then proceed to accept ride
+				if(this.props.ride.awaiting && this.props.ride.awaiting.length > 0){
+					this.props.ride.awaiting.map(async motoboyId => {
+						await firebase.database().ref(`register/commerce/motoboyPartner/${motoboyId}`).update({
+							awaiting: false,
+							onRide: false,
+							activeRide: false,
+						})
+					})
+				}
 				await firebase.database().ref(`register/commerce/motoboyPartner/${this.props.user.id}`).update({
 					onRide: true,
 					activeRide: this.props.ride,
@@ -189,7 +209,7 @@ class Details extends Component {
 									<Thumbnail large source={require('../../assets/motoboy.png')} />
 								</TouchableOpacity>
 								<TypeTitle>{this.props.ride.name}</TypeTitle>
-								{/* <TypeDescription>{this.props.rideDistance/1000} km</TypeDescription> */}
+								<TypeDescription>Distância da corrida: {parseInt(this.props.ride.distance)} km</TypeDescription>
 				
 								<RequestButton onPress={this.refuseRide}>
 									<RequestButtonText>Recusar</RequestButtonText>
@@ -347,19 +367,21 @@ class Details extends Component {
 				refusedBy: [this.props.user.id]
 			})
 				.then(async () => {
-					if(user.rideRefused){
-						let rideRefused = _.filter(Object.values(user.rideRefused), e  => e.id === this.props.ride.id)
+					if(user.ridesRefused){
+						let rideRefused = _.filter(Object.values(user.ridesRefused), e  => e.id === this.props.ride.id)
 						if(rideRefused.length === 0){
 							await firebase.database().ref(`register/commerce/motoboyPartner/${this.props.user.id}`).update({
-								rideRefused: [...Object.values(user.rideRefused), this.props.ride],
+								ridesRefused: [...user.ridesRefused, this.props.ride.id],
 									onRide: false,
 									activeRide: false,
+									awaiting: false,
 							})
 								.then(() => {
 									this.props.setUser({
 										...this.props.user,
 										onRide: false,
 										activeRide: false,
+										awaiting: false,
 									})
 									this.setState({ loading: false })
 									return this.props.setRide(false)
@@ -522,6 +544,7 @@ class Details extends Component {
 					rides: this.props.user.rides ? [...Object.values(this.props.user.rides), isRideCanceled ? ride : this.props.ride] : [isRideCanceled ? ride : this.props.ride],
 					onRide: false,
 					activeRide: false,
+					awaiting: false,
 				})
 					.then(() => {
 						this.setState({ loading: false})

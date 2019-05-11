@@ -1,5 +1,5 @@
 import React, { Component, Fragment } from  'react'
-import { View, Image, Text, AppState } from 'react-native'
+import { View, Image, Text, AppState, Platform } from 'react-native'
 import MapView, { Marker } from 'react-native-maps'
 import { withNavigation } from 'react-navigation'
 
@@ -9,6 +9,7 @@ import Details from '../Details'
 import Active from '../Active'
 import EarningBar from '../EarningBar'
 import Info from '../Info'
+import Refresh from '../Refresh'
 
 import { connect } from 'react-redux'
 import * as firebase from 'firebase'
@@ -32,6 +33,8 @@ import moment from 'moment'
 
 import OneSignal from 'react-native-onesignal'; // Import package from node modules
 import { ONE_SIGNAL_ID } from '../../utils/constants'
+
+import TimerCountdown from "react-native-timer-countdown";
 
 Geocoder.init("AIzaSyBionuXtSnhN7kKXD8Y2tms-Dx43GI4W6g")
 const refresh = Math.floor((Math.random() * 100000000000) + 1)
@@ -58,6 +61,8 @@ class Map extends Component {
 	
 			//foreground
 			appState: AppState.currentState,
+
+			initialMilliseconds: 0,
 		}
 	
 	}
@@ -198,37 +203,85 @@ class Map extends Component {
 				}
 
 				this.props.setUser(motoboy)
-				console.log('DECIFRANDO O ERRO', motoboy.rideStatus && !motoboy.onRide)
-				if(motoboy.rideStatus && !motoboy.onRide){ 
-					console.log('ENTROU AQUI MESMO NAO DEVENDO')
-					firebase.database().ref(`rides`).on('value', async rideshot => {
-						if(rideshot.val() !== null){
-							let nearRide = []
-							 nearRide = _.filter(Object.values(rideshot.val()), e => {
-								return geolib.getDistance(
-									{ latitude: e.restaurant.latitude, longitude: e.restaurant.longitude },
-									{ latitude, longitude }
-								 ) <= 7000 && e.status === 'pending' && !e.motoboy //if another motoboy has accept nothing must happen
-							})
-								console.log('DISTANCIAS', nearRide)
 
-						await firebase.database().ref(`register/commerce/motoboyPartner/${this.props.user.id}`).on('value', r => {
-							let moto = r.val()
-							if(nearRide.length > 0 && moto.rideStatus && !moto.onRide){
-								let ride = _.sample(nearRide)
-								// let rideRefused = _.filter(motoboy.rideRefused, e => e.id === ride.id)
-								// 	if(rideRefused.length > 0 ){
-								// 		this.setState({ isRide: false })
-								// 	} else if(rideRefused.length === 0) {
-										this.setState({ isRide: true, ride })
+				firebase.database().ref(`register/commerce/motoboyPartner/${this.props.user.id}`).on('value', snap => {
+					let m = snap.val()
+					if(m.rideStatus && !m.onRide && !m.awaiting){ 
+						console.log('ENTROU AQUI MESMO NAO DEVENDO')
+						firebase.database().ref(`rides`).on('value', async rideshot => {
+							if(rideshot.val() !== null){
+								let nearRide = []
+								 nearRide = _.filter(Object.values(rideshot.val()), e => {
+									return geolib.getDistance(
+										{ latitude: e.restaurant.latitude, longitude: e.restaurant.longitude },
+										{ latitude, longitude }
+									 ) <= 4000 && e.status === 'pending' && !e.motoboy //if another motoboy has accept nothing must happen
+								})
+									console.log('DISTANCIAS', nearRide)
+	
+							await firebase.database().ref(`register/commerce/motoboyPartner/${this.props.user.id}`).once('value',async r => {
+								let moto = r.val()
+								if(nearRide.length > 0 && moto.rideStatus && !moto.onRide && !moto.awaiting){
+									let ride = _.sample(nearRide)
+									let isRideRefused = _.filter(moto.ridesRefused, e => e === ride.id)
+									if((ride.awaiting && ride.awaiting.length > 0) || isRideRefused.length > 0){
+										
+										this.setState({ isRide: false, ride: null })
+										firebase.database().ref(`register/commerce/motoboyPartner/${this.props.user.id}`).update({
+											awaiting: false
+										})
+
+									} else {
+										await firebase.database().ref(`rides/${ride.id}`).update({
+											awaiting: ride.awaiting && ride.awaiting.lenght > 0 ? [...ride.awaiting, this.props.user.id] : [this.props.user.id]
+										})
+											.then(async () => {
+												await firebase.database().ref(`rides/${ride.id}`).once('value', async snap => {
+													let ride2 = snap.val()
+													console.log('primeiro elemento', ride2.awaiting[0])
+													if(ride2.awaiting[0] !== this.props.user.id){
+
+														firebase.database().ref(`register/commerce/motoboyPartner/${this.props.user.id}`).update({
+															awaiting: false
+														})
+														
+														this.setState({ isRide: false, ride: null})
+													} else {
+														await firebase.database().ref(`register/commerce/motoboyPartner/${this.props.user.id}`).update({
+															awaiting: true
+														})
+															.then(() => {
+																this.setState({ isRide: true, ride, initialMilliseconds: 1000*10 })
+															})
+															.catch(error => {
+																console.log('error update motoboy with awaiting true', error)
+															})
+													}
+												})
+											})
+											.catch(error => {
+												console.log('error update ride with motoboy status', error)
+											})
+									}
+									
+									// let rideRefused = _.filter(motoboy.rideRefused, e => e.id === ride.id)
+									// 	if(rideRefused.length > 0 ){
+									// 		this.setState({ isRide: false })
+									// 	} else if(rideRefused.length === 0) {
+										
+										// }
+									} 
+									// else {
+									// 	this.setState({ isRide: false, ride: null })
 									// }
-								}
-							})
-						}
-					})
-				} else {
-					this.setState({ isRide: false })
-				}
+								})
+							}
+						})
+					} 
+					// else {
+					// 	this.setState({ isRide: false })
+					// }
+				})
 				// if(((Object.values(motoboy.rating).reduce((a,b) => a+b,0))/(Object.values(motoboy.rating).length)).toFixed(2) < 4.5){
 				// 	firebase.database().ref(`register/commerce/motoboyPartner/${this.props.user.id}`).update({
 				// 		status: 'Bloqueado'
@@ -258,6 +311,67 @@ class Map extends Component {
 				maximumAge: 1000,
 			}
 		)
+		
+	}
+
+	countDown = () => {
+		let ride = this.props.ride ? this.props.ride.status === 'pending' : this.state.ride.status === 'pending'
+		if(this.state.initialMilliseconds > 0 && ride){
+			return (
+				<View style={styles.countdowncontainer}>
+					<TimerCountdown
+						initialMilliseconds={this.state.initialMilliseconds}
+						onTick={(milliseconds) => console.log("tick", milliseconds)}
+						onExpire={() => {
+							this.refuseRide()
+							console.log('expirou')
+						}}
+						formatMilliseconds={(milliseconds) => {
+							const remainingSec = Math.round(milliseconds / 1000);
+							const seconds = parseInt((remainingSec % 60).toString(), 10);
+							const minutes = parseInt(((remainingSec / 60) % 60).toString(), 10);
+							const hours = parseInt((remainingSec / 3600).toString(), 10);
+							const s = seconds < 10 ? '0' + seconds : seconds;
+							const m = minutes < 10 ? '0' + minutes : minutes;
+							let h = hours < 10 ? '0' + hours : hours;
+							h = h === '00' ? '' : h + ':';
+							return h + m + ':' + s;
+						}}
+						allowFontScaling={true}
+						style={{ fontSize: 20 }}
+				/>
+				</View>
+			)
+		} else {
+			return <View />
+		}
+	}
+
+	refuseRide = async () => {
+		console.log('state do refuse', this.state.ride.id, this.state, this.props.user, this.props.user.id)
+		let rideId = this.state.ride.id
+		await firebase.database().ref(`rides/${this.state.ride.id}`).update({
+			awaiting: false,
+			status: 'pending',
+		})
+			.then(async () => {
+				
+				await firebase.database().ref(`register/commerce/motoboyPartner/${this.props.user.id}`).update({
+					ridesRefused: this.props.user.ridesRefused && this.props.user.ridesRefused.length > 0 ? 
+						[...this.props.user.ridesRefused, this.state.ride.id] : [ this.state.ride.id ],
+						awaiting: false,
+				})
+					.then(() => {
+						this.setState({ initialMilliseconds: 0, isRide: false, ride: null })
+					})
+					.catch(error => {
+						console.log('error updating motoboy with ride refused', error)
+					})
+				
+			})
+			.catch(error => {
+				console.log('error refusing ride after countdown', error)
+			})
 	}
 
 	componentWillUnmount() {
@@ -332,6 +446,10 @@ class Map extends Component {
 				isRide: true,
 				destination: null
 			})
+		} else if(ride.status === 'pending'){
+			this.setState({
+				isRide: true,
+			})
 		} else { 
 			this.setState({
 				destination: null,
@@ -339,7 +457,7 @@ class Map extends Component {
 				ride: null,
 			})
 		}
-	}
+	 }
 
 	signOut = async () => {
 		await firebase.auth().signOut()
@@ -445,8 +563,10 @@ class Map extends Component {
 							<Info
 								pedido={this.props.ride ? this.props.ride : this.state.ride}
 							/>
+							{this.countDown()}
 							<Details
 								 isRide={true}
+								 duration={this.state.duration}
 								 ride={this.props.ride ? this.props.ride : this.state.ride}
 								 rideDistance={this.state.rideDistance}
 							 />
@@ -460,6 +580,7 @@ class Map extends Component {
 							{/* <Search
 								onLocationSelected={this.handleLocationSelected}
 							/> */}
+							<Refresh />
 							<Active />
 						</Fragment>
 					)}
@@ -487,6 +608,22 @@ class Map extends Component {
 			</View>
     )
 	}	
+}
+
+const styles = {
+	countdowncontainer: {
+		// flex: 0.3,
+		backgroundColor: "#fff",
+		// alignItems: "center",
+		// justifyContent: "center",
+		position: 'absolute',
+		top: Platform.select({
+			ios: 60, android: 40
+		}),
+		right: 13,
+		width: '30%',
+		alignSelf: 'center',
+	}
 }
 
 const mapStateToProps = state => ({

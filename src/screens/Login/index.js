@@ -11,7 +11,7 @@ import {
 	Alert,
 	TouchableOpacity
 } from 'react-native';
-import { Spinner } from 'native-base'
+import { Spinner, Content } from 'native-base'
 import { connect } from 'react-redux'
 import * as firebase from 'firebase'
 import _ from 'lodash'
@@ -114,11 +114,10 @@ class Login extends Component {
     return (
       <View style={styles.container}>
 				<Fragment>
-					<Image source={require('../../assets/logo.png')} style={{ width: 200, height: 200, resizeMode: 'contain'}} />
+					<Image source={require('../../assets/logo.png')} style={{ width: 150, height: 150, resizeMode: 'contain'}} />
 				</Fragment>
         <View>
-						<Fragment>
-							<View style={styles.inputContainer}>
+						<View style={styles.inputContainer}>
 							<IconAwesome
 									size={22}
 									style={styles.inputIcon}
@@ -127,6 +126,7 @@ class Login extends Component {
 								{/* <Image style={styles.inputIcon} source={{uri: 'https://png.icons8.com/message/ultraviolet/50/3498db'}}/> */}
 								<TextInput style={styles.inputs}
 										placeholder="Email"
+										placeholderTextColor="#fff"
 										keyboardType="email-address"
 										underlineColorAndroid='transparent'
 										onChangeText={(email) => this.state.blocked ? '': this.setState({email: email.replace(/^\s+|\s+$|\s+(?=\s)/g, "")})}
@@ -143,6 +143,7 @@ class Login extends Component {
 								{/* <Image style={styles.inputIcon} source={{uri: 'https://png.icons8.com/key-2/ultraviolet/50/3498db'}}/> */}
 								<TextInput style={styles.inputs}
 										placeholder="Senha"
+										placeholderTextColor="#fff"
 										secureTextEntry={true}
 										underlineColorAndroid='transparent'
 										onChangeText={(password) =>this.state.blocked ? '' : this.setState({password})}
@@ -160,11 +161,11 @@ class Login extends Component {
 							<TouchableOpacity onPress={this.recoverPassword}>
 								<Text style={styles.register}>Esqueceu sua senha?</Text>
 							</TouchableOpacity>
-							<Text style={[styles.register, { textAlign: 'right'}]}>1.4.2</Text>
-						</Fragment>
+							<Text style={[styles.register, { textAlign: 'right'}]}>1.4.3</Text>
 				</View>
 				{/* <View style={{ height: 100 }} /> */}
-      </View>
+				</View>
+      // </View>
     );
   }
 }
@@ -179,10 +180,10 @@ const styles = {
 		backgroundColor: '#363777'
   },
   inputContainer: {
-      borderBottomColor: '#F5FCFF',
-      backgroundColor: '#FFFFFF',
-      borderRadius:30,
-      borderBottomWidth: 1,
+      borderBottomColor: 'transparent',
+      backgroundColor: '#FFFFFF50',
+      borderRadius:0,
+      borderBottomWidth: 0,
       width:250,
       height:45,
       marginBottom:20,
@@ -190,6 +191,7 @@ const styles = {
       alignItems:'center'
   },
   inputs:{
+			color: '#fff',
       height:45,
       marginLeft:16,
       borderBottomColor: '#FFFFFF',

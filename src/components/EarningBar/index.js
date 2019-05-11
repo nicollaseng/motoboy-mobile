@@ -23,7 +23,7 @@ const styles = {
 	container: {
 		position: 'absolute',
 		top: Platform.select({
-			ios: 60, android: 40
+			ios: 60, android: 70
 		}),
 		right: 13,
 		width: '40%',

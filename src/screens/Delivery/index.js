@@ -193,7 +193,8 @@ class Delivery extends Component {
 			}
 	}
 
-	renderDelivery = (rides) => {
+	renderDelivery = () => {
+		const { rides } = this.state
 		if(rides.length > 0){
 			let ridesFiltered = _.orderBy(rides, ['createdAt'], ['desc'])
 			return ridesFiltered.map(ride => {
@@ -285,10 +286,10 @@ class Delivery extends Component {
           <Spinner />
         ) : (
 					<Fragment>
-						<View style={{
+						{/* <View style={{
 							flex: 0.2,
-						}}>
-						<CalendarStrip
+						}}> */}
+						{/* <CalendarStrip
 							onDateSelected={this.filterDelivery}
 							ref={c => { this.calendar = c } }
 							calendarAnimation={{type: 'sequence', duration: 300}}
@@ -306,8 +307,8 @@ class Delivery extends Component {
 							// datesBlacklist={datesBlacklist}
 							iconContainer={{flex: 0.1}}
 							locale={locale}
-						/>
-						</View>
+						/> */}
+						{/* </View> */}
 						<Content style={styles.holder} keyboardShouldPersistTaps="handled">
 							{this.renderDelivery(ridesFiltered)}
 						</Content>
