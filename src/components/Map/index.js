@@ -10,6 +10,7 @@ import Active from '../Active'
 import EarningBar from '../EarningBar'
 import Info from '../Info'
 import Refresh from '../Refresh'
+import Terms from '../Terms'
 
 import { connect } from 'react-redux'
 import * as firebase from 'firebase'
@@ -37,6 +38,9 @@ import { isTest } from '../../firebase/test'
 
 import TimerCountdown from "react-native-timer-countdown";
 import Sound from 'react-native-sound'
+
+import Modal from "react-native-modal";
+
 
 Geocoder.init("AIzaSyBionuXtSnhN7kKXD8Y2tms-Dx43GI4W6g")
 
@@ -79,7 +83,10 @@ class Map extends Component {
 
 			initialMilliseconds: 0,
 			delay: false,
-			time: 10
+			time: 10,
+
+			//modal
+			openModal: false,
 		}
 	}
 
@@ -164,8 +171,15 @@ class Map extends Component {
 			firebase.database().ref(`register/commerce/motoboyPartner/${this.props.user.id}`).on('value', async snapshot => {
 				let motoboy = snapshot.val()
 
+				// START - CHECK IF TERMS ARE TRUE
+				if(!motoboy.terms){
+					this.setState({ openModal: true })
+				} else {
+					this.setState({ openModal: false })
+				}
+				// END - CHECK IF TERMS ARE TRUE
+
 				// START - GIVE 5 REAIS FOR EACH 10 RIDES ON DAY
-				
 				if(motoboy.earnings && Object.values(motoboy.earnings).length > 0){
 					let earnings = Object.values(motoboy.earnings)
 					let momentToday = moment().format('DD/MM/YYYY')
@@ -577,6 +591,9 @@ class Map extends Component {
 		// return <Text>Oi</Text>
 		return (
 			<View style={{ flex: 1 }}>
+			 <Modal isVisible={this.state.openModal}>
+          <Terms />
+        </Modal>
 				<MapView
 						ref={el => this.mapView = el}
 						style={{ flex: 1 }}
