@@ -5,7 +5,8 @@ import * as firebase from 'firebase'
 import AppContainer from './routes/index'
 import { Provider } from 'react-redux';
 import { Store }  from './redux/store';
-import { ONE_SIGNAL_ID } from './utils/constants'
+import { ONE_SIGNAL_ID, ONE_SIGNAL_TEST } from './utils/constants'
+import { isTest } from './firebase/test'
 import OneSignal from 'react-native-onesignal'; // Import package from node modules
 
 console.disableYellowBox = true;
@@ -14,8 +15,8 @@ class App extends Component {
 
 	constructor(properties) {
 		super(properties);
-		
-		OneSignal.init(ONE_SIGNAL_ID, {
+
+		OneSignal.init(isTest ? ONE_SIGNAL_TEST : ONE_SIGNAL_ID, {
 			kOSSettingsKeyAutoPrompt: true,
 			kOSSettingsKeyInFocusDisplayOption:2,
 		});

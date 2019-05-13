@@ -1,3 +1,4 @@
 const ONE_SIGNAL_ID = "c1ab6e20-6571-49b9-bf20-963f2a23d9a1"
+const ONE_SIGNAL_TEST = "ea812af4-9b2f-445e-ab9a-568779c61f8e"
 
-export { ONE_SIGNAL_ID }
+export { ONE_SIGNAL_ID, ONE_SIGNAL_TEST }

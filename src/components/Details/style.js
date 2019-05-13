@@ -14,6 +14,7 @@ export const Container = styled.View`
     border: 1px solid #DDD;
     align-items: center;
     padding: 20px;
+    border-radius: 18px;
 `
 
 export const TypeTitle = styled.Text`

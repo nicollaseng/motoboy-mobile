@@ -34,22 +34,22 @@ class Login extends Component {
   }
 
 	 componentWillMount(){
-		// this.setState({ loading: true })
-		// try {
-		// 	 firebase.auth().onAuthStateChanged(user => {
-		// 		console.log('user', user)
-		// 		if(user){
-		// 			console.log('USER ON AUTH STATE CHANGE', user.toJSON())
-		// 			this.setState({ email: user.toJSON().email })
-		// 			this._setUserInfo()
-		// 		} else {
-		// 			this.setState({ loading: false })
-		// 		}
-		// 	})
-		// } catch( error ) {
-		// 	this.setState({ loading: false })
-		// 	console.log(error)
-		// }
+		this.setState({ loading: true })
+		try {
+			 firebase.auth().onAuthStateChanged(user => {
+				console.log('user', user)
+				if(user){
+					console.log('USER ON AUTH STATE CHANGE', user.toJSON())
+					this.setState({ email: user.toJSON().email })
+					this._setUserInfo()
+				} else {
+					this.setState({ loading: false })
+				}
+			})
+		} catch( error ) {
+			this.setState({ loading: false })
+			console.log(error)
+		}
 	}
 
 	login = async () => {

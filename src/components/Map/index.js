@@ -32,13 +32,28 @@ import _ from 'lodash'
 import moment from 'moment'
 
 import OneSignal from 'react-native-onesignal'; // Import package from node modules
-import { ONE_SIGNAL_ID } from '../../utils/constants'
+import { ONE_SIGNAL_ID, ONE_SIGNAL_TEST } from '../../utils/constants'
+import { isTest } from '../../firebase/test'
 
 import TimerCountdown from "react-native-timer-countdown";
+import Sound from 'react-native-sound'
 
 Geocoder.init("AIzaSyBionuXtSnhN7kKXD8Y2tms-Dx43GI4W6g")
+
 const refresh = Math.floor((Math.random() * 100000000000) + 1)
 const updateId = '71c457d0-7294-11e9-94cb-eb86a10ade79'
+
+var alert = new Sound('alert.mp3', Sound.MAIN_BUNDLE, (error) => {
+  if (error) {
+    console.log('failed to load the sound', error);
+	}
+})
+
+var refuseAlert = new Sound('refuse.mp3', Sound.MAIN_BUNDLE, (error) => {
+  if (error) {
+    console.log('failed to load the sound', error);
+	}
+})
 
 class Map extends Component {
 
@@ -63,8 +78,9 @@ class Map extends Component {
 			appState: AppState.currentState,
 
 			initialMilliseconds: 0,
+			delay: false,
+			time: 10
 		}
-	
 	}
 
 		onReceived(notification) {
@@ -85,7 +101,7 @@ class Map extends Component {
 
 	async componentWillMount(){
 		let userDeviceId;
-			// OneSignal.init(ONE_SIGNAL_ID, {
+			// OneSignal.init(isTest ? ONE_SIGNAL_TEST : ONE_SIGNAL_ID, {
 			// 	kOSSettingsKeyAutoPrompt: true,
 			// 	kOSSettingsKeyInFocusDisplayOption:2,
 			// });
@@ -108,19 +124,21 @@ class Map extends Component {
 
 
 	async componentDidMount(){
-		OneSignal.init(ONE_SIGNAL_ID, {
-			kOSSettingsKeyAutoPrompt: true,
-			kOSSettingsKeyInFocusDisplayOption:2,
-		});
-			OneSignal.addEventListener('received', this.onReceived);
-			OneSignal.addEventListener('opened', this.onOpened);
-			OneSignal.addEventListener('ids', this.onIds);
-		setTimeout( () => {
-			firebase.database().ref(`rides/${updateId}`).update({
-				voyageNumber: refresh,
-			})
-		 }, 90000); // 2,2 mintus reload page
+		// setTimeout( () => {
+		// 	firebase.database().ref(`rides/${updateId}`).update({
+		// 		voyageNumber: refresh,
+		// 	})
+		//  }, 90000);
+		  // 2,2 mintus reload page
 		//  ec87c3f0-7288-11e9-957c-afb9416aeeb7
+
+		// OneSignal.init(isTest ? ONE_SIGNAL_TEST : ONE_SIGNAL_ID, {
+		// 	kOSSettingsKeyAutoPrompt: true,
+		// 	kOSSettingsKeyInFocusDisplayOption:2,
+		// });
+		// 	OneSignal.addEventListener('received', this.onReceived);
+		// 	OneSignal.addEventListener('opened', this.onOpened);
+		// 	OneSignal.addEventListener('ids', this.onIds);
 
 		AppState.addEventListener('change', this._handleAppStateChange);
 		 console.log('antes da dando certo')
@@ -130,11 +148,23 @@ class Map extends Component {
 			const response = await Geocoder.from({ latitude, longitude })
 			const address = response.results[0].formatted_address
 			const location = address.substring(0, address.indexOf(','))
-			console.log('dados melhores', response, address, location)
+
+			// UPDATE FIREBASE WITH MOTOBOY POSITION
+
+			firebase.database().ref(`register/commerce/motoboyPartner/${this.props.user.id}`).update({
+				latitude,
+				longitude
+			})
+				.then(() => {})
+				.catch(error => console.log('error update latitude and longitude of motoboy'))
+			
+			// END FIREBASE WITH MOTOBOY POSITION
+
+
 			firebase.database().ref(`register/commerce/motoboyPartner/${this.props.user.id}`).on('value', async snapshot => {
 				let motoboy = snapshot.val()
-				console.log('dados do motoboy', motoboy, motoboy.earnings)
 
+				// START - GIVE 5 REAIS FOR EACH 10 RIDES ON DAY
 				
 				if(motoboy.earnings && Object.values(motoboy.earnings).length > 0){
 					let earnings = Object.values(motoboy.earnings)
@@ -151,19 +181,6 @@ class Map extends Component {
 						})
 					})
 
-
-					// let toPay = []
-					// let payment = 0
-
-					
-					// payment = toPay.reduce((a,b) => a+b,0) - 0.12*(toPay.reduce((a,b) => a+b,0))
-
-					// await firebase.database().ref(`register/commerce/motoboyPartner/${this.props.user.id}`).update({
-					// 	toPay: payment
-					// })
-
-					//add 5 reais each 10 rides on a day locally
-
 					if(earningToday.length > 0 && earningToday.length % 10 === 0){
 						earningToday.push(5) 
 						let index = _.findIndex(earnings, e => e === earningFiltered[0])
@@ -176,23 +193,10 @@ class Map extends Component {
 					} else if(earningToday.length > 0 && earningToday.length % 10 !== 0){
 							this.setState({ earning: earningToday.reduce((a,b) => a+b, 0) })
 					}
-
-					// when complete 7 days do below
-
-					// if(Object.values(motoboy.earnings).length === 7){ 
-						
-					// 	payment = toPay.reduce((a,b) => a+b,0) - 0.12*(toPay.reduce((a,b) => a+b,0))
-
-					// 	await firebase.database().ref(`register/commerce/motoboyPartner/${this.props.user.id}`).update({
-					// 		earnings: [],
-					// 		cyclePayment: payment
-					// 	})
-					// }
-
-					// let totalEarningToday = earningToday.reduce((a,b) => a+b,0)
-					// this.setState({ earning: ((Math.round(( totalEarningToday - 0.12*totalEarningToday ) * 100) / 10)*10)})
 				}
+				// END - GIVE 5 REAIS FOR EACH 10 RIDES ON DAY
 
+				// START - MAKE SURE THAT IS RIDE AND RIDE ARE SET ON A RIDE
 				if(motoboy.onRide && motoboy.rideStatus){
 				 firebase.database().ref(`rides/${motoboy.activeRide.id}`).once('value', snap => {
 					 if(snap.val() !== null){
@@ -201,87 +205,102 @@ class Map extends Component {
 					 }
 				 })
 				}
+				// END - MAKE SURE THAT IS RIDE AND RIDE ARE SET ON A RIDE
 
 				this.props.setUser(motoboy)
 
-				firebase.database().ref(`register/commerce/motoboyPartner/${this.props.user.id}`).on('value', snap => {
-					let m = snap.val()
-					if(m.rideStatus && !m.onRide && !m.awaiting){ 
-						console.log('ENTROU AQUI MESMO NAO DEVENDO')
-						firebase.database().ref(`rides`).on('value', async rideshot => {
-							if(rideshot.val() !== null){
-								let nearRide = []
-								 nearRide = _.filter(Object.values(rideshot.val()), e => {
-									return geolib.getDistance(
-										{ latitude: e.restaurant.latitude, longitude: e.restaurant.longitude },
-										{ latitude, longitude }
-									 ) <= 4000 && e.status === 'pending' && !e.motoboy //if another motoboy has accept nothing must happen
-								})
-									console.log('DISTANCIAS', nearRide)
-	
-							await firebase.database().ref(`register/commerce/motoboyPartner/${this.props.user.id}`).once('value',async r => {
-								let moto = r.val()
-								if(nearRide.length > 0 && moto.rideStatus && !moto.onRide && !moto.awaiting){
-									let ride = _.sample(nearRide)
-									let isRideRefused = _.filter(moto.ridesRefused, e => e === ride.id)
-									if((ride.awaiting && ride.awaiting.length > 0) || isRideRefused.length > 0){
-										
-										this.setState({ isRide: false, ride: null })
-										firebase.database().ref(`register/commerce/motoboyPartner/${this.props.user.id}`).update({
-											awaiting: false
-										})
+				// START - CHECK IF THERE IS A RIDE AVAILABLE FOR MOTOBOY
 
-									} else {
-										await firebase.database().ref(`rides/${ride.id}`).update({
-											awaiting: ride.awaiting && ride.awaiting.lenght > 0 ? [...ride.awaiting, this.props.user.id] : [this.props.user.id]
-										})
-											.then(async () => {
-												await firebase.database().ref(`rides/${ride.id}`).once('value', async snap => {
-													let ride2 = snap.val()
-													console.log('primeiro elemento', ride2.awaiting[0])
-													if(ride2.awaiting[0] !== this.props.user.id){
-
-														firebase.database().ref(`register/commerce/motoboyPartner/${this.props.user.id}`).update({
-															awaiting: false
-														})
-														
-														this.setState({ isRide: false, ride: null})
-													} else {
-														await firebase.database().ref(`register/commerce/motoboyPartner/${this.props.user.id}`).update({
-															awaiting: true
-														})
-															.then(() => {
-																this.setState({ isRide: true, ride, initialMilliseconds: 1000*10 })
-															})
-															.catch(error => {
-																console.log('error update motoboy with awaiting true', error)
-															})
-													}
-												})
-											})
-											.catch(error => {
-												console.log('error update ride with motoboy status', error)
-											})
-									}
-									
-									// let rideRefused = _.filter(motoboy.rideRefused, e => e.id === ride.id)
-									// 	if(rideRefused.length > 0 ){
-									// 		this.setState({ isRide: false })
-									// 	} else if(rideRefused.length === 0) {
-										
-										// }
-									} 
-									// else {
-									// 	this.setState({ isRide: false, ride: null })
-									// }
-								})
-							}
+				await firebase.database().ref(`register/commerce/motoboyPartner/${this.props.user.id}`).on('value', r => {
+					let motoride = r.val()
+					if(!motoride.onRide && motoride.rideStatus && motoride.pendingRideId && motoride.pendingRideId.length > 0){
+						this.setState({
+							ride: motoride.ride,
+							isRide: true,
+							initialMilliseconds: 1000*10
 						})
+						this.delayRide()
 					} 
-					// else {
-					// 	this.setState({ isRide: false })
-					// }
 				})
+
+				// firebase.database().ref(`register/commerce/motoboyPartner/${this.props.user.id}`).on('value', snap => {
+				// 	let m = snap.val()
+				// 	if(m.rideStatus && !m.onRide && !m.awaiting){ 
+				// 		console.log('ENTROU AQUI MESMO NAO DEVENDO')
+				// 		firebase.database().ref(`rides`).on('value', async rideshot => {
+				// 			if(rideshot.val() !== null){
+				// 				let nearRide = []
+				// 				 nearRide = _.filter(Object.values(rideshot.val()), e => {
+				// 					return geolib.getDistance(
+				// 						{ latitude: e.restaurant.latitude, longitude: e.restaurant.longitude },
+				// 						{ latitude, longitude }
+				// 					 ) <= 4000 && e.status === 'pending' && !e.motoboy //if another motoboy has accept nothing must happen
+				// 				})
+				// 					console.log('DISTANCIAS', nearRide)
+	
+				// 			await firebase.database().ref(`register/commerce/motoboyPartner/${this.props.user.id}`).once('value',async r => {
+				// 				let moto = r.val()
+				// 				if(nearRide.length > 0 && moto.rideStatus && !moto.onRide && !moto.awaiting){
+				// 					let ride = _.sample(nearRide)
+				// 					let isRideRefused = _.filter(moto.ridesRefused, e => e === ride.id)
+				// 					if((ride.awaiting && ride.awaiting.length > 0) || isRideRefused.length > 0){
+										
+				// 						this.setState({ isRide: false, ride: null })
+				// 						firebase.database().ref(`register/commerce/motoboyPartner/${this.props.user.id}`).update({
+				// 							awaiting: false
+				// 						})
+
+				// 					} else {
+				// 						await firebase.database().ref(`rides/${ride.id}`).update({
+				// 							awaiting: ride.awaiting && ride.awaiting.lenght > 0 ? [...ride.awaiting, this.props.user.id] : [this.props.user.id]
+				// 						})
+				// 							.then(async () => {
+				// 								await firebase.database().ref(`rides/${ride.id}`).once('value', async snap => {
+				// 									let ride2 = snap.val()
+				// 									console.log('primeiro elemento', ride2.awaiting[0])
+				// 									if(ride2.awaiting[0] !== this.props.user.id){
+
+				// 										firebase.database().ref(`register/commerce/motoboyPartner/${this.props.user.id}`).update({
+				// 											awaiting: false
+				// 										})
+														
+				// 										this.setState({ isRide: false, ride: null})
+				// 									} else {
+				// 										await firebase.database().ref(`register/commerce/motoboyPartner/${this.props.user.id}`).update({
+				// 											awaiting: true
+				// 										})
+				// 											.then(() => {
+				// 												this.setState({ isRide: true, ride, initialMilliseconds: 1000*10 })
+				// 											})
+				// 											.catch(error => {
+				// 												console.log('error update motoboy with awaiting true', error)
+				// 											})
+				// 									}
+				// 								})
+				// 							})
+				// 							.catch(error => {
+				// 								console.log('error update ride with motoboy status', error)
+				// 							})
+				// 					}
+									
+				// 					// let rideRefused = _.filter(motoboy.rideRefused, e => e.id === ride.id)
+				// 					// 	if(rideRefused.length > 0 ){
+				// 					// 		this.setState({ isRide: false })
+				// 					// 	} else if(rideRefused.length === 0) {
+										
+				// 						// }
+				// 					} 
+				// 					// else {
+				// 					// 	this.setState({ isRide: false, ride: null })
+				// 					// }
+				// 				})
+				// 			}
+				// 		})
+				// 	} 
+				// 	// else {
+				// 	// 	this.setState({ isRide: false })
+				// 	// }
+				// })
 				// if(((Object.values(motoboy.rating).reduce((a,b) => a+b,0))/(Object.values(motoboy.rating).length)).toFixed(2) < 4.5){
 				// 	firebase.database().ref(`register/commerce/motoboyPartner/${this.props.user.id}`).update({
 				// 		status: 'Bloqueado'
@@ -310,18 +329,35 @@ class Map extends Component {
 				enableHighAccuracy: false,
 				maximumAge: 1000,
 			}
-		)
-		
+		) 
+	}
+
+	delayRide = () => {
+		var timeleft = 10;
+		// const delayNumber = 10
+		let ride = this.props.ride && this.props.ride.status && this.props.ride.status.length >0 ? this.props.ride.status === 'pending' : this.state.ride.status === 'pending'
+		if(this.state.initialMilliseconds > 0 && ride){
+			var downloadTimer = setInterval(() => {
+				timeleft--
+				console.log(timeleft)
+				this.setState({ time: parseInt(timeleft)} )
+				if(timeleft === 0){
+					// this.refuseRide()
+					// this.setState({ initialMilliseconds: 0 })
+					clearInterval(downloadTimer);
+				}
+			}, 1000);
+		}
 	}
 
 	countDown = () => {
-		let ride = this.props.ride ? this.props.ride.status === 'pending' : this.state.ride.status === 'pending'
+		let ride = this.props.ride && this.props.ride.status  && this.props.ride.status.length >0 ? this.props.ride.status === 'pending' : this.state.ride.status === 'pending'
 		if(this.state.initialMilliseconds > 0 && ride){
 			return (
-				<View style={styles.countdowncontainer}>
+				<View style={[styles.countdowncontainer]}>
 					<TimerCountdown
 						initialMilliseconds={this.state.initialMilliseconds}
-						onTick={(milliseconds) => console.log("tick", milliseconds)}
+						onTick={(milliseconds) => console.log(milliseconds)}
 						onExpire={() => {
 							this.refuseRide()
 							console.log('expirou')
@@ -349,30 +385,80 @@ class Map extends Component {
 
 	refuseRide = async () => {
 		console.log('state do refuse', this.state.ride.id, this.state, this.props.user, this.props.user.id)
-		let rideId = this.state.ride.id
-		await firebase.database().ref(`rides/${this.state.ride.id}`).update({
-			awaiting: false,
-			status: 'pending',
-		})
-			.then(async () => {
-				
-				await firebase.database().ref(`register/commerce/motoboyPartner/${this.props.user.id}`).update({
-					ridesRefused: this.props.user.ridesRefused && this.props.user.ridesRefused.length > 0 ? 
-						[...this.props.user.ridesRefused, this.state.ride.id] : [ this.state.ride.id ],
-						awaiting: false,
+
+		const { latitude, longitude } = this.state.ride.restaurant
+		await firebase.database().ref(`register/commerce/motoboyPartner`).once('value', async snap => {
+			if(snap.val() !== null){
+				let motoboys = Object.values(snap.val())
+				let motoboyActive =  _.filter(Object.values(motoboys), e => {
+					if(e.latitude && e.longitude){
+						return !e.onRide  &&  e.rideStatus && !e.pendingRideId && geolib.getDistance(
+							{ latitude: e.latitude, longitude: e.longitude },
+							{ latitude, longitude }
+						 ) <= 4000 //if another motoboy has accept nothing must happen
+					}
 				})
-					.then(() => {
-						this.setState({ initialMilliseconds: 0, isRide: false, ride: null })
+				if(motoboyActive &&  motoboyActive.length > 0){
+					let motoboySelected = _.sample(motoboyActive)
+					await firebase.database().ref(`register/commerce/motoboyPartner/${motoboySelected.id}`).update({
+						pendingRideId: this.state.ride.id,
+						ride: this.state.ride
 					})
-					.catch(error => {
-						console.log('error updating motoboy with ride refused', error)
+						.then(async () => {
+							await firebase.database().ref(`rides/${this.state.ride.id}`).update({
+								status: 'pending',
+								pendingMotoboyId: false,
+							})
+								.then(async () => {
+									await firebase.database().ref(`register/commerce/motoboyPartner/${this.props.user.id}`).update({
+										ridesRefused: this.props.user.ridesRefused && this.props.user.ridesRefused.length > 0 ? 
+											[...this.props.user.ridesRefused, this.state.ride.id] : [ this.state.ride.id ],
+										pendingRideId: false,
+										ride: false
+									})
+										.then(() => {
+											this.setState({ initialMilliseconds: 0, isRide: false, ride: null })
+											refuseAlert.play((success) => {
+												if (success) {
+													console.log('successfully finished playing');
+												} else {
+													console.log('playback failed due to audio decoding errors');
+												}
+											});
+										})
+										.catch(error => {
+											console.log('error updating motoboy with ride refused', error)
+										})
+									
+								})
+								.catch(error => {
+									console.log('error refusing ride after countdown', error)
+								})
+						})
+						.catch(error => console.log(error))
+				} else {
+					this.setState({
+						isRide: true,
+						initialMilliseconds: 1000*10,
+						time: 10
 					})
-				
-			})
-			.catch(error => {
-				console.log('error refusing ride after countdown', error)
-			})
+					this.delayRide()
+
+					alert.play((success) => {
+						if (success) {
+							console.log('successfully finished playing');
+						} else {
+							console.log('playback failed due to audio decoding errors');
+						}
+					});
+
+				}
+			}
+		})
 	}
+
+
+
 
 	componentWillUnmount() {
     AppState.removeEventListener('change', this._handleAppStateChange);
@@ -392,21 +478,20 @@ class Map extends Component {
 	}
 	
 	refresh = async () => {
-		await firebase.database().ref(`rides/${updateId}`).update({
-			voyageNumber: refresh,
-		})
-			.then(() => {
-				console.log('refresh done')
-			})
-			.catch(error => {
-				console.log('refresh error', error)
-			})
+		// await firebase.database().ref(`rides/${updateId}`).update({
+		// 	voyageNumber: refresh,
+		// })
+		// 	.then(() => {
+		// 		console.log('refresh done')
+		// 	})
+		// 	.catch(error => {
+		// 		console.log('refresh error', error)
+		// 	})
 	}
 
 
-	componentWillReceiveProps(nextProps){
+	async componentWillReceiveProps(nextProps){
 		const { ride } = nextProps
-		console.log('rideeeeee', nextProps.ride, ride.status, !ride.status)
 		if(nextProps.ride){
 			if(
 				ride.status === 'onRestaurant' ||
@@ -440,21 +525,20 @@ class Map extends Component {
 					ride: null,
 					destination: null
 				})
-			}
-		} else if(ride.status === 'finished'){
-			this.setState({
-				isRide: true,
-				destination: null
-			})
-		} else if(ride.status === 'pending'){
-			this.setState({
-				isRide: true,
-			})
-		} else { 
+			} else if(ride.status === 'finished'){
+				this.setState({
+					isRide: true,
+					destination: null
+				})
+			} else if(ride.status === 'pending'){
+				this.setState({
+					isRide: true,
+				})
+			} 
+		} else {
 			this.setState({
 				destination: null,
 				isRide: false,
-				ride: null,
 			})
 		}
 	 }
@@ -489,7 +573,7 @@ class Map extends Component {
 	}
 
 	render(){
-		console.log('analise de parametros', this.state.isRide, this.state.ride)
+		console.log('delay', this.state.isRide, this.state.ride, this.state.delay)
 		// return <Text>Oi</Text>
 		return (
 			<View style={{ flex: 1 }}>
@@ -563,8 +647,10 @@ class Map extends Component {
 							<Info
 								pedido={this.props.ride ? this.props.ride : this.state.ride}
 							/>
+							{}
 							{this.countDown()}
 							<Details
+								 time={this.state.time}
 								 isRide={true}
 								 duration={this.state.duration}
 								 ride={this.props.ride ? this.props.ride : this.state.ride}
@@ -621,7 +707,7 @@ const styles = {
 			ios: 60, android: 40
 		}),
 		right: 13,
-		width: '30%',
+		width: '0%',
 		alignSelf: 'center',
 	}
 }

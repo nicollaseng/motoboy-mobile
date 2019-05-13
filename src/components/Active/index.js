@@ -24,9 +24,9 @@ class Active extends Component {
 
 	changeStatus = async () => {
 		this.setState({ loading: true }, async () => {
-			firebase.database().ref(`rides/${updateId}`).update({
-				voyageNumber: refresh,
-			})
+			// firebase.database().ref(`rides/${updateId}`).update({
+			// 	voyageNumber: refresh,
+			// })
 
 			await firebase.database().ref(`register/commerce/motoboyPartner/${this.props.user.id}`).once('value', async snap => {
 				let motoboy = snap.val()

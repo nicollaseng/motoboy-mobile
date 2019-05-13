@@ -8,20 +8,18 @@ import { connect } from 'react-redux'
 const updateId = '71c457d0-7294-11e9-94cb-eb86a10ade79'
 
 class Refresh extends Component {
-	state = {
-	
-	}
 
 	refresh = async () => {
 		await firebase.database().ref(`register/commerce/motoboyPartner/${this.props.user.id}`).update({
-			awaiting: false,
 			onRide: false,
 			activeRide: false,
+			pendingRideId: false,
+			ride: false
 		})
 			.then(async () => {
-				await	firebase.database().ref(`rides/${updateId}`).update({
-					voyageNumber: refresh,
-				})
+				// await	firebase.database().ref(`rides/${updateId}`).update({
+				// 	voyageNumber: refresh,
+				// })
 			})
 	}
 
