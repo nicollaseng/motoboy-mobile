@@ -116,8 +116,8 @@ android {
         applicationId "com.xdev.motoboysdeplantaodriver"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 7
-        versionName "1.4.3"
+        versionCode 8
+        versionName "1.4.4"
     }
     splits {
         abi {
@@ -149,6 +149,7 @@ android {
 }
 
 dependencies {
+    implementation project(':react-native-background-timer')
     implementation project(':react-native-onesignal')
     implementation project(':react-native-image-picker')
     implementation project(':react-native-push-notification')

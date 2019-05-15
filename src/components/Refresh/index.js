@@ -1,35 +1,90 @@
 import React, { Component } from  'react'
-import { Platform, View, Text, TouchableOpacity, Dimensions } from 'react-native'
+import { Platform, View, Text, TouchableOpacity, Dimensions, Alert } from 'react-native'
 import Icon from 'react-native-vector-icons/FontAwesome5'
 import VMasker from 'vanilla-masker'
 import * as firebase from 'firebase'
 import { connect } from 'react-redux'
+import Sound from 'react-native-sound'
 
-const updateId = '71c457d0-7294-11e9-94cb-eb86a10ade79'
+
+
+var rideAlert = new Sound('alert2.mp3', Sound.MAIN_BUNDLE, (error) => {
+  if (error) {
+    console.log('failed to load the sound', error);
+	}
+})
 
 class Refresh extends Component {
+
+	constructor(props){
+		super(props)
+		this.state ={
+			delayRunning: false,
+			time: 0,
+		}
+	}
+
+	componentDidMount(){
+		if(this.props.rideAvailable){
+			rideAlert.play((success) => {
+				if (success) {
+					console.log('SET RIDE FREE SUCCESS');
+				} else {
+					console.log('playback failed due to audio decoding errors');
+				}
+			});
+			rideAlert.setVolume(10);
+			rideAlert.setNumberOfLoops(-1);
+		} 
+		if(this.props.isRide){
+			rideAlert.pause();
+		}
+	}
+
+	delay = () => {
+		var timeleft = 30;
+		// const delayNumber = 10
+		if(this.state.delayRunning){
+			var downloadTimer = setInterval(() => {
+				timeleft--
+				console.log(timeleft)
+				this.setState({ time: parseInt(timeleft)} )
+				if(timeleft === 0){
+					this.setState({ delayRunning: false })
+					// this.refuseRide()
+					// this.setState({ initialMilliseconds: 0 })
+					clearInterval(downloadTimer);
+				}
+			}, 1000);
+		}
+	}
 
 	refresh = async () => {
 		await firebase.database().ref(`register/commerce/motoboyPartner/${this.props.user.id}`).update({
 			onRide: false,
 			activeRide: false,
 			pendingRideId: false,
-			ride: false
+			ride: false,
 		})
 			.then(async () => {
-				// await	firebase.database().ref(`rides/${updateId}`).update({
-				// 	voyageNumber: refresh,
-				// })
+				this.setState({ delayRunning: true })
+				this.props.checkRide()
+				this.delay()
+				Alert.alert('Atenção', 'Buscando novas entregas. Por favor aguarde. Clique em ok')
+			})
+			.catch(error => {
+				console.log('error trying to refresh', error)
 			})
 	}
 
 	render(){
 		return (
-				<View style={styles.container}>
-					<TouchableOpacity onPress={this.refresh} style={styles.subContainer}>
-						<Icon name="redo-alt" size={30} style={{ color: '#666', backgroundColor: '#fff'}} />
-					</TouchableOpacity>
-				</View>
+			<View style={styles.container}>
+				<TouchableOpacity onPress={() => this.state.delayRunning && !this.props.isRide ? false : this.refresh()} style={[styles.subContainer, { backgroundColor: this.props.rideAvailable ? '#363777' : '#fff' }]}>
+					{this.state.delayRunning ? <Text style={{ color: '#666', fontSize: 19, textAlign: 'center', padding: 9, fontWeight: '500'}}>{this.state.time}</Text> 
+						: <Icon name="motorcycle" size={30} style={{ color: this.props.rideAvailable ? '#fff' : '#666', backgroundColor: this.props.rideAvailable ? '#363777' : '#fff'}} />}
+				</TouchableOpacity>
+			</View>
     )
 	}	
 }
@@ -58,7 +113,7 @@ const styles = {
 		shadowColor: '#000',
 		shadowOpacity: 0.2,
 		shadowOffset: { x: 0, y: 0},
-		shadowRadius: 15,
+		shadowRadius: 19,
 	},
 	title: {
 		textAlign: 'center',

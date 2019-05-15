@@ -28,7 +28,7 @@ class Terms extends Component {
 									<Text style={{ fontWeight: '500', marginVertical: 5}}> 1. RELACIONAMENTO CONTRATUAL{"\n"}{"\n"}</Text>
 
 									
-									Estes Termos de uso (“Termos”) regem seu acesso e uso, como pessoa física, dentro do Brasil, de aplicativos, sítios de Internet, conteúdos, bens e também serviços (os “Serviços”) disponibilizados pela Motoboys de Plantao do Brasil Tecnologia Ltda., sociedade de responsabilidade limitada, estabelecida no Brasil, com sede na Avenida Brigadeiro Faria Lima, nº 201, 26º e 27º andares, salas 2601 e 2701, CEP 05426-100, São Paulo/SP, inscrita no Cadastro Nacional de Pessoas Jurídicas do Ministério da Fazenda (CNPJ/MF) sob n. 17.895.646/0001-87 (“Motoboys de Plantao”) ou qualquer de suas afiliadas.
+									Estes Termos de uso (“Termos”) regem seu acesso e uso, como pessoa física, dentro do Brasil, de aplicativos, sítios de Internet, conteúdos, bens e também serviços (os “Serviços”) disponibilizados pela Motoboys de Plantao.
 
 									POR FAVOR, LEIA COM ATENÇÃO ESTES TERMOS ANTES DE ACESSAR OU USAR OS SERVIÇOS.
 

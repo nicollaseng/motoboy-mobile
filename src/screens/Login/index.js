@@ -34,8 +34,8 @@ class Login extends Component {
   }
 
 	 componentWillMount(){
-		this.setState({ loading: true })
 		try {
+				this.setState({ loading: true })
 			 firebase.auth().onAuthStateChanged(user => {
 				console.log('user', user)
 				if(user){
@@ -62,7 +62,7 @@ class Login extends Component {
 					this._setUserInfo()
 				})
 				.catch(err => {
-					Alert.alert('Atenção','E-mail ou senha inválidos')
+					Alert.alert('Atenção','Verifique seu e-mail e senha novamente. Caso o erro persista tente recuperar sua senha. Se ainda mantiver o erro entre em contato com nosso suporte')
 					console.log('Erro while login firebase', err)
 					this.setState({ loading: false })
 				})
@@ -75,24 +75,63 @@ class Login extends Component {
 
 	_setUserInfo = async key => {
 		await firebase.database().ref(`register/commerce/motoboyPartner`).once('value', data => {
-			if(data){
+			if(data !== null){
 				let dataJson = data.toJSON()
-				let user = _.filter(Object.values(dataJson), e => e.email.toLowerCase().includes(this.state.email.toLowerCase()))
+				console.log('email lower case', dataJson)
+				let user = _.filter(Object.values(dataJson), e => {
+					if(e.email && e.email.length > 0){
+						return e.email.toLowerCase() === this.state.email.toLowerCase()
+					}
+				})
+				
 				console.log('user', user)
 				if(user.length > 0){
-					if(user[0].status === 'Aprovado'){
-						console.log('passou por aqui e user', user[0])
-						this.props.setUser(user[0])
-						this.props.navigation.navigate('DrawerComponent')
-						this.setState({ loading: false })
-						console.log('user', user)
-					} else if(user[0].status === 'Bloqueado')  {
-						Alert.alert('Atenção', 'Sua conta encontra-se temporariamente bloqueada. Entre em contato com nosso suporte')
-						this.setState({ loading: false })
-					} else {
-						Alert.alert('Atenção', 'Seu cadastro está em análise')
-						this.setState({ loading: false })
-					}
+					user.map(async user => {
+						if(user.email.toLowerCase() === this.state.email.toLowerCase()){
+							if(user.status === 'Aprovado'){
+								// ASSURE THAT RIDE ID AND RIDE WILL NOT BLOCK USER LOGIN IF USER HAS NOT ANY ACTIVE RIDE RUNNING
+								if(user.activeRide !== null && !Object.values(user.activeRide).length > 0){
+									await firebase.database().ref(`register/commerce/motoboyPartner/${user.id}`).update({
+										rideId: false,
+										ride: false,
+										out: false,
+									})
+									.then(() => {
+										console.log('passou por aqui e user', user)
+										this.props.setUser(user)
+										this.props.navigation.navigate('DrawerComponent')
+										this.setState({ loading: false })
+										console.log('user', user)
+									})
+									.catch(error => {
+										console.log('Error firebase login updatin motoboy', error)
+										Alert.alert('Atenção', 'Firebase error. Contate nosso suporte')
+									})
+									//IF ACTIVE RIDE RUNNING SO JUST PROCESSO NORMALLY BUT ASSURE THAT OUT IS FALSE
+								} else {
+									 await firebase.database().ref(`register/commerce/motoboyPartner/${user.id}`).update({
+										out: false,
+									})
+										.then(() => {
+											this.props.setUser(user)
+											this.props.navigation.navigate('DrawerComponent')
+											this.setState({ loading: false })
+											console.log('user', user)
+										})
+										.catch(error => {
+											console.log('Error firebase login updatin motoboy', error)
+											Alert.alert('Atenção', 'Firebase error set out false. Contate nosso suporte')
+										})
+								}
+							} else if(user.status === 'Bloqueado')  {
+								Alert.alert('Atenção', 'Sua conta encontra-se temporariamente bloqueada. Entre em contato com nosso suporte')
+								this.setState({ loading: false })
+							} else {
+								Alert.alert('Atenção', 'Seu cadastro está em análise')
+								this.setState({ loading: false })
+							}
+						}
+					})
 				} else {
 					alert('Atenção, estamos enfrentando problemas técnicos na sua conta. Tente novamente em instantes')
 					this.setState({ loading: false })
@@ -111,6 +150,7 @@ class Login extends Component {
 
   render() {
 		const { loading } = this.state
+		console.log('email', this.state.email)
     return (
       <View style={styles.container}>
 				<Fragment>
@@ -161,7 +201,7 @@ class Login extends Component {
 							<TouchableOpacity onPress={this.recoverPassword}>
 								<Text style={styles.register}>Esqueceu sua senha?</Text>
 							</TouchableOpacity>
-							<Text style={[styles.register, { textAlign: 'right'}]}>1.4.3</Text>
+							<Text style={[styles.register, { textAlign: 'right'}]}>1.4.4</Text>
 				</View>
 				{/* <View style={{ height: 100 }} /> */}
 				</View>

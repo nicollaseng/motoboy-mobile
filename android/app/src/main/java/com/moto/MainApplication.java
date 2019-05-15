@@ -2,6 +2,7 @@ package com.xdev.motoboysdeplantaodriver;
 
 import android.app.Application;
 
+import com.ocetnik.timer.BackgroundTimerPackage;
 import com.facebook.react.ReactApplication;
 import com.geektime.rnonesignalandroid.ReactNativeOneSignalPackage;
 import com.imagepicker.ImagePickerPackage;
@@ -36,7 +37,8 @@ public class MainApplication extends Application implements ReactApplication {
             new RNSoundPackage(),
             new VectorIconsPackage(),
             new RNGestureHandlerPackage(),
-            new MapsPackage()
+            new MapsPackage(),
+            new BackgroundTimerPackage()
       );
     }
 
