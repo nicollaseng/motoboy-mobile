@@ -1,7 +1,8 @@
-import React, { Component, Fragment } from  'react'
+import React, { Component, Fragment, DeviceEventEmitter } from  'react'
 import { View, Image, Text, AppState, Platform, Alert } from 'react-native'
 import MapView, { Marker } from 'react-native-maps'
 import { withNavigation } from 'react-navigation'
+import Icon from 'react-native-vector-icons/FontAwesome5'
 
 import Search from '../Search'
 import Directions from '../Directions'
@@ -23,6 +24,7 @@ import menuImage from '../../assets/menu.png'
 
 import { setUser } from '../../redux/action/auth'
 import { setRide } from '../../redux/action/ride'
+import { setOut } from '../../redux/action/out'
 
 import { LocationBox, LocationText, LocationTimeText, LocationTimeBox, LocationTimeTextSmall, Back, Menu } from './styles'
 
@@ -34,6 +36,7 @@ import moment from 'moment'
 
 import OneSignal from 'react-native-onesignal'; // Import package from node modules
 import PushNotification from 'react-native-push-notification'
+import Notification from 'react-native-android-local-notification';
 
 import { ONE_SIGNAL_ID, ONE_SIGNAL_TEST } from '../../utils/constants'
 import { isTest } from '../../firebase/test'
@@ -56,6 +59,16 @@ var alert = new Sound('alert.mp3', Sound.MAIN_BUNDLE, (error) => {
 })
 
 var refuseAlert = new Sound('refuse.mp3', Sound.MAIN_BUNDLE, (error) => {
+  if (error) {
+    console.log('failed to load the sound', error);
+	}
+})
+
+var rideAlert = new Sound('alert2.mp3', Sound.MAIN_BUNDLE, (error) => {
+
+	rideAlert.setVolume(10);
+	// rideAlert.setNumberOfLoops(3);
+
   if (error) {
     console.log('failed to load the sound', error);
 	}
@@ -268,6 +281,8 @@ class Map extends Component {
 									initialMilliseconds: 1000*10,
 									// delay: true,
 								})
+								this.setState({ rideFreeAvailable: false })
+								// Notification.create({ subject: 'Hey', message: 'Yo! Hello world.' });
 							}
 						})
 						
@@ -287,6 +302,16 @@ class Map extends Component {
 								 ) <= 4500 
 							})
 							this.setState({ rideFreeAvailable: rideFree.length > 0 })
+							if(rideFree.length > 0 && !this.props.finish && this.props.user.rideStatus){
+								rideAlert.play((success) => {
+								if (success) {
+									console.log('SET RIDE FREE SUCCESS');
+								} else {
+									console.log('playback failed due to audio decoding errors');
+								}
+							})
+							}
+						
 						}
 					})
 
@@ -312,6 +337,7 @@ class Map extends Component {
 	}
 
 	checkRide = async () => {
+		this.setState({ rideFreeAvailable: false })
 		const { latitude, longitude } = this.state.region
 		console.log('CHECK RIDE', latitude, longitude)
 		await firebase.database().ref(`rides`).once('value',async snapshot => {
@@ -537,18 +563,27 @@ class Map extends Component {
 	_handleAppStateChange = async (nextAppState) => {
     if (this._backgroundState(nextAppState)) {
 
-			await firebase.database().ref(`register/commerce/motoboyPartner/${this.props.user.id}`).update({
-				out: true
-			})
-				.then(() => Alert.alert('Atenção', 'Você está saindo e poderá não receber chamadas'))
-				.catch(error => console.log('Error going outside', error))
+			if(!this.props.user.onRide){
+				await firebase.database().ref(`register/commerce/motoboyPartner/${this.props.user.id}`).update({
+					out: true
+				})
+					.then(() => Alert.alert('Atenção', 'Você está saindo e poderá não receber chamadas'))
+					.catch(error => console.log('Error going outside', error))
+			}
+
+			// if(this.props.out){
+				
+			// }
 
     } else if (this._backgroundState(this.state.appState) && (nextAppState === 'active')) {
 
 			await firebase.database().ref(`register/commerce/motoboyPartner/${this.props.user.id}`).update({
 				out: false
 			})
-				.then(() => Alert.alert('Atenção', 'Você voltou, obrigado. Seu status é online. Em breve você receberá corridas'))
+				.then(() => {
+					// this.props.setOut(true)
+					Alert.alert('Atenção', 'Você voltou, obrigado. Seu status é online. Em breve você receberá corridas')
+				})
 				.catch(error => console.log('Error going outside', error))
     }
     this.setState({appState: nextAppState});
@@ -731,7 +766,8 @@ class Map extends Component {
 					) : (
 						<Fragment>
 							<Menu onPress={this.handleMenu}>
-								<Image source={menuImage} style={{ width: 30, height: 30, resizeMode: 'contain'}} />
+								{/* <Image source={menuImage} style={{ width: 30, height: 30, resizeMode: 'contain'}} /> */}
+								<Icon name="bars" size={30} style={{ color: 'rgba(62, 65, 126, 1)'}} />
 							</Menu>
 							<EarningBar earning={this.state.earning} />
 							{/* <Search
@@ -787,6 +823,7 @@ const mapStateToProps = state => ({
 	user: state.user.user,
 	ride: state.ride.ride,
 	finish: state.finish.finish,
+	out: state.out.out
 })
 
-export default connect(mapStateToProps, { setUser, setRide })(withNavigation(Map))
+export default connect(mapStateToProps, { setUser, setRide, setOut })(withNavigation(Map))

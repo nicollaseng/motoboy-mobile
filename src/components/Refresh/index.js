@@ -9,6 +9,10 @@ import Sound from 'react-native-sound'
 
 
 var rideAlert = new Sound('alert2.mp3', Sound.MAIN_BUNDLE, (error) => {
+
+	rideAlert.setVolume(10);
+	// rideAlert.setNumberOfLoops(3);
+
   if (error) {
     console.log('failed to load the sound', error);
 	}
@@ -25,19 +29,16 @@ class Refresh extends Component {
 	}
 
 	componentDidMount(){
+		console.log('ride available', this.props.rideAvailable)
 		if(this.props.rideAvailable){
-			rideAlert.play((success) => {
+			let i;
+			 rideAlert.play((success) => {
 				if (success) {
-					console.log('SET RIDE FREE SUCCESS');
+					console.log('SET RIDE FREE SUCCESS', i);
 				} else {
 					console.log('playback failed due to audio decoding errors');
 				}
-			});
-			rideAlert.setVolume(10);
-			rideAlert.setNumberOfLoops(-1);
-		} 
-		if(this.props.isRide){
-			rideAlert.pause();
+			})
 		}
 	}
 
@@ -80,10 +81,12 @@ class Refresh extends Component {
 	render(){
 		return (
 			<View style={styles.container}>
-				<TouchableOpacity onPress={() => this.state.delayRunning && !this.props.isRide ? false : this.refresh()} style={[styles.subContainer, { backgroundColor: this.props.rideAvailable ? '#363777' : '#fff' }]}>
-					{this.state.delayRunning ? <Text style={{ color: '#666', fontSize: 19, textAlign: 'center', padding: 9, fontWeight: '500'}}>{this.state.time}</Text> 
-						: <Icon name="motorcycle" size={30} style={{ color: this.props.rideAvailable ? '#fff' : '#666', backgroundColor: this.props.rideAvailable ? '#363777' : '#fff'}} />}
-				</TouchableOpacity>
+				{this.props.user.rideStatus && (
+					<TouchableOpacity onPress={() => this.state.delayRunning && !this.props.isRide ? false : this.refresh()} style={[styles.subContainer, { backgroundColor: this.props.rideAvailable ? '#363777' : '#fff' }]}>
+						{this.state.delayRunning ? <Text style={{ color: '#666', fontSize: 19, textAlign: 'center', padding: 9, fontWeight: '500'}}>{this.state.time}</Text> 
+							: <Icon name="motorcycle" size={30} style={{ color: this.props.rideAvailable ? '#fff' : '#666', backgroundColor: this.props.rideAvailable ? '#363777' : '#fff'}} />}
+					</TouchableOpacity>
+				)}
 			</View>
     )
 	}	

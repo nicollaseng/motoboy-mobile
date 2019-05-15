@@ -9,6 +9,7 @@ import { connect } from 'react-redux'
 import { setRide } from '../../redux/action/ride'
 import { setUser } from '../../redux/action/auth'
 import { setFinish } from '../../redux/action/finish'
+import { setOut } from '../../redux/action/out'
 
 import Countdown from '../Countdown'
 
@@ -20,6 +21,8 @@ import Sound from 'react-native-sound'
 import PushNotification from 'react-native-push-notification'
 
 import TimerCountdown from "react-native-timer-countdown";
+import Icon from 'react-native-vector-icons/FontAwesome5'
+
 
 
 const today = moment().format('DD/MM/YYYY')
@@ -195,10 +198,21 @@ class Details extends Component {
 		})
 	}
 
+	cancelOut = () => {
+		// this.props.setOut(false)
+	}
+
 
 	handleRide = (ride) => {
 		console.log(ride.status)
+
 		if(ride && ride.status && ride.status.length > 0){
+
+			let restaurantLat = ride.restaurant.latitude
+			let restaurantLong = ride.restaurant.longitude
+			let deliveryLat = ride.delivery.latitude
+			let deliveryLong = ride.delivery.longitude
+
 			if(ride.status === 'pending'){
 				return (
 					<Fragment>
@@ -244,12 +258,16 @@ class Details extends Component {
 			} else if( ride.status === 'onWay'){
 				return (
 					<Fragment>
-						<TypeTitle>Escolha um mapa abaixo para iniciar a navegação</TypeTitle>
+						<TypeTitle>Clique na imagem abaixo para iniciar uma navegação externa</TypeTitle>
 						{/* <TypeDescription>Clique no mapa para abrir</TypeDescription> */}
 							<Fragment>
 								<View style={{ flexDirection: 'row', justifyContent: 'space-around', marginVertical: 18 }}>
-									<TouchableOpacity onPress={() => this.openGoogleMaps(restaurantLat, restaurantLong)}>
-										<Thumbnail square large source={require('../../assets/google.png')} />
+									<TouchableOpacity onPress={() => {
+										// this.props.setOut(false)
+										this.openGoogleMaps(restaurantLat, restaurantLong)
+									}}>
+										<Icon name="route" size={50} style={{ color: 'rgba(62, 65, 126, 1)'}} />
+										{/* <Thumbnail square large source={require('../../assets/google.png')} /> */}
 									</TouchableOpacity>
 								</View>
 								<RestaurantButton onPress={this.onRestaurant}>
@@ -261,12 +279,16 @@ class Details extends Component {
 			} else if( ride.status === 'onRestaurant') {
 				return (
 					<Fragment>
-						<TypeTitle>Escolha um mapa abaixo para iniciar a navegação</TypeTitle>
+						<TypeTitle>Clique na imagem abaixo para iniciar uma navegação externa</TypeTitle>
 						{/* <TypeDescription>Clique no mapa para abrir</TypeDescription> */}
 							<Fragment>
 								<View style={{ flexDirection: 'row', justifyContent: 'space-around',  marginVertical: 18 }}>
-									<TouchableOpacity onPress={() => this.openGoogleMaps(deliveryLat, deliveryLong)}>
-										<Thumbnail square large source={require('../../assets/google.png')} />
+									<TouchableOpacity onPress={() => {
+										// this.props.setOut(false)
+										this.openGoogleMaps(deliveryLat, deliveryLong)
+									}}>
+										<Icon name="route" size={50} style={{ color: 'rgba(62, 65, 126, 1)'}} />
+										{/* <Thumbnail square large source={require('../../assets/google.png')} /> */}
 									</TouchableOpacity>
 								</View>
 								<RestaurantButton onPress={() => !this.state.isRideCanceled ? this.startDelivery() : false}>
@@ -278,12 +300,16 @@ class Details extends Component {
 			} else if( ride.status === 'onDelivery') {
 				return (
 					<Fragment>
-						<TypeTitle>Escolha um mapa abaixo para iniciar a navegação</TypeTitle>
+						<TypeTitle>Clique na imagem abaixo para iniciar uma navegação externa</TypeTitle>
 						{/* <TypeDescription>Clique no mapa para abrir</TypeDescription> */}
 							<Fragment>
 								<View style={{ flexDirection: 'row', justifyContent: 'space-around',  marginVertical: 18 }}>
-									<TouchableOpacity onPress={() => this.openGoogleMaps(restaurantLat, restaurantLong)}>
-										<Thumbnail square large source={require('../../assets/google.png')} />
+									<TouchableOpacity onPress={() => {
+										// this.props.setOut(false)
+										this.openGoogleMaps(restaurantLat, restaurantLong)
+									}}>
+										<Icon name="route" size={50} style={{ color: 'rgba(62, 65, 126, 1)'}} />
+										{/* <Thumbnail square large source={require('../../assets/google.png')} /> */}
 									</TouchableOpacity>
 								</View>
 								<RestaurantButton onPress={() => !this.state.isRideCanceled ? ride.retorno ? this.wayBack() : this.finishDelivery() : false}>
@@ -299,8 +325,12 @@ class Details extends Component {
 						<TypeDescription>Clique em finalizar somente após retornar ao restaurante</TypeDescription>
 							<Fragment>
 								<View style={{ flexDirection: 'row', justifyContent: 'space-around',  marginVertical: 18 }}>
-									<TouchableOpacity onPress={() => this.openGoogleMaps(restaurantLat, restaurantLong)}>
-										<Thumbnail square large source={require('../../assets/google.png')} />
+									<TouchableOpacity onPress={() => {
+										// this.props.setOut(false)
+										this.openGoogleMaps(restaurantLat, restaurantLong)
+									}}>
+										<Icon name="route" size={65} style={{ color: 'rgba(62, 65, 126, 1)', marginTop: 20  }} />
+										{/* <Thumbnail square large source={require('../../assets/google.png')} /> */}
 									</TouchableOpacity>
 								</View>
 								<RestaurantButton onPress={() => !this.state.isRideCanceled ? this.finishDelivery() : false}>
@@ -313,9 +343,9 @@ class Details extends Component {
 				return (
 					<Fragment>
 						<TypeTitle>Obrigado por essa viagem</TypeTitle>
-						<TypeDescription>Confira abaixo o seu pagamento</TypeDescription>
+						<TypeDescription>Receba do estabelecimento o valor abaixo</TypeDescription>
 						<View style={{ flex: 0.8, justifyContent: 'center', alignItems: 'center'}}>
-						<Text style={{ fontSize: 50, color: '#666', marginBottom: 10, marginTop: 10,  fontWeigth: '400'}}>R$ {ride.taxMotoboy.toString().replace('.',',')}0</Text>
+						<Text style={{ fontSize: 50, color: '#666', marginBottom: 10, marginTop: 10,  fontWeigth: '400'}}>R$ {ride.taxMotoboy.toString().includes('.') ? `${ride.taxMotoboy.toString().replace('.',',')}0` : ride.taxMotoboy.toString().replace('.',',')}</Text>
 							{/* <TypeTitle>R$ {ride.taxMotoboy.toString().replace('.',',')}0</TypeTitle> */}
 						</View>
 							<Fragment>
@@ -628,6 +658,7 @@ class Details extends Component {
 					activeRide: false,
 					pendingRideId: false,
 					ride: false,
+					rideId: false,
 					// awaiting: false,
 				})
 					.then(async () => {
@@ -672,4 +703,4 @@ const mapStateToProps = state => ({
 	user: state.user.user,
 })
 
-export default connect(mapStateToProps, { setRide, setUser, setFinish })(Details)
+export default connect(mapStateToProps, { setRide, setUser, setFinish, setOut })(Details)

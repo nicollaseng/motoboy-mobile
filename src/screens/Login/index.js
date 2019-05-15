@@ -30,6 +30,8 @@ class Login extends Component {
 			
 			// loading
 			loading: false,
+
+			isVisible: true,
     }
   }
 
@@ -154,7 +156,7 @@ class Login extends Component {
     return (
       <View style={styles.container}>
 				<Fragment>
-					<Image source={require('../../assets/logo.png')} style={{ width: 150, height: 150, resizeMode: 'contain'}} />
+					<Image source={require('../../assets/logo.png')} style={{ width: 200, height: 200, resizeMode: 'contain'}} />
 				</Fragment>
         <View>
 						<View style={styles.inputContainer}>
@@ -184,11 +186,18 @@ class Login extends Component {
 								<TextInput style={styles.inputs}
 										placeholder="Senha"
 										placeholderTextColor="#fff"
-										secureTextEntry={true}
+										secureTextEntry={this.state.isVisible}
 										underlineColorAndroid='transparent'
 										onChangeText={(password) =>this.state.blocked ? '' : this.setState({password})}
 										value={this.state.password}
 								/>
+									<TouchableOpacity onPress={() => this.setState({ isVisible: !this.state.isVisible })}>
+										<IconAwesome
+											size={22}
+											style={[styles.inputIcon, { marginLeft: 0, padding: 10 }]}
+											name={"eye"}
+										/>
+									</TouchableOpacity>
 							</View>
 							{this.state.loading ? <Spinner /> : (
 								<TouchableHighlight style={[styles.buttonContainer, styles.loginButton]} onPress={this.login}>
@@ -201,7 +210,7 @@ class Login extends Component {
 							<TouchableOpacity onPress={this.recoverPassword}>
 								<Text style={styles.register}>Esqueceu sua senha?</Text>
 							</TouchableOpacity>
-							<Text style={[styles.register, { textAlign: 'right'}]}>1.4.4</Text>
+							<Text style={[styles.register, { textAlign: 'right'}]}>1.4.5</Text>
 				</View>
 				{/* <View style={{ height: 100 }} /> */}
 				</View>
@@ -217,7 +226,7 @@ const styles = {
     flex: 1,
     justifyContent: 'space-around',
 		alignItems: 'center',
-		backgroundColor: '#363777'
+		backgroundColor: 'rgba(62, 65, 126, 1)'
   },
   inputContainer: {
       borderBottomColor: 'transparent',
