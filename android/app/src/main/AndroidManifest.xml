@@ -5,6 +5,8 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>           <!-- <- Add this line -->
+    <uses-permission android:name="android.permission.VIBRATE"/>                          <!-- <- Add this line -->
 
     <application
       android:name=".MainApplication"
@@ -27,7 +29,16 @@
             <category android:name="android.intent.category.LAUNCHER" />
         </intent-filter>
       </activity>
+      
       <activity android:name="com.facebook.react.devsupport.DevSettingsActivity" />
+       <receiver android:name="com.staltz.reactnativeandroidlocalnotification.NotificationEventReceiver" />   <!-- <- Add this line -->
+      <receiver android:name="com.staltz.reactnativeandroidlocalnotification.NotificationPublisher" />       <!-- <- Add this line -->
+      <receiver android:name="com.staltz.reactnativeandroidlocalnotification.SystemBootEventReceiver">       <!-- <- Add this line -->
+        <intent-filter>                                                                   <!-- <- Add this line -->
+          <action android:name="android.intent.action.BOOT_COMPLETED"></action>           <!-- <- Add this line -->
+        </intent-filter>                                                                  <!-- <- Add this line -->
+      </receiver>                                                                         <!-- <- Add this line -->
+      
     </application>
 
 </manifest>
