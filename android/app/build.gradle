@@ -116,8 +116,8 @@ android {
         applicationId "com.xdev.motoboysdeplantaodriver"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 11
-        versionName "1.5.1"
+        versionCode 12
+        versionName "1.5.2"
     }
     splits {
         abi {

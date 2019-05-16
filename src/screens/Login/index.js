@@ -273,7 +273,7 @@ class Login extends Component {
 							<TouchableOpacity onPress={this.recoverPassword}>
 								<Text style={styles.register}>Esqueceu sua senha?</Text>
 							</TouchableOpacity>
-							<Text style={[styles.register, { textAlign: 'right'}]}>1.5.1</Text>
+							<Text style={[styles.register, { textAlign: 'right'}]}>1.5.2</Text>
 				</View>
 				{/* <View style={{ height: 100 }} /> */}
 				</View>
