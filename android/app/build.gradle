@@ -116,8 +116,8 @@ android {
         applicationId "com.xdev.motoboysdeplantaodriver"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 9
-        versionName "1.4.5"
+        versionCode 10
+        versionName "1.5.0"
     }
     splits {
         abi {
@@ -149,6 +149,9 @@ android {
 }
 
 dependencies {
+
+    implementation project(':react-native-appstore-version-checker')
+    implementation project(':react-native-device-info')
     implementation project(':react-native-background-timer')
     implementation project(':react-native-onesignal')
     implementation project(':react-native-image-picker')

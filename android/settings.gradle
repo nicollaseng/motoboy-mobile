@@ -1,4 +1,9 @@
 rootProject.name = 'moto'
+
+include ':react-native-appstore-version-checker'
+project(':react-native-appstore-version-checker').projectDir = new File(rootProject.projectDir,     '../node_modules/react-native-appstore-version-checker/android')
+include ':react-native-device-info'
+project(':react-native-device-info').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-device-info/android')
 include ':react-native-android-local-notification'
 project(':react-native-android-local-notification').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-android-local-notification/android')
 include ':react-native-background-timer'

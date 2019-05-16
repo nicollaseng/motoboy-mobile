@@ -9,7 +9,8 @@ import {
   TouchableHighlight,
   Image,
 	Alert,
-	TouchableOpacity
+	TouchableOpacity, 
+	Platform
 } from 'react-native';
 import { Spinner, Content } from 'native-base'
 import { connect } from 'react-redux'
@@ -18,6 +19,8 @@ import _ from 'lodash'
 import { setUser } from '../../redux/action/auth'
 
 import IconAwesome from "react-native-vector-icons/FontAwesome5";
+import { getAppstoreAppVersion } from "react-native-appstore-version-checker";
+
 
 import { getPixelSize, setId } from '../../utils'
 
@@ -28,6 +31,17 @@ import { getPixelSize, setId } from '../../utils'
 // 		console.log(latestVersion); 
 // 	});
 
+let latestVersion = null
+
+getAppstoreAppVersion("com.xdev.motoboysdeplantaodriver") //put any apps packageId here
+  .then(appVersion => {
+		latestVersion = appVersion
+    console.log("clashofclans android app version on playstore", appVersion);
+  })
+  .catch(err => {
+    console.log("error occurred", err);
+	});
+	
 
 class Login extends Component {
 
@@ -63,6 +77,7 @@ class Login extends Component {
 		}
 	}
 
+
 	login = async () => {
 		const { email, password } = this.state
 		this.setState({ loading: true })
@@ -87,7 +102,8 @@ class Login extends Component {
 	_setUserInfo = async key => {
 		await firebase.database().ref('version/versao').once('value', async snap => {
 			let versao = snap.val()
-			console.log('versao', versao)
+			console.log('versao', versao, latestVersion)
+
 
 			await firebase.database().ref(`register/commerce/motoboyPartner`).once('value', data => {
 				if(data !== null){
@@ -102,8 +118,7 @@ class Login extends Component {
 					if(user.length > 0){
 						user.map(async user => {
 							if(user.email.toLowerCase() === this.state.email.toLowerCase()){
-
-								// if(latestVersion === versao){
+								if(latestVersion === versao || Platform.OS === 'ios'){
 									if(user.status === 'Aprovado'){
 										// ASSURE THAT RIDE ID AND RIDE WILL NOT BLOCK USER LOGIN IF USER HAS NOT ANY ACTIVE RIDE RUNNING
 										if(user.activeRide !== null && !Object.values(user.activeRide).length > 0){
@@ -148,10 +163,12 @@ class Login extends Component {
 										Alert.alert('Atenção', 'Seu cadastro está em análise')
 										this.setState({ loading: false })
 									}
-								// }	else {
-								// 	alert('O seu aplicativo está desatualizado. Favor atualize seu aplicativo na Playstore')
-								// }
+								}	else {
+									this.setState({ loading: false })
+									alert('O seu aplicativo está desatualizado. Favor atualize seu aplicativo na Playstore')
+								}
 							} else {
+								this.setState({ loading: false })
 								alert('Email não encontrado em nosso banco de dados')
 							}
 						})
