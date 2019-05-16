@@ -19,7 +19,6 @@ import _ from 'lodash'
 import { setUser } from '../../redux/action/auth'
 
 import IconAwesome from "react-native-vector-icons/FontAwesome5";
-import { getAppstoreAppVersion } from "react-native-appstore-version-checker";
 
 
 import { getPixelSize, setId } from '../../utils'
@@ -30,6 +29,9 @@ import { getPixelSize, setId } from '../../utils'
 // let latestVersion = VersionCheck.getLatestVersion().then(latestVersion => {
 // 		console.log(latestVersion); 
 // 	});
+
+import { getAppstoreAppVersion } from "react-native-appstore-version-checker";
+
 
 let latestVersion = null
 
@@ -55,47 +57,69 @@ class Login extends Component {
 			loading: false,
 
 			isVisible: true,
+
+			versao: 0
     }
   }
 
-	 componentWillMount(){
-		try {
-				this.setState({ loading: true })
-			 firebase.auth().onAuthStateChanged(user => {
-				console.log('user', user)
-				if(user){
-					console.log('USER ON AUTH STATE CHANGE', user.toJSON())
-					this.setState({ email: user.toJSON().email })
-					this._setUserInfo()
+	async componentWillMount(){
+
+		await firebase.database().ref('version/versao').once('value', async snap => {
+			let versao = snap.val()
+			if(versao !== null){
+				console.log('versao do app do servidor', versao)
+				this.setState({ versao })
+
+				console.log('versao', versao, latestVersion)
+				if(latestVersion === versao || Platform.OS === 'ios'){
+					try {
+					this.setState({ loading: true })
+					firebase.auth().onAuthStateChanged(user => {
+						console.log('user', user)
+						if(user){
+							console.log('USER ON AUTH STATE CHANGE', user.toJSON())
+							this.setState({ email: user.toJSON().email })
+							this._setUserInfo()
+						} else {
+							this.setState({ loading: false })
+						}
+					})
+				} catch( error ) {
+					this.setState({ loading: false })
+					console.log(error)
+				}
 				} else {
 					this.setState({ loading: false })
+					alert('O seu aplicativo está desatualizado. Favor atualize seu aplicativo na Playstore')
 				}
-			})
-		} catch( error ) {
-			this.setState({ loading: false })
-			console.log(error)
-		}
+			}
+		})
 	}
 
 
 	login = async () => {
 		const { email, password } = this.state
-		this.setState({ loading: true })
-		try {
-			await firebase.auth().signInWithEmailAndPassword(email, password)
-				.then(response => {
-					console.log(response)
-					this._setUserInfo()
-				})
-				.catch(err => {
-					Alert.alert('Atenção','Verifique seu e-mail e senha novamente. Caso o erro persista tente recuperar sua senha. Se ainda mantiver o erro entre em contato com nosso suporte')
-					console.log('Erro while login firebase', err)
-					this.setState({ loading: false })
-				})
-		}	catch (err) {	
+		if(latestVersion === this.state.versao || Platform.OS === 'ios'){
+			this.setState({ loading: true })
+			try {
+				await firebase.auth().signInWithEmailAndPassword(email, password)
+					.then(response => {
+						console.log(response)
+						this._setUserInfo()
+					})
+					.catch(err => {
+						Alert.alert('Atenção','Verifique seu e-mail e senha novamente. Caso o erro persista tente recuperar sua senha. Se ainda mantiver o erro entre em contato com nosso suporte')
+						console.log('Erro while login firebase', err)
+						this.setState({ loading: false })
+					})
+			}	catch (err) {	
+				this.setState({ loading: false })
+				Alert.alert('Atenção','Algo de errado aconteceu. Tente novamente em alguns instantes. Cód: login0002')
+				console.log('Error before login firebase', err)
+			}
+		} else {
 			this.setState({ loading: false })
-			Alert.alert('Atenção','Algo de errado aconteceu. Tente novamente em alguns instantes. Cód: login0002')
-			console.log('Error before login firebase', err)
+			alert('O seu aplicativo está desatualizado. Favor atualize seu aplicativo na Playstore')
 		}
 	}
 
@@ -103,7 +127,6 @@ class Login extends Component {
 		await firebase.database().ref('version/versao').once('value', async snap => {
 			let versao = snap.val()
 			console.log('versao', versao, latestVersion)
-
 
 			await firebase.database().ref(`register/commerce/motoboyPartner`).once('value', data => {
 				if(data !== null){
@@ -118,7 +141,7 @@ class Login extends Component {
 					if(user.length > 0){
 						user.map(async user => {
 							if(user.email.toLowerCase() === this.state.email.toLowerCase()){
-								if(latestVersion === versao || Platform.OS === 'ios'){
+								// if(latestVersion === versao || Platform.OS === 'ios'){
 									if(user.status === 'Aprovado'){
 										// ASSURE THAT RIDE ID AND RIDE WILL NOT BLOCK USER LOGIN IF USER HAS NOT ANY ACTIVE RIDE RUNNING
 										if(user.activeRide !== null && !Object.values(user.activeRide).length > 0){
@@ -163,10 +186,10 @@ class Login extends Component {
 										Alert.alert('Atenção', 'Seu cadastro está em análise')
 										this.setState({ loading: false })
 									}
-								}	else {
-									this.setState({ loading: false })
-									alert('O seu aplicativo está desatualizado. Favor atualize seu aplicativo na Playstore')
-								}
+								// }	else {
+								// 	this.setState({ loading: false })
+								// 	alert('O seu aplicativo está desatualizado. Favor atualize seu aplicativo na Playstore')
+								// }
 							} else {
 								this.setState({ loading: false })
 								alert('Email não encontrado em nosso banco de dados')
@@ -250,7 +273,7 @@ class Login extends Component {
 							<TouchableOpacity onPress={this.recoverPassword}>
 								<Text style={styles.register}>Esqueceu sua senha?</Text>
 							</TouchableOpacity>
-							<Text style={[styles.register, { textAlign: 'right'}]}>1.4.5</Text>
+							<Text style={[styles.register, { textAlign: 'right'}]}>1.5.1</Text>
 				</View>
 				{/* <View style={{ height: 100 }} /> */}
 				</View>

@@ -221,33 +221,10 @@ class Details extends Component {
 						{this.state.loading ? <Spinner /> : (
 							<Fragment>
 								<TouchableOpacity onPress={this.handleAcceptRide} style={{ alignItems: 'center', justifyContent: 'center'}}>
-									{/* <Thumbnail large source={require('../../assets/motoboy.png')} /> */}
-									{/* <TimerCountdown
-											initialMilliseconds={this.props.time*1000}
-											onTick={(milliseconds) => false}
-											onExpire={() => {
-												this.props.refuseRide()
-												console.log('expirou')
-											}}
-											formatMilliseconds={(milliseconds) => {
-												const remainingSec = Math.round(milliseconds / 1000);
-												const seconds = parseInt((remainingSec % 60).toString(), 10);
-												const minutes = parseInt(((remainingSec / 60) % 60).toString(), 10);
-												const hours = parseInt((remainingSec / 3600).toString(), 10);
-												const s = seconds;
-												const m = minutes < 10 ? '0' + minutes : minutes;
-												let h = hours < 10 ? '0' + hours : hours;
-												h = h === '00' ? '' : h + ':';
-												return s;
-											}}
-											allowFontScaling={true}
-											style={{ fontSize: 50, color: '#666', marginBottom: 0, marginTop: 20, fontWeigth: '400' }}
-									/> */}
 									<Countdown style={{ fontSize: 70, color: '#666', marginBottom: 0, marginTop: 20, fontWeigth: '400'}} />
-									{/* // <Text style={{ fontSize: 50, color: '#666', marginBottom: 0, marginTop: 20, fontWeigth: '400'}}>{this.props.time}</Text> */}
 								</TouchableOpacity>
 								<TypeTitle>{this.props.ride.name}</TypeTitle>
-								{/* <TypeDescription>Distância da corrida: {parseInt(this.props.ride.distance)} km</TypeDescription> */}
+								<TypeDescription>{this.props.ride.restaurant.nome} </TypeDescription>
 								<RequestButton onPress={this.refuseRide}>
 									<RequestButtonText>Recusar</RequestButtonText>
 								</RequestButton>

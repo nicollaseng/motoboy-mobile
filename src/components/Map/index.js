@@ -46,11 +46,23 @@ import Sound from 'react-native-sound'
 
 import Modal from "react-native-modal";
 import BackgroundTimer from 'react-native-background-timer';
+import { getAppstoreAppVersion } from "react-native-appstore-version-checker";
+
+
+let latestVersion = null
+
+getAppstoreAppVersion("com.xdev.motoboysdeplantaodriver") //put any apps packageId here
+  .then(appVersion => {
+		latestVersion = appVersion
+    console.log("clashofclans android app version on playstore", appVersion);
+  })
+  .catch(err => {
+    console.log("error occurred", err);
+	});
+
 
 Geocoder.init("AIzaSyBionuXtSnhN7kKXD8Y2tms-Dx43GI4W6g")
 
-const refresh = Math.floor((Math.random() * 100000000000) + 1)
-const updateId = '71c457d0-7294-11e9-94cb-eb86a10ade79'
 
 var alert = new Sound('alert.mp3', Sound.MAIN_BUNDLE, (error) => {
 	alert.setVolume(100);
@@ -77,76 +89,111 @@ var rideAlert = new Sound('alert2.mp3', Sound.MAIN_BUNDLE, (error) => {
 
 let userId;
 getId().then(async id => {
-	 userId = id
+		userId = id
 })
+
+console.log('userId', userId)
 
 BackgroundTimer.runBackgroundTimer(() => { 
 	navigator.geolocation.getCurrentPosition(
 		async	({ coords: { latitude, longitude } }) => {
-			const response = await Geocoder.from({ latitude, longitude })
-			const address = response.results[0].formatted_address
-			// if(userId.length >0){
-				await firebase.database().ref(`register/commerce/motoboyPartner/${userId}`).update({
-					latitude,
-					longitude,
-					localizacao: address,
-				})
-					.then(() => {
-						console.log('atualizou posicao')
-					})
-					.catch(error => {
-						console.log('nao atualizou posicao', error)
-					})
-			// }
+		
+		firebase.database().ref(`register/commerce/motoboyPartner/${userId}`).once('value',async snap => {
+			if(snap.val() !== null){
+				let motoboy = snap.val()
+				if(motoboy.rideStatus){
+					const response = await Geocoder.from({ latitude, longitude })
+					const address = response.results[0].formatted_address
+					if(userId.length > 0 && userId !== 'none'){
+						await firebase.database().ref(`register/commerce/motoboyPartner/${userId}`).update({
+							latitude,
+							longitude,
+							localizacao: address,
+						})
+							.then(() => {
+								console.log('atualizou posicao')
+							})
+							.catch(error => {
+								console.log('nao atualizou posicao', error)
+							})
+					}
+				} else {
+					Platform.OS === 'ios' ? BackgroundTimer.stop() : BackgroundTimer.clearInterval()
+				}
+			}
+		})
 		}, //success,
 	() => {}, //error
 	{}
 	)
-	// console.log('TA ENTRANDO AQUI')
-			// firebase.database().ref(`rides/${userId}`).once('value', snap => {
-			// 	let ride = snap.val()
-			// 	console.log('buscando corrida', ride);
-			// 	if(ride)
-			// 	// let diff = moment().diff(moment(motoboy.ride.createdAt, "DD/MM/YYYY HH:mm:ss"), 'seconds')
-			// 	if(ride.status && ride.status === 'pending' && ride.free === false){
-			// 		alert.play((success) => {
-			// 			if (success) {
-			// 				console.log('alerta com sucesso');
-			// 			} else {
-			// 				console.log('playback failed due to audio decoding errors');
-			// 			}
-			// 		})
-			// 	}
-			// })
+
+	firebase.database().ref('status').once('value',async snap => {
+		if(snap.val() !== null){
+			let status = snap.val()
+			console.log('status do servidor', status)
+			if(!status.status){
+				if(userId.length > 0 && userId !== 'none'){
+					firebase.database().ref(`register/commerce/motoboyPartner/${userId}`).update({
+						rideStatus: false,
+						activeRide: false,
+						rideId: false,
+						ride: false,
+						onRide: false,
+					})
+						.then( async () => {
+								await firebase.auth().signOut()
+									.then(() => {
+										
+										Alert.alert('Atenção', 'Você foi desconectado pois o sistema está em manutenção')
+										// this.props.navigation.navigate('Login')
+										Platform.OS === 'ios' ? BackgroundTimer.stop() : BackgroundTimer.clearInterval()
+									})
+									.catch(error => {
+										Platform.OS === 'ios' ? BackgroundTimer.stop() : BackgroundTimer.clearInterval()
+										console.log('error signout', error)
+									})
+						})
+						.catch(error => {
+							Platform.OS === 'ios' ? BackgroundTimer.stop() : BackgroundTimer.clearInterval()
+							Alert.alert('Atenção', 'Houve um erro interno. Tente novamente em alguns instantes')
+							console.log('error updating ridestatus', error)
+						})
+				}
+			} 
+		}
+	})
 }, 
-40*1000);
+10*1000);
 
 BackgroundTimer.setInterval(() => {
 	firebase.database().ref(`register/commerce/motoboyPartner/${userId}`).once('value',async snap => {
 		if(snap.val() !== null){
 			console.log('MOTOBOY NO TIMER2',  snap.val())
 			let motoboy = snap.val()
-
-			if(!motoboy.onRide && motoboy.rideStatus && motoboy.rideId && motoboy.rideId.length > 0){
-				await firebase.database().ref(`rides/${motoboy.rideId}`).once('value', snap => {
-					let ride = snap.val()
-					if(ride !== null){
-						// let diff = moment().diff(moment(motoboy.ride.createdAt, "DD/MM/YYYY HH:mm:ss"), 'seconds')
-						if(ride.status && ride.status === 'pending'){
-							alert.play((success) => {
-								if (success) {
-									console.log('SET RIDE FREE SUCCESS');
-								} else {
-									console.log('playback failed due to audio decoding errors');
-								}
-							})
-						} else { 
-							console.log('NAO HA CORRIDAS NO TIMER 2')
+			if(motoboy.rideStatus){
+				if(!motoboy.onRide && motoboy.rideStatus && motoboy.rideId && motoboy.rideId.length > 0){
+					await firebase.database().ref(`rides/${motoboy.rideId}`).once('value', snap => {
+						let ride = snap.val()
+						if(ride !== null){
+							// let diff = moment().diff(moment(motoboy.ride.createdAt, "DD/MM/YYYY HH:mm:ss"), 'seconds')
+							if(ride.status && ride.status === 'pending'){
+								alert.play((success) => {
+									if (success) {
+										console.log('SET RIDE FREE SUCCESS');
+									} else {
+										console.log('playback failed due to audio decoding errors');
+									}
+								})
+							} else { 
+								console.log('NAO HA CORRIDAS NO TIMER 2')
+							}
 						}
-					}
-				})
+					})
+				} else {
+					console.log('SEM CORRIDAS NO TIMER 2')
+				}
 			} else {
-				console.log('SEM CORRIDAS NO TIMER 2')
+				Platform.OS === 'ios' ? BackgroundTimer.stop() : BackgroundTimer.clearInterval()
 			}
 		}
 	})
