@@ -19,6 +19,15 @@ import { setUser } from '../../redux/action/auth'
 
 import IconAwesome from "react-native-vector-icons/FontAwesome5";
 
+import { getPixelSize, setId } from '../../utils'
+
+
+// import VersionCheck from 'react-native-version-check';
+
+// let latestVersion = VersionCheck.getLatestVersion().then(latestVersion => {
+// 		console.log(latestVersion); 
+// 	});
+
 
 class Login extends Component {
 
@@ -76,69 +85,83 @@ class Login extends Component {
 	}
 
 	_setUserInfo = async key => {
-		await firebase.database().ref(`register/commerce/motoboyPartner`).once('value', data => {
-			if(data !== null){
-				let dataJson = data.toJSON()
-				console.log('email lower case', dataJson)
-				let user = _.filter(Object.values(dataJson), e => {
-					if(e.email && e.email.length > 0){
-						return e.email.toLowerCase() === this.state.email.toLowerCase()
-					}
-				})
-				
-				console.log('user', user)
-				if(user.length > 0){
-					user.map(async user => {
-						if(user.email.toLowerCase() === this.state.email.toLowerCase()){
-							if(user.status === 'Aprovado'){
-								// ASSURE THAT RIDE ID AND RIDE WILL NOT BLOCK USER LOGIN IF USER HAS NOT ANY ACTIVE RIDE RUNNING
-								if(user.activeRide !== null && !Object.values(user.activeRide).length > 0){
-									await firebase.database().ref(`register/commerce/motoboyPartner/${user.id}`).update({
-										rideId: false,
-										ride: false,
-										out: false,
-									})
-									.then(() => {
-										console.log('passou por aqui e user', user)
-										this.props.setUser(user)
-										this.props.navigation.navigate('DrawerComponent')
-										this.setState({ loading: false })
-										console.log('user', user)
-									})
-									.catch(error => {
-										console.log('Error firebase login updatin motoboy', error)
-										Alert.alert('Atenção', 'Firebase error. Contate nosso suporte')
-									})
-									//IF ACTIVE RIDE RUNNING SO JUST PROCESSO NORMALLY BUT ASSURE THAT OUT IS FALSE
-								} else {
-									 await firebase.database().ref(`register/commerce/motoboyPartner/${user.id}`).update({
-										out: false,
-									})
-										.then(() => {
-											this.props.setUser(user)
-											this.props.navigation.navigate('DrawerComponent')
-											this.setState({ loading: false })
-											console.log('user', user)
-										})
-										.catch(error => {
-											console.log('Error firebase login updatin motoboy', error)
-											Alert.alert('Atenção', 'Firebase error set out false. Contate nosso suporte')
-										})
-								}
-							} else if(user.status === 'Bloqueado')  {
-								Alert.alert('Atenção', 'Sua conta encontra-se temporariamente bloqueada. Entre em contato com nosso suporte')
-								this.setState({ loading: false })
-							} else {
-								Alert.alert('Atenção', 'Seu cadastro está em análise')
-								this.setState({ loading: false })
-							}
+		await firebase.database().ref('version/versao').once('value', async snap => {
+			let versao = snap.val()
+			console.log('versao', versao)
+
+			await firebase.database().ref(`register/commerce/motoboyPartner`).once('value', data => {
+				if(data !== null){
+					let dataJson = data.toJSON()
+					console.log('email lower case', dataJson)
+					let user = _.filter(Object.values(dataJson), e => {
+						if(e.email && e.email.length > 0){
+							return e.email.toLowerCase().includes(this.state.email.toLowerCase()) 
 						}
 					})
-				} else {
-					alert('Atenção, estamos enfrentando problemas técnicos na sua conta. Tente novamente em instantes')
-					this.setState({ loading: false })
+					console.log('user', user)
+					if(user.length > 0){
+						user.map(async user => {
+							if(user.email.toLowerCase() === this.state.email.toLowerCase()){
+
+								// if(latestVersion === versao){
+									if(user.status === 'Aprovado'){
+										// ASSURE THAT RIDE ID AND RIDE WILL NOT BLOCK USER LOGIN IF USER HAS NOT ANY ACTIVE RIDE RUNNING
+										if(user.activeRide !== null && !Object.values(user.activeRide).length > 0){
+											await firebase.database().ref(`register/commerce/motoboyPartner/${user.id}`).update({
+												rideId: false,
+												ride: false,
+												out: false,
+											})
+											.then(() => {
+												console.log('passou por aqui e user', user)
+												this.props.setUser(user)
+												setId(user.id)
+												this.props.navigation.navigate('DrawerComponent')
+												this.setState({ loading: false })
+												console.log('user', user)
+											})
+											.catch(error => {
+												console.log('Error firebase login updatin motoboy', error)
+												Alert.alert('Atenção', 'Firebase error. Contate nosso suporte')
+											})
+											//IF ACTIVE RIDE RUNNING SO JUST PROCESSO NORMALLY BUT ASSURE THAT OUT IS FALSE
+										} else {
+											 await firebase.database().ref(`register/commerce/motoboyPartner/${user.id}`).update({
+												out: false,
+											})
+												.then(() => {
+													this.props.setUser(user)
+													setId(user.id)
+													this.props.navigation.navigate('DrawerComponent')
+													this.setState({ loading: false })
+													console.log('user', user)
+												})
+												.catch(error => {
+													console.log('Error firebase login updatin motoboy', error)
+													Alert.alert('Atenção', 'Firebase error set out false. Contate nosso suporte')
+												})
+										}
+									} else if(user.status === 'Bloqueado')  {
+										Alert.alert('Atenção', 'Sua conta encontra-se temporariamente bloqueada. Entre em contato com nosso suporte')
+										this.setState({ loading: false })
+									} else {
+										Alert.alert('Atenção', 'Seu cadastro está em análise')
+										this.setState({ loading: false })
+									}
+								// }	else {
+								// 	alert('O seu aplicativo está desatualizado. Favor atualize seu aplicativo na Playstore')
+								// }
+							} else {
+								alert('Email não encontrado em nosso banco de dados')
+							}
+						})
+					} else {
+						alert('Atenção, estamos enfrentando problemas técnicos na sua conta. Tente novamente em instantes')
+						this.setState({ loading: false })
+					}
 				}
-			}
+			})
+
 		})
 	}
 

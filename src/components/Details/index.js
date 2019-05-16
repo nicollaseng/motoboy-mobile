@@ -345,7 +345,7 @@ class Details extends Component {
 						<TypeTitle>Obrigado por essa viagem</TypeTitle>
 						<TypeDescription>Receba do estabelecimento o valor abaixo</TypeDescription>
 						<View style={{ flex: 0.8, justifyContent: 'center', alignItems: 'center'}}>
-						<Text style={{ fontSize: 50, color: '#666', marginBottom: 10, marginTop: 10,  fontWeigth: '400'}}>R$ {ride.taxMotoboy.toString().includes('.') ? `${ride.taxMotoboy.toString().replace('.',',')}0` : ride.taxMotoboy.toString().replace('.',',')}</Text>
+						<Text style={{ fontSize: 50, color: '#666', marginBottom: 10, marginTop: 10,  fontWeigth: '400'}}>R$ {ride.taxMotoboy.toString().includes('.') ? `${ride.taxMotoboy.toString().replace('.',',')}0` : `${ride.taxMotoboy.toString().replace('.',',')},00`}</Text>
 							{/* <TypeTitle>R$ {ride.taxMotoboy.toString().replace('.',',')}0</TypeTitle> */}
 						</View>
 							<Fragment>

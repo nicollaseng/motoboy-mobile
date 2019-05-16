@@ -40,7 +40,7 @@ public class MainApplication extends Application implements ReactApplication {
             new RNGestureHandlerPackage(),
             new MapsPackage(),
             new BackgroundTimerPackage(),
-            new NotificationPackage()          
+            new NotificationPackage()
       );
     }
 

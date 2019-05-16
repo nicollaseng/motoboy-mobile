@@ -16,7 +16,7 @@ import Terms from '../Terms'
 import { connect } from 'react-redux'
 import * as firebase from 'firebase'
 
-import { getPixelSize } from '../../utils'
+import { getPixelSize, getId } from '../../utils'
 
 import markerImage from '../../assets/marker.png'
 import backImage from '../../assets/back.png'
@@ -73,6 +73,37 @@ var rideAlert = new Sound('alert2.mp3', Sound.MAIN_BUNDLE, (error) => {
     console.log('failed to load the sound', error);
 	}
 })
+
+let userId;
+getId().then(async id => {
+	 userId = id
+})
+
+BackgroundTimer.runBackgroundTimer(() => { 
+	navigator.geolocation.getCurrentPosition(
+		async	({ coords: { latitude, longitude } }) => {
+			const response = await Geocoder.from({ latitude, longitude })
+			const address = response.results[0].formatted_address
+			// if(userId.length >0){
+				await firebase.database().ref(`register/commerce/motoboyPartner/${userId}`).update({
+					latitude,
+					longitude,
+					localizacao: address,
+				})
+					.then(() => {
+						console.log('atualizou posicao')
+					})
+					.catch(error => {
+						console.log('nao atualizou posicao', error)
+					})
+			// }
+		}, //success,
+	() => {}, //error
+	{}
+	) 
+}, 
+3*5000);
+console.log('userId', userId)
 
 
 
