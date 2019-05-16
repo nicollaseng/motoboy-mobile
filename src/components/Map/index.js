@@ -53,6 +53,7 @@ const refresh = Math.floor((Math.random() * 100000000000) + 1)
 const updateId = '71c457d0-7294-11e9-94cb-eb86a10ade79'
 
 var alert = new Sound('alert.mp3', Sound.MAIN_BUNDLE, (error) => {
+	alert.setVolume(100);
   if (error) {
     console.log('failed to load the sound', error);
 	}
@@ -66,7 +67,7 @@ var refuseAlert = new Sound('refuse.mp3', Sound.MAIN_BUNDLE, (error) => {
 
 var rideAlert = new Sound('alert2.mp3', Sound.MAIN_BUNDLE, (error) => {
 
-	rideAlert.setVolume(10);
+	rideAlert.setVolume(100);
 	// rideAlert.setNumberOfLoops(3);
 
   if (error) {
@@ -100,9 +101,59 @@ BackgroundTimer.runBackgroundTimer(() => {
 		}, //success,
 	() => {}, //error
 	{}
-	) 
+	)
+	// console.log('TA ENTRANDO AQUI')
+			// firebase.database().ref(`rides/${userId}`).once('value', snap => {
+			// 	let ride = snap.val()
+			// 	console.log('buscando corrida', ride);
+			// 	if(ride)
+			// 	// let diff = moment().diff(moment(motoboy.ride.createdAt, "DD/MM/YYYY HH:mm:ss"), 'seconds')
+			// 	if(ride.status && ride.status === 'pending' && ride.free === false){
+			// 		alert.play((success) => {
+			// 			if (success) {
+			// 				console.log('alerta com sucesso');
+			// 			} else {
+			// 				console.log('playback failed due to audio decoding errors');
+			// 			}
+			// 		})
+			// 	}
+			// })
 }, 
-3*5000);
+40*1000);
+
+BackgroundTimer.setInterval(() => {
+	firebase.database().ref(`register/commerce/motoboyPartner/${userId}`).once('value',async snap => {
+		if(snap.val() !== null){
+			console.log('MOTOBOY NO TIMER2',  snap.val())
+			let motoboy = snap.val()
+
+			if(!motoboy.onRide && motoboy.rideStatus && motoboy.rideId && motoboy.rideId.length > 0){
+				await firebase.database().ref(`rides/${motoboy.rideId}`).once('value', snap => {
+					let ride = snap.val()
+					if(ride !== null){
+						// let diff = moment().diff(moment(motoboy.ride.createdAt, "DD/MM/YYYY HH:mm:ss"), 'seconds')
+						if(ride.status && ride.status === 'pending'){
+							alert.play((success) => {
+								if (success) {
+									console.log('SET RIDE FREE SUCCESS');
+								} else {
+									console.log('playback failed due to audio decoding errors');
+								}
+							})
+						} else { 
+							console.log('NAO HA CORRIDAS NO TIMER 2')
+						}
+					}
+				})
+			} else {
+				console.log('SEM CORRIDAS NO TIMER 2')
+			}
+		}
+	})
+}, 5*1000);
+
+
+
 console.log('userId', userId)
 
 
@@ -315,6 +366,13 @@ class Map extends Component {
 								this.setState({ rideFreeAvailable: false })
 								// Notification.create({ subject: 'Hey', message: 'Yo! Hello world.' });
 							}
+							alert.play((success) => {
+								if (success) {
+									console.log('SET RIDE FREE SUCCESS');
+								} else {
+									console.log('playback failed due to audio decoding errors');
+								}
+							})
 						})
 						
 					} 
@@ -598,7 +656,7 @@ class Map extends Component {
 				await firebase.database().ref(`register/commerce/motoboyPartner/${this.props.user.id}`).update({
 					out: true
 				})
-					.then(() => Alert.alert('Atenção', 'Você está saindo e poderá não receber chamadas'))
+					// .then(() => Alert.alert('Atenção', 'Você está saindo e poderá não receber chamadas'))
 					.catch(error => console.log('Error going outside', error))
 			}
 
@@ -613,7 +671,7 @@ class Map extends Component {
 			})
 				.then(() => {
 					// this.props.setOut(true)
-					Alert.alert('Atenção', 'Você voltou, obrigado. Seu status é online. Em breve você receberá corridas')
+					// Alert.alert('Atenção', 'Você voltou, obrigado. Seu status é online. Em breve você receberá corridas')
 				})
 				.catch(error => console.log('Error going outside', error))
     }

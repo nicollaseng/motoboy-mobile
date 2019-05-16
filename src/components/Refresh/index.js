@@ -71,7 +71,7 @@ class Refresh extends Component {
 				this.setState({ delayRunning: true })
 				this.props.checkRide()
 				this.delay()
-				Alert.alert('Atenção', 'Buscando novas entregas. Por favor aguarde. Clique em ok')
+				// Alert.alert('Atenção', 'Buscando novas entregas. Por favor aguarde. Clique em ok')
 			})
 			.catch(error => {
 				console.log('error trying to refresh', error)

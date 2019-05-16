@@ -1,7 +1,7 @@
 
 export const countDown = () => {
 
-	var timeleft = 10;
+	var timeleft = 20;
 	var downloadTimer = setInterval(() => {
 		timeleft--
 		console.log(timeleft)
