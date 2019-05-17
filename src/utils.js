@@ -1,4 +1,4 @@
-import { Platform, PixelRatio, AsyncStorage } from 'react-native'
+import { Platform, PixelRatio, AsyncStorage, Alert } from 'react-native'
 
 export function getPixelSize(pixels){
     return Platform.select({
@@ -41,3 +41,18 @@ export const getId = async () => {
     }
     return userId;
   }
+
+export const recover = async (id) => {
+	await firebase.database().ref(`register/commerce/motoboyPartner/${motoboy.id}`).update({
+				activeRide: false,
+				ride: false,
+				rideId: false,
+				onRide: false,
+			}) 
+			.then(() => {
+					Alert.alert('Olá','Seja bem vindo novamente!')
+			})
+			.catch((error) => {
+					console.log('recover failed.', error)
+			})
+}

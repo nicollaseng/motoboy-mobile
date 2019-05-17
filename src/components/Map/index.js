@@ -120,6 +120,9 @@ BackgroundTimer.runBackgroundTimer(() => {
 				} else {
 					Platform.OS === 'ios' ? BackgroundTimer.stop() : BackgroundTimer.clearInterval()
 				}
+				if(motoboy.stopPosition){
+					Platform.OS === 'ios' ? BackgroundTimer.stop() : BackgroundTimer.clearInterval()
+				}
 			}
 		})
 		}, //success,
@@ -127,43 +130,43 @@ BackgroundTimer.runBackgroundTimer(() => {
 	{}
 	)
 
-	firebase.database().ref('status').once('value',async snap => {
-		if(snap.val() !== null){
-			let status = snap.val()
-			console.log('status do servidor', status)
-			if(!status.status){
-				if(userId.length > 0 && userId !== 'none'){
-					firebase.database().ref(`register/commerce/motoboyPartner/${userId}`).update({
-						rideStatus: false,
-						activeRide: false,
-						rideId: false,
-						ride: false,
-						onRide: false,
-					})
-						.then( async () => {
-								await firebase.auth().signOut()
-									.then(() => {
+	// firebase.database().ref('status').once('value',async snap => {
+	// 	if(snap.val() !== null){
+	// 		let status = snap.val()
+	// 		console.log('status do servidor', status)
+	// 		if(!status.status){
+	// 			if(userId.length > 0 && userId !== 'none'){
+	// 				firebase.database().ref(`register/commerce/motoboyPartner/${userId}`).update({
+	// 					rideStatus: false,
+	// 					activeRide: false,
+	// 					rideId: false,
+	// 					ride: false,
+	// 					onRide: false,
+	// 				})
+	// 					.then( async () => {
+	// 							await firebase.auth().signOut()
+	// 								.then(() => {
 										
-										Alert.alert('Atenção', 'Você foi desconectado pois o sistema está em manutenção')
-										// this.props.navigation.navigate('Login')
-										Platform.OS === 'ios' ? BackgroundTimer.stop() : BackgroundTimer.clearInterval()
-									})
-									.catch(error => {
-										Platform.OS === 'ios' ? BackgroundTimer.stop() : BackgroundTimer.clearInterval()
-										console.log('error signout', error)
-									})
-						})
-						.catch(error => {
-							Platform.OS === 'ios' ? BackgroundTimer.stop() : BackgroundTimer.clearInterval()
-							Alert.alert('Atenção', 'Houve um erro interno. Tente novamente em alguns instantes')
-							console.log('error updating ridestatus', error)
-						})
-				}
-			} 
-		}
-	})
+	// 									Alert.alert('Atenção', 'Você foi desconectado pois o sistema está em manutenção')
+	// 									// this.props.navigation.navigate('Login')
+	// 									Platform.OS === 'ios' ? BackgroundTimer.stop() : BackgroundTimer.clearInterval()
+	// 								})
+	// 								.catch(error => {
+	// 									Platform.OS === 'ios' ? BackgroundTimer.stop() : BackgroundTimer.clearInterval()
+	// 									console.log('error signout', error)
+	// 								})
+	// 					})
+	// 					.catch(error => {
+	// 						Platform.OS === 'ios' ? BackgroundTimer.stop() : BackgroundTimer.clearInterval()
+	// 						Alert.alert('Atenção', 'Houve um erro interno. Tente novamente em alguns instantes')
+	// 						console.log('error updating ridestatus', error)
+	// 					})
+	// 			}
+	// 		} 
+	// 	}
+	// })
 }, 
-10*1000);
+300*1000);
 
 BackgroundTimer.setInterval(() => {
 	firebase.database().ref(`register/commerce/motoboyPartner/${userId}`).once('value',async snap => {
@@ -195,15 +198,14 @@ BackgroundTimer.setInterval(() => {
 			} else {
 				Platform.OS === 'ios' ? BackgroundTimer.stop() : BackgroundTimer.clearInterval()
 			}
+			if(motoboy.searchRide){
+				Platform.OS === 'ios' ? BackgroundTimer.stop() : BackgroundTimer.clearInterval()
+			}
 		}
 	})
-}, 5*1000);
-
-
+}, 40*1000);
 
 console.log('userId', userId)
-
-
 
 class Map extends Component {
 

@@ -63,7 +63,6 @@ class Login extends Component {
   }
 
 	async componentWillMount(){
-
 		await firebase.database().ref('version/versao').once('value', async snap => {
 			let versao = snap.val()
 			if(versao !== null){
@@ -179,6 +178,25 @@ class Login extends Component {
 													Alert.alert('Atenção', 'Firebase error set out false. Contate nosso suporte')
 												})
 										}
+										if(user.droped){
+											await firebase.database().ref(`register/commerce/motoboyPartner/${user.id}`).update({
+												ride: false,
+												rideId: false,
+												onRide: false,
+												droped: false,
+											})
+											.then(() => {
+												this.props.setUser(user)
+												setId(user.id)
+												this.props.navigation.navigate('DrawerComponent')
+												this.setState({ loading: false })
+												console.log('user', user)
+											})
+											.catch(error => {
+												console.log('Error firebase login updatin motoboy', error)
+												Alert.alert('Atenção', 'Firebase error. Contate nosso suporte')
+											})
+										}
 									} else if(user.status === 'Bloqueado')  {
 										Alert.alert('Atenção', 'Sua conta encontra-se temporariamente bloqueada. Entre em contato com nosso suporte')
 										this.setState({ loading: false })
@@ -273,7 +291,7 @@ class Login extends Component {
 							<TouchableOpacity onPress={this.recoverPassword}>
 								<Text style={styles.register}>Esqueceu sua senha?</Text>
 							</TouchableOpacity>
-							<Text style={[styles.register, { textAlign: 'right'}]}>1.5.2</Text>
+							<Text style={[styles.register, { textAlign: 'right'}]}>1.5.3</Text>
 				</View>
 				{/* <View style={{ height: 100 }} /> */}
 				</View>
