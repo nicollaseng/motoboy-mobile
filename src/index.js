@@ -1,4 +1,5 @@
 import React, { Component } from  'react'
+import {BackHandler} from 'react-native'
 import Map from './components/Map'
 import { firebaseConfig } from './firebase'
 import * as firebase from 'firebase'
@@ -21,11 +22,23 @@ class App extends Component {
 			kOSSettingsKeyInFocusDisplayOption:2,
 		});
 	
-		OneSignal.addEventListener('received', this.onReceived);
-		OneSignal.addEventListener('opened', this.onOpened);
-		OneSignal.addEventListener('ids', this.onIds);
+			OneSignal.addEventListener('received', this.onReceived);
+			OneSignal.addEventListener('opened', this.onOpened);
+			OneSignal.addEventListener('ids', this.onIds);
 	  }
 	
+
+		componentDidMount() {
+			BackHandler.addEventListener('hardwareBackPress', this.handleBackButton);
+		}
+
+		componentWillUnmount() {
+				BackHandler.removeEventListener('hardwareBackPress', this.handleBackButton);
+		}
+
+		handleBackButton() {
+			return true;
+		}
 	
 	componentWillMount() {
 		!firebase.apps.length ? firebase.initializeApp(firebaseConfig()) : firebase.app();

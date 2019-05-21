@@ -1,6 +1,6 @@
 import React, { Component, Fragment, DeviceEventEmitter } from  'react'
 import { View, Image, Text, AppState, Platform, Alert } from 'react-native'
-import MapView, { Marker } from 'react-native-maps'
+import MapView, { Marker, Circle, PROVIDER_GOOGLE } from 'react-native-maps'
 import { withNavigation } from 'react-navigation'
 import Icon from 'react-native-vector-icons/FontAwesome5'
 
@@ -9,9 +9,13 @@ import Directions from '../Directions'
 import Details from '../Details'
 import Active from '../Active'
 import EarningBar from '../EarningBar'
+import BonusBar from '../BonusBar'
 import Info from '../Info'
 import Refresh from '../Refresh'
 import Terms from '../Terms'
+import Telephone from '../Telephone'
+import Cancel from '../Cancel'
+import Navigation from '../Navigation'
 
 import { connect } from 'react-redux'
 import * as firebase from 'firebase'
@@ -48,18 +52,10 @@ import Modal from "react-native-modal";
 import BackgroundTimer from 'react-native-background-timer';
 import { getAppstoreAppVersion } from "react-native-appstore-version-checker";
 
+// The generated json object
+mapStyle = require('./day.json')
 
-let latestVersion = null
-
-getAppstoreAppVersion("com.xdev.motoboysdeplantaodriver") //put any apps packageId here
-  .then(appVersion => {
-		latestVersion = appVersion
-    console.log("clashofclans android app version on playstore", appVersion);
-  })
-  .catch(err => {
-    console.log("error occurred", err);
-	});
-
+const today = moment().format('DD/MM/YYYY')
 
 Geocoder.init("AIzaSyBionuXtSnhN7kKXD8Y2tms-Dx43GI4W6g")
 
@@ -80,7 +76,6 @@ var refuseAlert = new Sound('refuse.mp3', Sound.MAIN_BUNDLE, (error) => {
 var rideAlert = new Sound('alert2.mp3', Sound.MAIN_BUNDLE, (error) => {
 
 	rideAlert.setVolume(100);
-	// rideAlert.setNumberOfLoops(3);
 
   if (error) {
     console.log('failed to load the sound', error);
@@ -92,12 +87,10 @@ getId().then(async id => {
 		userId = id
 })
 
-console.log('userId', userId)
-
 BackgroundTimer.runBackgroundTimer(() => { 
 	navigator.geolocation.getCurrentPosition(
 		async	({ coords: { latitude, longitude } }) => {
-		
+		console.log('latitude e longitude no background', latitude, longitude)
 		firebase.database().ref(`register/commerce/motoboyPartner/${userId}`).once('value',async snap => {
 			if(snap.val() !== null){
 				let motoboy = snap.val()
@@ -129,44 +122,8 @@ BackgroundTimer.runBackgroundTimer(() => {
 	() => {}, //error
 	{}
 	)
-
-	// firebase.database().ref('status').once('value',async snap => {
-	// 	if(snap.val() !== null){
-	// 		let status = snap.val()
-	// 		console.log('status do servidor', status)
-	// 		if(!status.status){
-	// 			if(userId.length > 0 && userId !== 'none'){
-	// 				firebase.database().ref(`register/commerce/motoboyPartner/${userId}`).update({
-	// 					rideStatus: false,
-	// 					activeRide: false,
-	// 					rideId: false,
-	// 					ride: false,
-	// 					onRide: false,
-	// 				})
-	// 					.then( async () => {
-	// 							await firebase.auth().signOut()
-	// 								.then(() => {
-										
-	// 									Alert.alert('Atenção', 'Você foi desconectado pois o sistema está em manutenção')
-	// 									// this.props.navigation.navigate('Login')
-	// 									Platform.OS === 'ios' ? BackgroundTimer.stop() : BackgroundTimer.clearInterval()
-	// 								})
-	// 								.catch(error => {
-	// 									Platform.OS === 'ios' ? BackgroundTimer.stop() : BackgroundTimer.clearInterval()
-	// 									console.log('error signout', error)
-	// 								})
-	// 					})
-	// 					.catch(error => {
-	// 						Platform.OS === 'ios' ? BackgroundTimer.stop() : BackgroundTimer.clearInterval()
-	// 						Alert.alert('Atenção', 'Houve um erro interno. Tente novamente em alguns instantes')
-	// 						console.log('error updating ridestatus', error)
-	// 					})
-	// 			}
-	// 		} 
-	// 	}
-	// })
 }, 
-300*1000);
+60*1000);
 
 BackgroundTimer.setInterval(() => {
 	firebase.database().ref(`register/commerce/motoboyPartner/${userId}`).once('value',async snap => {
@@ -238,7 +195,9 @@ class Map extends Component {
 			openModal: false,
 
 			// ride free
-			rideFreeAvailable: false
+			rideFreeAvailable: false,
+
+			ridesOfRestaurant: []
 		}
 	}
 
@@ -260,10 +219,7 @@ class Map extends Component {
 
 	async componentWillMount(){
 		let userDeviceId;
-			// OneSignal.init(isTest ? ONE_SIGNAL_TEST : ONE_SIGNAL_ID, {
-			// 	kOSSettingsKeyAutoPrompt: true,
-			// 	kOSSettingsKeyInFocusDisplayOption:2,
-			// });
+	
 			OneSignal.getPermissionSubscriptionState( (status) => {
 				userDeviceId =  status.userId;
 				if(!this.props.user.userDeviceId){
@@ -279,6 +235,40 @@ class Map extends Component {
 				}
 				this.setState({ userDeviceId })
 			});
+
+			// ----------- START LOOK FOR CALOR RIDES ---------------
+
+			await firebase.database().ref(`register/commerce/list`).on('value', async snapRes => {
+				if( snapRes.val() !== null){
+				let restaurants = Object.values(snapRes.val())
+					await firebase.database().ref(`rides`).on('value', snap => {
+						if(snap.val() !== null){
+							let rides = Object.values(snap.val())
+							let ridesOfRestaurant = []
+
+							restaurants.map(restaurant => {
+								let restaurantRides = _.filter(rides, e => e.restaurant.id === restaurant.id)
+								let rideColor = this.filterRide(restaurantRides, 'minutes', 0, 30)
+								ridesOfRestaurant = [...ridesOfRestaurant, {
+									latitude: restaurant.lat,
+									longitude: restaurant.lng,
+									restaurantid:restaurant.id,
+									rideColor: rideColor.length
+								}]
+							})
+							console.log('Rides of restaurant', ridesOfRestaurant)
+							this.setState({ ridesOfRestaurant  })
+						}
+					})
+				}
+			})
+	}
+
+	filterRide = (array, notation, time1, time2) => {
+		let rides = _.filter(array, e => moment().diff(moment(e.createdAt, "DD/MM/YYYY HH:mm:ss"), notation) >= time1 && moment().diff(moment(e.createdAt, "DD/MM/YYYY HH:mm:ss"), notation) <= time2
+			 && `${e.createdAt.substring(0,2)}/${e.createdAt.substring(3,5)}/${e.createdAt.substring(6,10)}` === today)
+		
+			 return rides
 	}
 
 
@@ -318,6 +308,7 @@ class Map extends Component {
 
 		navigator.geolocation.getCurrentPosition(
 		async	({ coords: { latitude, longitude } }) => {
+			console.log('latitude e longitude sendo pega', latitude, longitude)
 			const response = await Geocoder.from({ latitude, longitude })
 			const address = response.results[0].formatted_address
 			const location = address.substring(0, address.indexOf(','))
@@ -335,7 +326,27 @@ class Map extends Component {
 
 
 			firebase.database().ref(`register/commerce/motoboyPartner/${this.props.user.id}`).on('value', async snapshot => {
+
 				let motoboy = snapshot.val()
+
+				// START - CHECK IF THERE IS ACTIVE RIDE FOR MOTOBOy
+				if(motoboy.activeRide && Object.values(motoboy.activeRide)){
+					firebase.database().ref(`rides/${motoboy.rideId}`).once('value', snap => {
+						console.log('tem ride do motoboy', snap.val())
+						this.setState({
+							isRide: true,
+							ride: snap.val()
+						})
+					})
+				} 
+				else {
+					this.setState({
+						isRide: false,
+						ride: {}
+					})
+				}
+				// END - CHECK IF THERE IS ACTIVE RIDE FOR MOTOBOy
+
 
 				// START - CHECK IF TERMS ARE TRUE
 				if(!motoboy.terms){
@@ -349,6 +360,7 @@ class Map extends Component {
 				if(motoboy.earnings && Object.values(motoboy.earnings).length > 0){
 					let earnings = Object.values(motoboy.earnings)
 					let momentToday = moment().format('DD/MM/YYYY')
+					bonusToday = []
 					let earningToday = []
 					let toPay = []
 					let payToday = []
@@ -362,10 +374,11 @@ class Map extends Component {
 					})
 
 					if(earningToday.length > 0 && earningToday.length % 10 === 0){
-						earningToday.push(5) 
+						bonusToday.push(5) 
 						let index = _.findIndex(earnings, e => e === earningFiltered[0])
 						earnings[index].tax = earningToday
 						await firebase.database().ref(`register/commerce/motoboyPartner/${this.props.user.id}`).update({
+							bonus: bonusToday,
 							earnings,
 							rating: motoboy.isRated ? motoboy.rating : [5],
 							isRated: true
@@ -376,16 +389,16 @@ class Map extends Component {
 				}
 				// END - GIVE 5 REAIS FOR EACH 10 RIDES ON DAY
 
-				// START - MAKE SURE THAT IS RIDE AND RIDE ARE SET ON A RIDE
-				if(motoboy.onRide && motoboy.rideStatus){
-				 firebase.database().ref(`rides/${motoboy.activeRide.id}`).once('value', snap => {
-					 if(snap.val() !== null){
-						console.log('CORRIDA PERDIDA', snap.val())
-						this.setState({ isRide: true, ride: snap.val()})
-					 }
-				 })
-				}
-				// END - MAKE SURE THAT IS RIDE AND RIDE ARE SET ON A RIDE
+				// // START - MAKE SURE THAT IS RIDE AND RIDE ARE SET ON A RIDE
+				// if(motoboy.onRide && motoboy.rideStatus){
+				//  firebase.database().ref(`rides/${motoboy.activeRide.id}`).once('value', snap => {
+				// 	 if(snap.val() !== null){
+				// 		console.log('CORRIDA PERDIDA', snap.val())
+				// 		this.setState({ isRide: true, ride: snap.val()})
+				// 	 }
+				//  })
+				// }
+				// // END - MAKE SURE THAT IS RIDE AND RIDE ARE SET ON A RIDE
 
 				this.props.setUser(motoboy)
 
@@ -454,7 +467,6 @@ class Map extends Component {
 					})
 
 			})
-
 				this.setState({
 					location,
 					region: {
@@ -475,6 +487,7 @@ class Map extends Component {
 	}
 
 	checkRide = async () => {
+		console.log('ENTRANDO AQUI NORMAMENTE')
 		this.setState({ rideFreeAvailable: false })
 		const { latitude, longitude } = this.state.region
 		console.log('CHECK RIDE', latitude, longitude)
@@ -741,7 +754,8 @@ class Map extends Component {
 						longitude: ride.delivery.longitude,
 						title: 'Destino Cliente',
 					},
-					isRide: true
+					isRide: true,
+					ride,
 				})
 			} else if (
 				ride.status === 'onWay' ||
@@ -753,7 +767,8 @@ class Map extends Component {
 						longitude: ride.restaurant.longitude,
 						title: 'Restaurante',
 					},
-					isRide: true
+					isRide: true,
+					ride,
 				})
 			} else if(
 				ride.status === 'canceled'
@@ -773,12 +788,13 @@ class Map extends Component {
 					isRide: true,
 				})
 			} 
-		} else {
-			this.setState({
-				destination: null,
-				isRide: false,
-			})
-		}
+		} 
+		// else {
+		// 	this.setState({
+		// 		destination: null,
+		// 		isRide: false,
+		// 	})
+		// }
 	 }
 
 	signOut = async () => {
@@ -811,7 +827,7 @@ class Map extends Component {
 	}
 
 	render(){
-		console.log('finish', this.props.finish, this.state.diff)
+		console.log('IS RIDE', this.state.isRide, this.state.ride)
 
 		// return <Text>Oi</Text>
 		return (
@@ -821,6 +837,7 @@ class Map extends Component {
         </Modal>
 				{this.countDown()}
 				<MapView
+						// provider={PROVIDER_GOOGLE}
 						ref={el => this.mapView = el}
 						style={{ flex: 1 }}
 						region={this.state.region}
@@ -831,11 +848,40 @@ class Map extends Component {
             pitchEnabled={true}
             showsUserLocation={true}
             followsUserLocation={true}
-            showsCompass={true}
-            showsBuildings={true}
-            showsTraffic={true}
-            showsIndoors={true}
+						showsCompass={true}
+						customMapStyle={mapStyle}
 					>
+					
+					{this.state.ridesOfRestaurant.length > 0 && this.state.ridesOfRestaurant.map(ride => {
+						const { rideColor } = ride
+
+						let color = 'transparent'
+
+						if(rideColor > 0 &&  rideColor <= 5 ){
+							color = "rgba(77, 255, 77, 0.3)"
+						} else
+						if(rideColor > 5 && rideColor <= 10){
+							color = "rgba(255, 166, 77,0.3)"
+						} else
+						if(rideColor > 10 &&  rideColor <= 15){
+							color =  "rgba(255, 77, 77, 0.3)"
+						} else
+						if(rideColor > 15){
+							color = "rgba(115, 0, 230, 0.6)"
+						}
+						
+						return (
+							<Circle
+								radius={1000}
+								center={{ latitude: ride.latitude, longitude: ride.longitude, }}
+								strokeOpacity={0}
+								strokeWidth={2}
+								strokeColor="transparent"
+								fillColor={color}
+								fillOpacity={0.2}
+							/>
+						)
+					}) }
 						{this.state.destination && ( 
 							<Fragment>
 								<Directions 
@@ -900,14 +946,23 @@ class Map extends Component {
 								 ride={this.props.ride ? this.props.ride : this.state.ride}
 								 rideDistance={this.state.rideDistance}
 							 />
+							{ this.props.rideStatus !== "pending" && (
+								<Fragment>
+									<Cancel />
+									<Telephone />
+									<Navigation />
+								</Fragment>
+							)
+						}
 						</Fragment>
 					) : (
 						<Fragment>
 							<Menu onPress={this.handleMenu}>
 								{/* <Image source={menuImage} style={{ width: 30, height: 30, resizeMode: 'contain'}} /> */}
-								<Icon name="bars" size={30} style={{ color: 'rgba(62, 65, 126, 1)'}} />
+								<Icon name="bars" size={30} style={{ color: 'rgba(0, 0, 0, 1)'}} />
 							</Menu>
 							<EarningBar earning={this.state.earning} />
+							<BonusBar earning={this.state.earning} />
 							{/* <Search
 								onLocationSelected={this.handleLocationSelected}
 							/> */}

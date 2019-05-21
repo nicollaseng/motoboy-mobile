@@ -33,16 +33,16 @@ import { getPixelSize, setId } from '../../utils'
 import { getAppstoreAppVersion } from "react-native-appstore-version-checker";
 
 
-let latestVersion = null
+// let latestVersion = null
 
-getAppstoreAppVersion("com.xdev.motoboysdeplantaodriver") //put any apps packageId here
-  .then(appVersion => {
-		latestVersion = appVersion
-    console.log("clashofclans android app version on playstore", appVersion);
-  })
-  .catch(err => {
-    console.log("error occurred", err);
-	});
+// getAppstoreAppVersion("com.xdev.motoboysdeplantaodriver") //put any apps packageId here
+//   .then(appVersion => {
+// 		latestVersion = appVersion
+//     console.log('version of app', appVersion);
+//   })
+//   .catch(err => {
+//     console.log("error occurred get version of app", err);
+// 	});
 	
 
 class Login extends Component {
@@ -65,12 +65,12 @@ class Login extends Component {
 	async componentWillMount(){
 		await firebase.database().ref('version/versao').once('value', async snap => {
 			let versao = snap.val()
-			if(versao !== null){
+			// if(versao !== null){
 				console.log('versao do app do servidor', versao)
 				this.setState({ versao })
 
-				console.log('versao', versao, latestVersion)
-				if(latestVersion === versao || Platform.OS === 'ios'){
+				// console.log('versao', versao, latestVersion)
+				// if(latestVersion === versao || Platform.OS === 'ios'){
 					try {
 					this.setState({ loading: true })
 					firebase.auth().onAuthStateChanged(user => {
@@ -87,18 +87,19 @@ class Login extends Component {
 					this.setState({ loading: false })
 					console.log(error)
 				}
-				} else {
-					this.setState({ loading: false })
-					alert('O seu aplicativo está desatualizado. Favor atualize seu aplicativo na Playstore')
-				}
-			}
+				// } 
+				// else {
+				// 	this.setState({ loading: false })
+				// 	alert('O seu aplicativo está desatualizado. Favor atualize seu aplicativo na Playstore')
+				// }
+			// }
 		})
 	}
 
 
 	login = async () => {
 		const { email, password } = this.state
-		if(latestVersion === this.state.versao || Platform.OS === 'ios'){
+		// if(latestVersion === this.state.versao || Platform.OS === 'ios'){
 			this.setState({ loading: true })
 			try {
 				await firebase.auth().signInWithEmailAndPassword(email, password)
@@ -116,16 +117,16 @@ class Login extends Component {
 				Alert.alert('Atenção','Algo de errado aconteceu. Tente novamente em alguns instantes. Cód: login0002')
 				console.log('Error before login firebase', err)
 			}
-		} else {
-			this.setState({ loading: false })
-			alert('O seu aplicativo está desatualizado. Favor atualize seu aplicativo na Playstore')
-		}
+		// } else {
+		// 	this.setState({ loading: false })
+		// 	alert('O seu aplicativo está desatualizado. Favor atualize seu aplicativo na Playstore')
+		// }
 	}
 
 	_setUserInfo = async key => {
 		await firebase.database().ref('version/versao').once('value', async snap => {
 			let versao = snap.val()
-			console.log('versao', versao, latestVersion)
+			// console.log('versao', versao, latestVersion)
 
 			await firebase.database().ref(`register/commerce/motoboyPartner`).once('value', data => {
 				if(data !== null){
@@ -236,10 +237,10 @@ class Login extends Component {
 		console.log('email', this.state.email)
     return (
       <View style={styles.container}>
-				<Fragment>
-					<Image source={require('../../assets/logo.png')} style={{ width: 200, height: 200, resizeMode: 'contain'}} />
-				</Fragment>
         <View>
+					<View style={{ flex: 0, alignItems: 'center', justifyContent: 'center', marginBottom: 30 }}>
+						<Image source={require('../../assets/logo.png')} style={{ width: 180, height: 180, resizeMode: 'contain'}} />
+					</View>
 						<View style={styles.inputContainer}>
 							<IconAwesome
 									size={22}

@@ -35,6 +35,7 @@
     "react-navigation": "^3.9.1",
     "react-redux": "^7.0.2",
     "redux": "^4.0.1",
+    "rn-sliding-button": "^1.1.5",
     "styled-components": "^4.2.0",
     "validator": "^10.11.0",
     "vanilla-masker": "^1.2.0"

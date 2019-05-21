@@ -23,7 +23,7 @@ import PushNotification from 'react-native-push-notification'
 import TimerCountdown from "react-native-timer-countdown";
 import Icon from 'react-native-vector-icons/FontAwesome5'
 
-
+import {RNSlidingButton, SlideDirection} from 'rn-sliding-button';
 
 const today = moment().format('DD/MM/YYYY')
 
@@ -65,6 +65,7 @@ class Details extends Component {
 		ride: {},
 		isRideCanceled: false,
 		taxCanceled: 0,
+		deliveryPaid: false,
 
 		// time
 		time: 5
@@ -215,157 +216,407 @@ class Details extends Component {
 
 			if(ride.status === 'pending'){
 				return (
-					<Fragment>
-						<TypeTitle>Você tem uma entrega disponível</TypeTitle>
-						<TypeDescription>Clique abaixo para aceitar</TypeDescription>
+					// <Fragment>
+					// 	<TypeTitle>Obrigado por essa viagem</TypeTitle>
+					// 	<TypeDescription>Receba do estabelecimento o valor abaixo</TypeDescription>
+					// 	<View style={{ flex: 0.8, justifyContent: 'center', alignItems: 'center'}}>
+					// 	<Text style={{ fontSize: 50, color: '#fff', marginBottom: 10, marginTop: 10,  fontWeigth: '400'}}>R$ {ride.taxMotoboy.toString().includes('.') ? `${ride.taxMotoboy.toString().replace('.',',')}0` : `${ride.taxMotoboy.toString().replace('.',',')},00`}</Text>
+					// 		{/* <TypeTitle>R$ {ride.taxMotoboy.toString().replace('.',',')}0</TypeTitle> */}
+					// 	</View>
+					// 		<Fragment>
+					// 			<View style={{ flexDirection: 'row', justifyContent: 'space-around'}} />
+					// 			<RestaurantButton onPress={this.dismiss}>
+					// 				<RequestButtonText>{'PROSSEGUIR'}</RequestButtonText>
+					// 			</RestaurantButton>
+					// 		</Fragment>
+					// </Fragment>
+					
+					<View style={{ flex: 1, alignItems: 'center', justifyContent: 'space-between'}}>
+						<Fragment>
+							<TypeTitle>Você tem uma entrega disponível</TypeTitle>
+							<TypeDescription>Clique abaixo para aceitar</TypeDescription>
+						</Fragment>
 						{this.state.loading ? <Spinner /> : (
-							<Fragment>
-								<TouchableOpacity onPress={this.handleAcceptRide} style={{ alignItems: 'center', justifyContent: 'center'}}>
-									<Countdown style={{ fontSize: 70, color: '#666', marginBottom: 0, marginTop: 20, fontWeigth: '400'}} />
-								</TouchableOpacity>
-								<TypeTitle>{this.props.ride.name}</TypeTitle>
-								<TypeDescription>{this.props.ride.restaurant.nome} </TypeDescription>
-								<RequestButton onPress={this.refuseRide}>
-									<RequestButtonText>Recusar</RequestButtonText>
-								</RequestButton>
-							</Fragment>
+								<View style={{ flex: 1.0 ,justifyContent: 'center', alignItems: 'center', padding: 10}}>
+									<TouchableOpacity onPress={this.handleAcceptRide} style={{ alignItems: 'center', justifyContent: 'center', backgroundColor: '#54fa2a', borderRadius: 60}}>
+										<Countdown style={{ fontSize: 42, color: '#666', padding: 10, fontWeigth: '400',}} />
+									</TouchableOpacity>
+							</View>
 						)}
-					</Fragment>
+						<Fragment>
+							<TypeDescription>{this.props.ride.restaurant.nome} </TypeDescription>
+							<RNSlidingButton
+									style={{
+										backgroundColor: '#cc2900',
+										width: 280,
+										heigth: 40,
+										padding: 10,
+										borderRadius: 5,
+									}}
+									height={35}
+									onSlidingSuccess={this.refuseRide}
+									slideDirection={SlideDirection.RIGHT}>
+									<View>
+										<Text numberOfLines={1} style={style.textSlide}>
+											DESLIZE PARA RECUSAR >
+										</Text>
+									</View>
+								</RNSlidingButton>
+								{/* <RequestButton onPress={this.refuseRide}>
+										<RequestButtonText>Recusar</RequestButtonText>
+									</RequestButton> */}
+							</Fragment>
+					</View>
 				)
 			} else if( ride.status === 'onWay'){
-				return (
-					<Fragment>
-						<TypeTitle>Clique na imagem abaixo para iniciar uma navegação externa</TypeTitle>
-						{/* <TypeDescription>Clique no mapa para abrir</TypeDescription> */}
-							<Fragment>
-								<View style={{ flexDirection: 'row', justifyContent: 'space-around', marginVertical: 18 }}>
-									<TouchableOpacity onPress={() => {
-										// this.props.setOut(false)
-										this.openGoogleMaps(restaurantLat, restaurantLong)
-									}}>
-										<Icon name="route" size={50} style={{ color: 'rgba(62, 65, 126, 1)'}} />
-										{/* <Thumbnail square large source={require('../../assets/google.png')} /> */}
-									</TouchableOpacity>
+				if(this.state.loading){
+					return <Spinner />
+				} else {
+					return (
+						<Fragment>
+							{/* <TypeTitle>Clique no ícone abaixo para iniciar uma navegação externa</TypeTitle> */}
+								<View style={{ flex: 1.0 ,justifyContent: 'center', alignItems: 'center', padding: 10}}>
+									{/* <TouchableOpacity onPress={() => {
+											this.openGoogleMaps(restaurantLat, restaurantLong)
+										}}>
+											<Icon name="route" size={55} style={{ color: '#54fa2a'}} />
+										</TouchableOpacity> */}
 								</View>
-								<RestaurantButton onPress={this.onRestaurant}>
-									<RequestButtonText>Cheguei no restaurante</RequestButtonText>
-								</RestaurantButton>
+								<Fragment>
+								<RNSlidingButton
+										style={{
+											backgroundColor: '#363777',
+											borderRadius: 5,
+											width: 280,
+											height: 40,
+											padding: 20
+										}}
+										height={35}
+										onSlidingSuccess={this.onRestaurant}
+										slideDirection={SlideDirection.RIGHT}>
+										<View>
+											<Text numberOfLines={1} style={style.textSlide}>
+												NO RESTAURANTE >
+											</Text>
+										</View>
+									</RNSlidingButton>
+									{/* <RestaurantButton onPress={this.onRestaurant}>
+										<RequestButtonText> NO RESTAURANTE </RequestButtonText>
+									</RestaurantButton> */}
+								</Fragment>
+						</Fragment>
+					)		
+				}
+			} else if(ride.status === 'onRestaurant' && !ride.retorno){
+				if(this.state.loading){
+					return <Spinner />
+				} else { 
+					return(
+						<Fragment>
+							{/* <TypeTitle>Essa viagem não tem retorno</TypeTitle> */}
+							{/* <Text style={{ fontSize: 14, textAlign: 'center', marginBottom: 10, color: '#fff', padding: 5 }}>Antes de prosseguir receba do estabelecimento a sua taxa de entrega</Text> */}
+							<View style={{ flex: 0.8, justifyContent: 'center', alignItems: 'center'}}>
+							{/* <Text style={{ fontSize: 50, color: '#fff', marginBottom: 10, marginTop: 10,  fontWeigth: '400'}}>R$ {ride.taxMotoboy.toString().includes('.') ? `${ride.taxMotoboy.toString().replace('.',',')}0` : `${ride.taxMotoboy.toString().replace('.',',')},00`}</Text> */}
+							</View>
+							<Fragment>
+								<View style={{ flexDirection: 'row', justifyContent: 'space-around'}} />
+								<RNSlidingButton
+										style={{
+											backgroundColor: '#363777',
+											borderRadius: 5,
+											width: 280,
+											height: 40,
+											padding: 20
+										}}
+										height={35}
+										onSlidingSuccess={this.startDelivery}
+										slideDirection={SlideDirection.RIGHT}>
+										<View>
+											<Text numberOfLines={1} style={style.textSlide}>
+												INICIAR ENTREGA >
+											</Text>
+										</View>
+									</RNSlidingButton>
+								{/* <RestaurantButton onPress={this.startDelivery}>
+									<RequestButtonText>{'Iniciar Entrega'}</RequestButtonText>
+								</RestaurantButton> */}
 							</Fragment>
 					</Fragment>
-				)		
-			} else if( ride.status === 'onRestaurant') {
-				return (
-					<Fragment>
-						<TypeTitle>Clique na imagem abaixo para iniciar uma navegação externa</TypeTitle>
-						{/* <TypeDescription>Clique no mapa para abrir</TypeDescription> */}
-							<Fragment>
-								<View style={{ flexDirection: 'row', justifyContent: 'space-around',  marginVertical: 18 }}>
-									<TouchableOpacity onPress={() => {
-										// this.props.setOut(false)
+					)
+				}
+			}
+			else if( ride.status === 'onRestaurant' && ride.retorno ) {
+				if(this.state.loading){
+					return <Spinner />
+				} else {
+					return (
+						<Fragment>
+								{/* <TypeTitle>Clique na imagem abaixo para iniciar uma navegação externa</TypeTitle> */}
+								<View style={{ flex: 1.0 ,justifyContent: 'center', alignItems: 'center', padding: 10}}>
+									{/* <TouchableOpacity onPress={() => {
 										this.openGoogleMaps(deliveryLat, deliveryLong)
-									}}>
-										<Icon name="route" size={50} style={{ color: 'rgba(62, 65, 126, 1)'}} />
-										{/* <Thumbnail square large source={require('../../assets/google.png')} /> */}
-									</TouchableOpacity>
+										}}>
+											<Icon name="route" size={55} style={{ color: '#54fa2a'}} />
+										</TouchableOpacity> */}
 								</View>
-								<RestaurantButton onPress={() => !this.state.isRideCanceled ? this.startDelivery() : false}>
-									<RequestButtonText>Iniciar entrega</RequestButtonText>
-								</RestaurantButton>
-							</Fragment>
-					</Fragment>
-				)		
+								<RNSlidingButton
+										style={{
+											backgroundColor: '#363777',
+											borderRadius: 5,
+											width: 280,
+											height: 40,
+											padding: 20
+										}}
+										height={35}
+										onSlidingSuccess={this.startDelivery}
+										slideDirection={SlideDirection.RIGHT}>
+										<View>
+											<Text numberOfLines={1} style={style.textSlide}>
+												INICIAR ENTREGA >
+											</Text>
+										</View>
+									</RNSlidingButton>
+								{/* <Fragment>
+									<RestaurantButton onPress={this.startDelivery}>
+										<RequestButtonText>Iniciar entrega</RequestButtonText>
+									</RestaurantButton>
+								</Fragment> */}
+						</Fragment>
+					)		
+				}
 			} else if( ride.status === 'onDelivery') {
-				return (
-					<Fragment>
-						<TypeTitle>Clique na imagem abaixo para iniciar uma navegação externa</TypeTitle>
-						{/* <TypeDescription>Clique no mapa para abrir</TypeDescription> */}
-							<Fragment>
-								<View style={{ flexDirection: 'row', justifyContent: 'space-around',  marginVertical: 18 }}>
-									<TouchableOpacity onPress={() => {
-										// this.props.setOut(false)
-										this.openGoogleMaps(restaurantLat, restaurantLong)
+				if(this.state.loading){
+					return <Spinner />
+				} else {
+					return (
+						<Fragment>
+							{/* <TypeTitle>Clique na imagem abaixo para iniciar uma navegação externa</TypeTitle> */}
+							<View style={{ flex: 1.0 ,justifyContent: 'center', alignItems: 'center', padding: 10}}>
+								{/* <TouchableOpacity onPress={() => {
+									this.openGoogleMaps(restaurantLat, restaurantLong)
 									}}>
-										<Icon name="route" size={50} style={{ color: 'rgba(62, 65, 126, 1)'}} />
-										{/* <Thumbnail square large source={require('../../assets/google.png')} /> */}
-									</TouchableOpacity>
-								</View>
+										<Icon name="route" size={55} style={{ color: '#54fa2a'}} />
+									</TouchableOpacity> */}
+							</View>
+							<RNSlidingButton
+									style={{
+										backgroundColor: '#363777',
+										borderRadius: 5,
+										width: 280,
+										height: 40,
+										padding: 20
+									}}
+									height={35}
+									onSlidingSuccess={() => !this.state.isRideCanceled ? ride.retorno ? this.wayBack() : this.finishDelivery() : false}
+									slideDirection={SlideDirection.RIGHT}>
+									<View>
+										<Text numberOfLines={1} style={style.textSlide}>
+										{ride.retorno ? 'RETORNAR RESTAURANTE >' : 'FINALIZAR >'}
+										</Text>
+									</View>
+									</RNSlidingButton>
+							{/* <Fragment>
 								<RestaurantButton onPress={() => !this.state.isRideCanceled ? ride.retorno ? this.wayBack() : this.finishDelivery() : false}>
 									<RequestButtonText>{ride.retorno ? 'Retornar Restaurante' : 'Finalizar'}</RequestButtonText>
 								</RestaurantButton>
-							</Fragment>
-					</Fragment>
-				)		
-			} else if( ride.status === 'onBackWay') {
-				return (
-					<Fragment>
-						<TypeTitle>Favor retorne ao restaurante com troco/maquineta</TypeTitle>
-						<TypeDescription>Clique em finalizar somente após retornar ao restaurante</TypeDescription>
-							<Fragment>
-								<View style={{ flexDirection: 'row', justifyContent: 'space-around',  marginVertical: 18 }}>
-									<TouchableOpacity onPress={() => {
-										// this.props.setOut(false)
-										this.openGoogleMaps(restaurantLat, restaurantLong)
+							</Fragment> */}
+						</Fragment>
+					)		
+				}
+			} else if( ride.status === 'onBackWay' && ride.retorno) {
+				if(this.state.loading){
+					return <Spinner />
+				} else {
+					return (
+						<Fragment>
+							{/* <TypeTitle>Clique na imagem abaixo para iniciar uma navegação externa</TypeTitle> */}
+							{/* <TypeDescription>Clique em finalizar somente após retornar ao restaurante</TypeDescription> */}
+							<View style={{ flex: 1.0 ,justifyContent: 'center', alignItems: 'center', padding: 10}}>
+								{/* <TouchableOpacity onPress={() => {
+									this.openGoogleMaps(restaurantLat, restaurantLong)
 									}}>
-										<Icon name="route" size={65} style={{ color: 'rgba(62, 65, 126, 1)', marginTop: 20  }} />
-										{/* <Thumbnail square large source={require('../../assets/google.png')} /> */}
-									</TouchableOpacity>
-								</View>
+										<Icon name="route" size={55} style={{ color: '#54fa2a'}} />
+									</TouchableOpacity> */}
+							</View>
+							<RNSlidingButton
+									style={{
+										backgroundColor: '#363777',
+										borderRadius: 5,
+										width: 280,
+										height: 40,
+										padding: 20
+									}}
+									height={35}
+									onSlidingSuccess={() => !this.state.isRideCanceled ? this.finishDelivery() : false}
+									slideDirection={SlideDirection.RIGHT}>
+									<View>
+										<Text numberOfLines={1} style={style.textSlide}>
+										{'FINALIZAR >'}
+										</Text>
+									</View>
+									</RNSlidingButton>
+							{/* <Fragment>
 								<RestaurantButton onPress={() => !this.state.isRideCanceled ? this.finishDelivery() : false}>
 									<RequestButtonText>{'Finalizar'}</RequestButtonText>
 								</RestaurantButton>
-							</Fragment>
-					</Fragment>
-				)		
-			} else if( ride.status === 'finished') {
-				return (
-					<Fragment>
-						<TypeTitle>Obrigado por essa viagem</TypeTitle>
-						<TypeDescription>Receba do estabelecimento o valor abaixo</TypeDescription>
-						<View style={{ flex: 0.8, justifyContent: 'center', alignItems: 'center'}}>
-						<Text style={{ fontSize: 50, color: '#666', marginBottom: 10, marginTop: 10,  fontWeigth: '400'}}>R$ {ride.taxMotoboy.toString().includes('.') ? `${ride.taxMotoboy.toString().replace('.',',')}0` : `${ride.taxMotoboy.toString().replace('.',',')},00`}</Text>
-							{/* <TypeTitle>R$ {ride.taxMotoboy.toString().replace('.',',')}0</TypeTitle> */}
-						</View>
-							<Fragment>
-								<View style={{ flexDirection: 'row', justifyContent: 'space-around'}} />
-								<RestaurantButton onPress={this.dismiss}>
-									<RequestButtonText>{'Entendido'}</RequestButtonText>
-								</RestaurantButton>
-							</Fragment>
-					</Fragment>
-				)		
-			} else if (ride.status === 'canceled') {
-				const { taxCanceled } = this.state
-				return (
-					<Fragment>
-						<TypeTitle>Viagem cancelada pelo estabelecimento</TypeTitle>
-						<TypeDescription>A viagem foi cancelada por falta de resposta</TypeDescription>
-						<View style={{ flex: 0.8, justifyContent: 'center', alignItems: 'center'}}>
-							<TypeTitle />
-						</View>
-							<Fragment>
-								<View style={{ flexDirection: 'row', justifyContent: 'space-around'}} />
-								<RestaurantButton onPress={this.dismiss}>
-									<RequestButtonText>{'Entendido'}</RequestButtonText>
-								</RestaurantButton>
-							</Fragment>
-					</Fragment>	
-				)
+							</Fragment> */}
+						</Fragment>
+					)		
+				}
+			} 
+			else if( ride.status === 'finished' && ride.retorno) {
+				if(this.state.loading){
+					return <Spinner />
+				} else {
+					return (
+						<Fragment>
+							{/* <TypeTitle>Obrigado por essa viagem</TypeTitle>
+							<TypeDescription>Receba do estabelecimento o valor abaixo</TypeDescription> */}
+							<View style={{ flex: 0.8, justifyContent: 'center', alignItems: 'center'}}>
+							{/* <Text style={{ fontSize: 50, color: '#fff', marginBottom: 10, marginTop: 10,  fontWeigth: '400'}}>R$ {ride.taxMotoboy.toString().includes('.') ? `${ride.taxMotoboy.toString().replace('.',',')}0` : `${ride.taxMotoboy.toString().replace('.',',')},00`}</Text> */}
+								{/* <TypeTitle>R$ {ride.taxMotoboy.toString().replace('.',',')}0</TypeTitle> */}
+							</View>
+							<RNSlidingButton
+									style={{
+										backgroundColor: '#363777',
+										borderRadius: 5,
+										width: 280,
+										height: 40,
+										padding: 20
+									}}
+									height={35}
+									onSlidingSuccess={this.dismiss}
+									slideDirection={SlideDirection.RIGHT}>
+									<View>
+										<Text numberOfLines={1} style={style.textSlide}>
+										{'FINALIZAR > '}
+										</Text>
+									</View>
+									</RNSlidingButton>
+								{/* <Fragment>
+									<View style={{ flexDirection: 'row', justifyContent: 'space-around'}} />
+									<RestaurantButton onPress={this.dismiss}>
+										<RequestButtonText>{'PROSSEGUIR'}</RequestButtonText>
+									</RestaurantButton>
+								</Fragment> */}
+						</Fragment>
+					)		
+				}
+			} else if(ride.status === 'finished' && !ride.retorno){
+				if(this.state.loading){
+					return <Spinner />
+				} else {
+					return (
+						<Fragment>
+							{/* <TypeTitle>Obrigado por essa viagem</TypeTitle>
+							<TypeDescription>Receba do estabelecimento o valor abaixo</TypeDescription> */}
+							<View style={{ flex: 0.8, justifyContent: 'center', alignItems: 'center'}}>
+							{/* <Text style={{ fontSize: 50, color: '#fff', marginBottom: 10, marginTop: 10,  fontWeigth: '400'}}>R$ {ride.taxMotoboy.toString().includes('.') ? `${ride.taxMotoboy.toString().replace('.',',')}0` : `${ride.taxMotoboy.toString().replace('.',',')},00`}</Text> */}
+								{/* <TypeTitle>R$ {ride.taxMotoboy.toString().replace('.',',')}0</TypeTitle> */}
+							</View>
+							<RNSlidingButton
+									style={{
+										backgroundColor: '#363777',
+										borderRadius: 5,
+										width: 280,
+										height: 40,
+										padding: 20
+									}}
+									height={35}
+									onSlidingSuccess={this.dismiss}
+									slideDirection={SlideDirection.RIGHT}>
+									<View>
+										<Text numberOfLines={1} style={style.textSlide}>
+										{'PROSSEGUIR > '}
+										</Text>
+									</View>
+									</RNSlidingButton>
+								{/* <Fragment>
+									<View style={{ flexDirection: 'row', justifyContent: 'space-around'}} />
+									<RestaurantButton onPress={this.dismiss}>
+										<RequestButtonText>{'PROSSEGUIR'}</RequestButtonText>
+									</RestaurantButton>
+								</Fragment> */}
+						</Fragment>
+					)		
+				}
+			}
+			else if (ride.status === 'canceled' || ride.status === undefined || ride.status === null) {
+				if(this.state.loading){
+					return <Spinner />
+				} else {
+					return (
+						<Fragment>
+							{/* <TypeTitle>Obrigado por essa viagem</TypeTitle>
+							<TypeDescription>Receba do estabelecimento o valor abaixo</TypeDescription> */}
+							<View style={{ flex: 0.8, justifyContent: 'center', alignItems: 'center'}}>
+							{/* <Text style={{ fontSize: 50, color: '#fff', marginBottom: 10, marginTop: 10,  fontWeigth: '400'}}>R$ {ride.taxMotoboy.toString().includes('.') ? `${ride.taxMotoboy.toString().replace('.',',')}0` : `${ride.taxMotoboy.toString().replace('.',',')},00`}</Text> */}
+								{/* <TypeTitle>R$ {ride.taxMotoboy.toString().replace('.',',')}0</TypeTitle> */}
+							</View>
+							<RNSlidingButton
+									style={{
+										backgroundColor: '#363777',
+										borderRadius: 5,
+										width: 280,
+										height: 40,
+										padding: 20
+									}}
+									height={35}
+									onSlidingSuccess={this.dismiss}
+									slideDirection={SlideDirection.RIGHT}>
+									<View>
+										<Text numberOfLines={1} style={style.textSlide}>
+										{'FINALIZAR > '}
+										</Text>
+									</View>
+									</RNSlidingButton>
+								{/* <Fragment>
+									<View style={{ flexDirection: 'row', justifyContent: 'space-around'}} />
+									<RestaurantButton onPress={this.dismiss}>
+										<RequestButtonText>{'PROSSEGUIR'}</RequestButtonText>
+									</RestaurantButton>
+								</Fragment> */}
+						</Fragment>
+					)		
+				}
 			} else if (ride.status === undefined || ride.status === null ) {
-				return (
-					<Fragment>
-						<TypeTitle>Viagem cancelada pelo estabelecimento</TypeTitle>
-						<TypeDescription>A viagem foi cancelada por falta de resposta</TypeDescription>
-						<View style={{ flex: 0.8, justifyContent: 'center', alignItems: 'center'}}>
-							<TypeTitle />
-						</View>
-							<Fragment>
-								<View style={{ flexDirection: 'row', justifyContent: 'space-around'}} />
-								<RestaurantButton onPress={this.dismiss}>
-									<RequestButtonText>{'Entendido'}</RequestButtonText>
-								</RestaurantButton>
-							</Fragment>
-					</Fragment>	
-				)
+				if(this.state.loading){
+					return <Spinner />
+				} else {
+					return (
+						<Fragment>
+							{/* <TypeTitle>Obrigado por essa viagem</TypeTitle>
+							<TypeDescription>Receba do estabelecimento o valor abaixo</TypeDescription> */}
+							<View style={{ flex: 0.8, justifyContent: 'center', alignItems: 'center'}}>
+							{/* <Text style={{ fontSize: 50, color: '#fff', marginBottom: 10, marginTop: 10,  fontWeigth: '400'}}>R$ {ride.taxMotoboy.toString().includes('.') ? `${ride.taxMotoboy.toString().replace('.',',')}0` : `${ride.taxMotoboy.toString().replace('.',',')},00`}</Text> */}
+								{/* <TypeTitle>R$ {ride.taxMotoboy.toString().replace('.',',')}0</TypeTitle> */}
+							</View>
+							<RNSlidingButton
+									style={{
+										backgroundColor: '#363777',
+										borderRadius: 5,
+										width: 280,
+										height: 40,
+										padding: 20
+									}}
+									height={35}
+									onSlidingSuccess={this.dismiss}
+									slideDirection={SlideDirection.RIGHT}>
+									<View>
+										<Text numberOfLines={1} style={style.textSlide}>
+										{'PROSSEGUIR > '}
+										</Text>
+									</View>
+									</RNSlidingButton>
+								{/* <Fragment>
+									<View style={{ flexDirection: 'row', justifyContent: 'space-around'}} />
+									<RestaurantButton onPress={this.dismiss}>
+										<RequestButtonText>{'PROSSEGUIR'}</RequestButtonText>
+									</RestaurantButton>
+								</Fragment> */}
+						</Fragment>
+					)		
+				}
 			}
 		} 
 		// else if (ride.status === undefined) {
@@ -380,7 +631,7 @@ class Details extends Component {
 		// 				<Fragment>
 		// 					<View style={{ flexDirection: 'row', justifyContent: 'space-around'}} />
 		// 					<RestaurantButton onPress={this.dismiss}>
-		// 						<RequestButtonText>{'Entendido'}</RequestButtonText>
+		// 						<RequestButtonText>{'PROSSEGUIR'}</RequestButtonText>
 		// 					</RestaurantButton>
 		// 				</Fragment>
 		// 		</Fragment>	
@@ -579,6 +830,7 @@ class Details extends Component {
 					pendingRideId: false,
 					ride: false,
 				})
+				this.setState({ loading: false })
 				this.props.setRide({
 					...this.props.ride,
 					status: 'finished'
@@ -592,9 +844,7 @@ class Details extends Component {
 
 	
 	dismiss = async () => {
-
 		this.props.setFinish(false)
-
 		const { taxCanceled, isRideCanceled, ride } = this.state
 		this.setState({ loading: true })
 		await firebase.database().ref(`register/commerce/motoboyPartner/${this.props.user.id}`).once('value', async snap => {
@@ -669,11 +919,20 @@ class Details extends Component {
 		const { ride } = this.props
 		console.log('is ride canceled', this.state.isRideCanceled)
 		return (
-			<Container>
+			<Container status={this.state.isRideCanceled ? this.state.ride.status : ride.status}>
 				{this.handleRide(this.state.isRideCanceled ? this.state.ride : ride)}
 			</Container>
     )
 	}	
+}
+
+const style = {
+	textSlide :{
+		color: '#fff',
+		fontSize: 16,
+		padding: 20,
+		fontWeight: '700'
+	}
 }
 
 const mapStateToProps = state => ({
