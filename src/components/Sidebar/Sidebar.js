@@ -72,6 +72,13 @@ const SideBar = props => {
 												style={{ color: "#666666" }}
 												name={item.icon}
 											/>
+                    )}
+                    {item.useAwesome && item.isAdmin && (
+											<IconAwesome
+												size={24}
+												style={{ color: "#666666" }}
+												name={item.icon}
+											/>
 										)}
 										{!item.useAwesome && (
 											<Icon
@@ -88,7 +95,7 @@ const SideBar = props => {
 									</Col>
 								</Grid>
 							</ListItem>
-						)}
+            )}
 					</View>
 				)}
 			/>

@@ -16,6 +16,7 @@ import Terms from '../Terms'
 import Telephone from '../Telephone'
 import Cancel from '../Cancel'
 import Navigation from '../Navigation'
+import Chat from '../Chat'
 
 import { connect } from 'react-redux'
 import * as firebase from 'firebase'
@@ -54,8 +55,11 @@ import { getAppstoreAppVersion } from "react-native-appstore-version-checker";
 
 // The generated json object
 mapStyle = require('./day.json')
+nigthMap = require('./nigth.json')
 
 const today = moment().format('DD/MM/YYYY')
+let time = moment().format('HH:mm:ss')
+let isDay = moment(time).isBetween('06:00:00', '17:59:59')
 
 Geocoder.init("AIzaSyBionuXtSnhN7kKXD8Y2tms-Dx43GI4W6g")
 
@@ -123,7 +127,7 @@ BackgroundTimer.runBackgroundTimer(() => {
 	{}
 	)
 }, 
-60*1000);
+90*1000);
 
 BackgroundTimer.setInterval(() => {
 	firebase.database().ref(`register/commerce/motoboyPartner/${userId}`).once('value',async snap => {
@@ -603,38 +607,110 @@ class Map extends Component {
 	}
 
 	refuseRide = async () => {
-		console.log('state do refuse',)
-		await firebase.database().ref(`rides/${this.state.ride.id}`).update({
-			free: true,
-			pendingMotboyId: false,
-			motoboyId: false,
+		const { ride } = this.state
+		let id = ride.id
+	await firebase.database().ref(`register/commerce/motoboyPartner`).once('value', async motosnap => {
+		let motoboy = motosnap.val()
+		let latitude = ride.restaurant.latitude
+		let longitude = ride.restaurant.longitude
+
+		await firebase.database().ref(`register/commerce/motoboyPartner/${this.props.user.id}`).update({
+			onRide: false,
+			rideId: false,
+			ride: false,
 		})
 			.then(async () => {
-				await firebase.database().ref(`register/commerce/motoboyPartner/${this.props.user.id}`).update({
-					rideId: false, 
-					ride: false
-				})
-					.then(() => {
-						this.setState({
-							isRide: false,
-							// initialMilliseconds: 0,
-							// time: 10,
-							ride: null,
-							// delay: false,
-						})
-						refuseAlert.play((success) => {
-							if (success) {
-								console.log('SET RIDE FREE SUCCESS');
-							} else {
-								console.log('playback failed due to audio decoding errors');
-							}
-						});
+				// if(this.props.restaurant.credit > 0 && this.props.restaurant.credit >= parseFloat(taxaEntrega)){
+				if(this.searchMotoboy(motoboy, 200, latitude, longitude)) {
+					this.startRide(ride, id, false)
+				} else if(this.searchMotoboy(motoboy, 500, latitude, longitude)) {
+					this.startRide(ride, id, false)
+				} else if(this.searchMotoboy(motoboy, 1000, latitude, longitude)) {
+					this.startRide(ride, id, false)
+				} else if(this.searchMotoboy(motoboy, 2000, latitude, longitude)) {
+					this.startRide(ride, id, false)
+				} else if(this.searchMotoboy(motoboy, 3000, latitude, longitude)) {
+					this.startRide(ride, id, false)
+				} else if(this.searchMotoboy(motoboy, 4000, latitude, longitude)) {
+					this.startRide(ride, id, false)
+				} else if(this.searchMotoboy(motoboy, 5000, latitude, longitude)) {
+					this.startRide(ride, id, false)
+				}  
+				else {
+					this.setState({
+						loading: false
 					})
-					.catch(error => console.log('ERROR UPDATING MOTOBOY STATUS WITHOU RIDE'))
-			})
+					await firebase.database().ref(`rides/${id}`).update({
+						free: true,
+						pendingMotboyId: false,
+						motoboyId: false,
+						checked: true,
+					})
+
+					.then(async () => {
+						if(voyage.motoboyId){
+							await firebase.database().ref(`register/commerce/motoboyPartner/${voyage.motoboyId}`).update({
+								rideId: false, 
+								ride: false,
+								activeRide: false,
+								onRide: false,
+							})
+								.then(() => {
+									console.log('RIDE TRANSFERED TO LIMBO')
+								})
+								.catch(error => console.log('ERROR TRASFERING RIDE TO LIMBO', error))
+							} else {
+									console.log('RIDE TRANSFERED TO LIMBO')
+							}
+						})
+					.catch(error => {
+						console.log('ERROR UPDATING RIDE TO FREE', error)
+					})
+					// alert('Atenção: no momento todos os nossos motoboys estão ocupados. Tente novamente em instantes')
+				}
+			}
+			)
 			.catch(error => {
-				console.log('error updating ride with free true')
+				console.log('error refusing ride trying to release motoboy ', error)
 			})
+
+	})
+
+
+		// console.log('state do refuse',)
+		// if(this.state.ride.id){
+		// 	await firebase.database().ref(`rides/${this.state.ride.id}`).update({
+		// 		free: true,
+		// 		pendingMotboyId: false,
+		// 		motoboyId: false,
+		// 	})
+		// 		.then(async () => {
+		// 			await firebase.database().ref(`register/commerce/motoboyPartner/${this.props.user.id}`).update({
+		// 				rideId: false, 
+		// 				ride: false
+		// 			})
+		// 				.then(() => {
+		// 					this.setState({
+		// 						isRide: false,
+		// 						// initialMilliseconds: 0,
+		// 						// time: 10,
+		// 						ride: null,
+		// 						// delay: false,
+		// 					})
+		// 					refuseAlert.play((success) => {
+		// 						if (success) {
+		// 							console.log('SET RIDE FREE SUCCESS');
+		// 						} else {
+		// 							console.log('playback failed due to audio decoding errors');
+		// 						}
+		// 					});
+		// 				})
+		// 				.catch(error => console.log('ERROR UPDATING MOTOBOY STATUS WITHOU RIDE'))
+		// 		})
+		// 		.catch(error => {
+		// 			console.log('error updating ride with free true')
+		// 		})
+		// }
 
 		// const { latitude, longitude } = this.state.ride.restaurant
 		// await firebase.database().ref(`register/commerce/motoboyPartner`).once('value', async snap => {
@@ -700,6 +776,62 @@ class Map extends Component {
 		// })
 	}
 
+	searchMotoboy = (motoboy, distance, latitude, longitude) => {
+    let nearMoboy =  _.filter(Object.values(motoboy), e => {
+      if(e.latitude && e.longitude){
+        return !e.onRide  &&  e.rideStatus && !e.droped && e.id !== this.props.user.id && geolib.getDistance(
+          { latitude: e.latitude, longitude: e.longitude },
+          { latitude, longitude }
+         ) <= distance 
+      }
+		})
+		console.log('NEAR MOTOBOY', nearMotoboy)
+    this.setState({ motoboyActive: nearMoboy })
+    return nearMoboy.length > 0
+  }
+
+  startRide = async (ride, id, checked) => {
+    console.log('uuid que vem', id)
+    await firebase.database().ref(`rides/${id}`).set(ride)
+          .then(async () => { this.setRide(ride, this.state.motoboyActive, checked) })
+          .catch(error => {
+            this.setState({
+              loading: false
+            })
+            alert('Atenção: houve um erro técnico. Estamos trabalhando para corrigir')
+            console.log('error set ride on firebase', error)
+          })
+		}
+		
+		setRide = async (param, motoboyActive, checked) => {
+
+			await firebase.database().ref(`register/commerce/motoboyPartner`).once('value', async motosnap => {
+					let motoboySelected = _.sample(motoboyActive)
+					console.log('motoboy selecionado', motoboySelected)
+					
+					await firebase.database().ref(`register/commerce/motoboyPartner/${motoboySelected.id}`).update({
+						rideId: param.id,
+						ride: param
+					})
+						.then(async () => {
+							await firebase.database().ref(`rides/${param.id}`).update({
+								motoboyId: motoboySelected.id,
+								pendingMotoboyId: motoboySelected.id,
+								checked,
+							})
+								.then(async () => {
+									console.log('trasnferiu')
+								})
+								.catch(error => {
+									this.setState({ loading: false })
+									console.log('erro updating ride selected with pendingMotoboyId', error)
+								})
+						})
+						.catch(error => {
+							console.log('error updating motoboy with pendingRideId', error)
+						})
+			})
+		}
 
 
 
@@ -780,8 +912,9 @@ class Map extends Component {
 				})
 			} else if(ride.status === 'finished'){
 				this.setState({
-					isRide: true,
-					destination: null
+					isRide: false,
+					destination: null,
+					ride: {}
 				})
 			} else if(ride.status === 'pending'){
 				this.setState({
@@ -849,7 +982,7 @@ class Map extends Component {
             showsUserLocation={true}
             followsUserLocation={true}
 						showsCompass={true}
-						customMapStyle={mapStyle}
+						customMapStyle={isDay ? mapStyle : nigthMap}
 					>
 					
 					{this.state.ridesOfRestaurant.length > 0 && this.state.ridesOfRestaurant.map(ride => {
@@ -934,7 +1067,8 @@ class Map extends Component {
 					{this.state.isRide ? (
 						<Fragment>
 							<Info
-								pedido={this.props.ride ? this.props.ride : this.state.ride}
+								// pedido={this.props.ride ? this.props.ride : this.state.ride}
+								pedido={this.state.ride}
 							/>
 							{}
 							{/* {this.countDown()} */}
@@ -943,10 +1077,11 @@ class Map extends Component {
 								 time={this.state.time}
 								 isRide={true}
 								 duration={this.state.duration}
-								 ride={this.props.ride ? this.props.ride : this.state.ride}
+								//  ride={this.props.ride ? this.props.ride : this.state.ride}
+								 ride={this.state.ride}
 								 rideDistance={this.state.rideDistance}
 							 />
-							{ this.props.rideStatus !== "pending" && (
+							{ this.state.ride.status !== "pending" && (
 								<Fragment>
 									<Cancel />
 									<Telephone />
@@ -967,6 +1102,7 @@ class Map extends Component {
 								onLocationSelected={this.handleLocationSelected}
 							/> */}
 							<Refresh checkRide={this.checkRide} rideAvailable={this.state.rideFreeAvailable} isRide={this.state.isRide} />
+							<Chat />
 							<Active />
 						</Fragment>
 					)}

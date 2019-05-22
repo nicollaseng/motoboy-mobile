@@ -2,24 +2,35 @@ function getSideBarItems (context, currentUser) {
 	let users
 	let payment
 	let help
+	let chat
 
 	users = {
 		title: 'Meus dados',
 		icon: 'user',
 		useAwesome: true,
+		admin: false,
 		action: context.handleUserButton
 	}
 	delivery = {
 		title: 'Minhas Entregas',
 		icon: 'motorcycle',
 		useAwesome: true,
+		admin: false,
 		action: context.handleDeliveryButton
 	}
 	payment = {
 		title: 'Ganhos',
 		icon: 'money-check-alt',
 		useAwesome: true,
+		admin: false,
 		action: context.handlePaymentButton
+	}
+	chat = {
+		title: 'Suporte',
+		icon: 'comment-dots',
+		useAwesome: true,
+		admin: true,
+		action: context.handleChatButton
 	}
 	// help = {
 	// 	title: 'Ajuda',
@@ -32,6 +43,7 @@ function getSideBarItems (context, currentUser) {
 		users,
 		delivery,
 		payment,
+		chat,
 		// help,
 		{
 			title: 'Sair',

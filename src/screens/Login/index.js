@@ -17,6 +17,7 @@ import { connect } from 'react-redux'
 import * as firebase from 'firebase'
 import _ from 'lodash'
 import { setUser } from '../../redux/action/auth'
+import { setAdmin } from '../../redux/action/admin'
 
 import IconAwesome from "react-native-vector-icons/FontAwesome5";
 
@@ -79,6 +80,9 @@ class Login extends Component {
 							console.log('USER ON AUTH STATE CHANGE', user.toJSON())
 							this.setState({ email: user.toJSON().email })
 							this._setUserInfo()
+							if(user.toJSON().email === 'suporte.motoboysdeplantao@gmail.com'){
+								this.props.setAdmin(true)
+							}
 						} else {
 							this.setState({ loading: false })
 						}
@@ -151,6 +155,8 @@ class Login extends Component {
 												out: false,
 											})
 											.then(() => {
+												let isAdmin = user.email.toLowerCase() === 'suporte.motoboysdeplantao@gmail.com'
+												this.props.setAdmin(isAdmin)
 												console.log('passou por aqui e user', user)
 												this.props.setUser(user)
 												setId(user.id)
@@ -301,7 +307,7 @@ class Login extends Component {
   }
 }
 
-export default connect(null, { setUser })(Login)
+export default connect(null, { setUser, setAdmin })(Login)
 
 const styles = {
   container: {

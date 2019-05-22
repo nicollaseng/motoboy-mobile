@@ -6,6 +6,8 @@ import Register from '../screens/Register'
 import RecoverPassword from '../screens/RecoverPassword'
 import Map from '../components/Map'
 import DrawerComponent from '../components/DrawerComponent'
+import Chat from '../components/Chat/Chat'
+import ChatList from '../components/Chat/ChatList'
 
 export default {
 	Login,
@@ -16,4 +18,6 @@ export default {
     Payment,
     Register,
     RecoverPassword,
+    Chat,
+    ChatList,
 }

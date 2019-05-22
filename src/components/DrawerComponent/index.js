@@ -36,6 +36,10 @@ class DrawerComponent extends Component {
 		this.signOut()
 	}
 
+	handleChatButton = () => {
+		this.props.navigation.navigate('ChatList')
+	}
+
 	signOut = async () => {
 		await firebase.database().ref(`register/commerce/motoboyPartner/${this.props.user.id}`).update({
 			rideStatus: false

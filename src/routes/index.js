@@ -28,6 +28,12 @@ const AppNavigator = createStackNavigator({
 	RecoverPassword: {
 		screen: screens.RecoverPassword
 	},
+	Chat: {
+		screen: screens.Chat
+	},
+	ChatList: {
+		screen: screens.ChatList
+	},
 },
 {
 	initialRouteName: 'Login',
