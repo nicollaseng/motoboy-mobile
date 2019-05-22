@@ -97,7 +97,7 @@ const styles = {
 		// heigth: Dimensions.get('window').heigth/2,
 		position: 'absolute',
 		top: Platform.select({
-			ios: 200, android: 240
+			ios: 200, android: Dimensions.get('window').height/2.2
 		}),
 		justifyContent: 'flex-end',
 		alignItems: 'flex-end',

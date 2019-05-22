@@ -17,6 +17,7 @@ import Privacy from '../Privacy'
 import Telephone from '../Telephone'
 import Cancel from '../Cancel'
 import Navigation from '../Navigation'
+import Selector from '../Map/Selector'
 import Documents from '../Documents'
 import Chat from '../Chat'
 
@@ -989,7 +990,7 @@ class Map extends Component {
 	}
 
 	render(){
-		console.log('IS RIDE', this.state.isRide, this.state.ride)
+		console.log('map style', this.props.map)
 
 		// return <Text>Oi</Text>
 		return (
@@ -1013,7 +1014,7 @@ class Map extends Component {
             showsUserLocation={true}
             followsUserLocation={true}
 						showsCompass={true}
-						customMapStyle={isDay ? mapStyle : nigthMap}
+						customMapStyle={this.props.map ? mapStyle : nigthMap}
 					>
 					
 					{this.state.ridesOfRestaurant.length > 0 && this.state.ridesOfRestaurant.map(ride => {
@@ -1135,6 +1136,7 @@ class Map extends Component {
 							<Refresh checkRide={this.checkRide} rideAvailable={this.state.rideFreeAvailable} isRide={this.state.isRide} />
 							<Chat />
 							<Active />
+							{/* <Selector /> */}
 						</Fragment>
 					)}
 
@@ -1183,7 +1185,8 @@ const mapStateToProps = state => ({
 	user: state.user.user,
 	ride: state.ride.ride,
 	finish: state.finish.finish,
-	out: state.out.out
+	out: state.out.out,
+	map: state.map.map,
 })
 
 export default connect(mapStateToProps, { setUser, setRide, setOut })(withNavigation(Map))

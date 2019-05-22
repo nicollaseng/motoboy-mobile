@@ -194,10 +194,10 @@ class Delivery extends Component {
 	}
 
 	renderDelivery = () => {
-		const { rides } = this.state
-		if(rides.length > 0){
-			let ridesFiltered = _.orderBy(rides, ['createdAt'], ['desc'])
-			return ridesFiltered.map(ride => {
+		const { rides, ridesFiltered } = this.state
+		if( ridesFiltered && ridesFiltered.length > 0){
+			let ridesOrdered = _.orderBy(ridesFiltered, ['createdAt'], ['desc'])
+			return ridesOrdered.map(ride => {
 				let date = ride.createdAt.substring(0,10)
 				return (
 					<View style={{
@@ -245,14 +245,14 @@ class Delivery extends Component {
 		}	else {
 			return(
 				<View style={{
-					flex: 1,
-					justifyContent: 'center',
-					alignItems: 'center'
+					flex: 2,
+					justifyContent: 'flex-end',
+					alignItems: 'flex-end'
 				}}>
-					<Text style={{
-						fontSize: 18,
+					{/* <Text style={{
+						fontSize: 16,
 						fontWeight: 'bold'
-					}}>Não há entregas na data selecionada!</Text>
+					}}>Não há entregas na data selecionada!</Text> */}
 				</View>
 			)
 		}
@@ -260,10 +260,10 @@ class Delivery extends Component {
 
 	filterDelivery = param => {
 		const { rides } = this.state
-		if(rides.length > 0){
+		if(rides && rides.length > 0){
 			let datefiltered = param.format('DD/MM/YYYY')
 			let ridesFiltered = _.filter(rides, e => {
-				return e.createdAt.substring(0,10) === datefiltered
+				return e.createdAt.substring(0,10) === datefiltered && e.status === 'finished'
 			})
 			console.log('rides filtered', ridesFiltered)
 			this.setState({ ridesFiltered, date: datefiltered })
@@ -286,10 +286,10 @@ class Delivery extends Component {
           <Spinner />
         ) : (
 					<Fragment>
-						{/* <View style={{
-							flex: 0.2,
-						}}> */}
-						{/* <CalendarStrip
+						<View style={{
+							flex: 0.3,
+						}}>
+						<CalendarStrip
 							onDateSelected={this.filterDelivery}
 							ref={c => { this.calendar = c } }
 							calendarAnimation={{type: 'sequence', duration: 300}}
@@ -307,8 +307,8 @@ class Delivery extends Component {
 							// datesBlacklist={datesBlacklist}
 							iconContainer={{flex: 0.1}}
 							locale={locale}
-						/> */}
-						{/* </View> */}
+						/>
+						</View>
 						<Content style={styles.holder} keyboardShouldPersistTaps="handled">
 							{this.renderDelivery(ridesFiltered)}
 						</Content>

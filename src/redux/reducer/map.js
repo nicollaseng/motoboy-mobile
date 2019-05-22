@@ -3,7 +3,7 @@ import {
 } from '../action/actionTypes'
 
 const initial_state = {
-		map: [],
+		map: true,
 }
 
 export const map = (state = initial_state, action) => {
