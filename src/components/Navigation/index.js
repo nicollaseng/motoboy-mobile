@@ -32,7 +32,7 @@ const styles = {
 		// heigth: Dimensions.get('window').heigth/2,
 		position: 'absolute',
 		top: Platform.select({
-			ios: 200, android: Dimensions.get('window').height/1.8
+			ios: Dimensions.get('window').height/1.8, android: Dimensions.get('window').height/1.8
 		}),
 		justifyContent: 'flex-start',
 		alignItems: 'flex-start',

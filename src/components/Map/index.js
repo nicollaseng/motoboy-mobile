@@ -1084,7 +1084,7 @@ class Map extends Component {
 							{ this.state.ride.status !== "pending" && (
 								<Fragment>
 									<Cancel />
-									<Telephone />
+									<Telephone telefone={this.state.ride.restaurant.celular.length > 0 ? this.state.ride.restaurant.celular : this.state.ride.restaurant.telefone}/>
 									<Navigation />
 								</Fragment>
 							)

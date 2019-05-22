@@ -1,5 +1,5 @@
 import React, { Component } from  'react'
-import { Platform, View, Text, TouchableOpacity, Dimensions, Alert } from 'react-native'
+import { Platform, View, Text, TouchableOpacity, Dimensions, Alert, Linking } from 'react-native'
 import Icon from 'react-native-vector-icons/FontAwesome5'
 import VMasker from 'vanilla-masker'
 import * as firebase from 'firebase'
@@ -16,10 +16,15 @@ class Refresh extends Component {
 		}
 	}
 
+	call = () => {
+		console.log('telefone que vem', this.props.telefone)
+		Linking.openURL(`tel:${this.props.telefone}`)
+	}
+
 	render(){
 		return (
 			<View style={styles.container}>
-				<TouchableOpacity onPress={() => false} style={[styles.subContainer, { backgroundColor:  '#363777' }]}>
+				<TouchableOpacity onPress={this.call} style={[styles.subContainer, { backgroundColor:  '#363777' }]}>
 					<Icon name="phone" size={30} style={{ color: '#fff', backgroundColor: '#363777'}} />
 				</TouchableOpacity>
 			</View>
@@ -32,7 +37,7 @@ const styles = {
 		// heigth: Dimensions.get('window').heigth/2,
 		position: 'absolute',
 		top: Platform.select({
-			ios: 200, android: Dimensions.get('window').height/2.3
+			ios: Dimensions.get('window').height/2.3, android: Dimensions.get('window').height/2.3
 		}),
 		justifyContent: 'flex-end',
 		alignItems: 'flex-end',
@@ -67,6 +72,7 @@ const styles = {
 
 const mapStateToProps = state => ({
 	user: state.user.user,
+	ride: state.ride.ride,
 })
 
 export default connect(mapStateToProps)(Refresh)
