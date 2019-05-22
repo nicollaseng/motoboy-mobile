@@ -36,13 +36,19 @@ import * as firebase from 'firebase'
 import moment from 'moment'
 import VMasker from 'vanilla-masker'
 
+import axios from 'axios'
+
+
 const options = {
   title: 'Selecione uma foto de perfil',
   customButtons: [{ name: 'fb', title: 'Choose Photo from Facebook' }],
   storageOptions: {
     skipBackup: true,
     path: 'images',
-  },
+	},
+	quality: 0.4,
+	allowsEditing: false, 
+	maxWidth: 200, maxHeight: 200
 };
 
 const styles = StyleSheet.create({
@@ -161,7 +167,7 @@ class RegisterScreen extends Component {
     };
 	}
 	
-  componentWillMount(nextProps){
+  async componentDidMount(){
     const { user } = this.props
     console.log('current user do will', user)
     if(user){
@@ -186,6 +192,26 @@ class RegisterScreen extends Component {
 				cpf: user.cpf,
       })
     }
+    const images = firebase.storage().ref(`profile/photo/${this.props.user.id}`).child('profile_photo');
+    images.getDownloadURL().then(async (url) => { 
+      await firebase.database().ref(`register/commerce/motoboyPartner/${this.props.user.id}`).update({
+        photo: url
+      })
+      this.setState({ photo: url })
+  })
+   
+      // await firebase.storage().ref(`profile/photo/${this.props.user.id}`).child('profile_photo').getDownloadURL()
+        // .then(url => {
+        //   console.log('axios url', url)
+        //   axios.get(url)
+        //     .then(response => {
+        //       console.log('response do axios', response)
+        //       this.setState({ photo64:  response.data })
+        //     })
+        //     .catch(error => {
+        //       console.log('error retrieving photo from user', error)
+        //     })
+        // })
   }
 
   onClickBackButton = () => {
@@ -380,7 +406,10 @@ class RegisterScreen extends Component {
 	 * The first arg is the options object for customization (it can also be null or omitted for default options),
 	 * The second arg is the callback which sends object: response (more info in the API Reference)
 	 */
-		await ImagePicker.showImagePicker(options, (response) => {
+  this.setState({ 
+    isLoading: true
+  })
+		await ImagePicker.launchCamera(options, async (response) => {
       console.log('response da photo', response)
 			if (response.didCancel) {
 				console.log('User cancelled image picker');
@@ -395,14 +424,16 @@ class RegisterScreen extends Component {
           photo64: response.data,
           profilePhoto: source
 				});
-			}
+      }
+      await firebase.storage().ref(`profile/photo/${this.props.user.id}`).child('profile_photo')
+      .putString(response.data, 'base64', {contentType: 'image/jpg'})
+        .then(() => {
+          this.setState({ isLoading: false })
+        })
+        .catch(error => {
+          console.log('error uploading photo', error)
+        })
     })
-    // .then(result => {
-    //   console.log('result da promisse', result)
-    // })
-    // .catch(err => {
-    //   console.log('err da photo', err)
-    // })
 	}
 
 	handleEstadoChange = (estado) => {
@@ -423,7 +454,7 @@ class RegisterScreen extends Component {
   }
 
   render() {
-    console.log('user', this.props.user)
+    console.log('user', this.props.user, this.state.photo)
     const { isLoading } = this.state;
     const { user } = this.props
     return (
@@ -438,10 +469,10 @@ class RegisterScreen extends Component {
           <Content style={styles.holder} keyboardShouldPersistTaps="handled">
 					<View style={{ alignItems: 'center'}}> 
 						<Label style={styles.logoText}>Perfil</Label>
-						<TouchableWithoutFeedback onPress={() => {}}>
+						<TouchableWithoutFeedback onPress={() => this.selectPhoto()}>
               <Thumbnail
                 large
-                source={this.state.profilePhoto && Object.keys(this.state.profilePhoto).length > 0 ? this.state.profilePhoto : require('../../assets/avatar.png')} />
+                source={this.state.photo && this.state.photo.length > 0 ? {uri: `${this.state.photo}`} : require('../../assets/avatar.png')} />
 						</TouchableWithoutFeedback>
 						<Text style={styles.subLabel}> Clique e selecione uma foto de perfil </Text>
 					</View>

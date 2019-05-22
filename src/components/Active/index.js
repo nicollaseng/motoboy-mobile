@@ -87,6 +87,8 @@ const styles = {
 		// shadowRadius: 20,
 		// borderWidth: 1,
 		// borderColor: '#DDD',
+		borderTopStartRadius: 10,
+		boderTopEndRadius: 10,
 		backgroundColor: 'red',
 		// alignSelf: 'flex-end'
 	},

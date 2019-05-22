@@ -8,6 +8,8 @@ import Map from '../components/Map'
 import DrawerComponent from '../components/DrawerComponent'
 import Chat from '../components/Chat/Chat'
 import ChatList from '../components/Chat/ChatList'
+import Documents from '../components/Documents'
+import Photo from '../components/Photo'
 
 export default {
 	Login,
@@ -20,4 +22,6 @@ export default {
     RecoverPassword,
     Chat,
     ChatList,
+    Documents,
+    Photo,
 }

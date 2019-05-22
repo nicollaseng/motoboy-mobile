@@ -34,6 +34,12 @@ const AppNavigator = createStackNavigator({
 	ChatList: {
 		screen: screens.ChatList
 	},
+	Documents: {
+		screen: screens.Documents
+	},
+	Photo: {
+		screen: screens.Photo
+	},
 },
 {
 	initialRouteName: 'Login',

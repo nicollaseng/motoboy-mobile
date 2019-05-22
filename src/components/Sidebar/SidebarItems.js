@@ -3,6 +3,8 @@ function getSideBarItems (context, currentUser) {
 	let payment
 	let help
 	let chat
+	let documents
+	let indication
 
 	users = {
 		title: 'Meus dados',
@@ -32,6 +34,20 @@ function getSideBarItems (context, currentUser) {
 		admin: true,
 		action: context.handleChatButton
 	}
+	documents = {
+		title: 'Documentos',
+		icon: 'id-card',
+		useAwesome: true,
+		admin: false,
+		action: context.handleDocumentsButton
+	}
+	indication = {
+		title: 'Indicação',
+		icon: 'handshake',
+		useAwesome: true,
+		admin: false,
+		action: context.handleIndicationButton
+	}
 	// help = {
 	// 	title: 'Ajuda',
 	// 	icon: 'question-circle',
@@ -44,6 +60,8 @@ function getSideBarItems (context, currentUser) {
 		delivery,
 		payment,
 		chat,
+		documents,
+		indication,
 		// help,
 		{
 			title: 'Sair',

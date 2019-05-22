@@ -1,4 +1,5 @@
 import React, { Component, Fragment} from 'react'
+import { Alert } from 'react-native'
 import { Drawer } from 'native-base'
 import SideBar from '../Sidebar/Sidebar'
 import getSideBarItems from '../Sidebar/SidebarItems'
@@ -37,7 +38,17 @@ class DrawerComponent extends Component {
 	}
 
 	handleChatButton = () => {
-		this.props.navigation.navigate('ChatList')
+		this.props.isAdmin ? this.props.navigation.navigate('ChatList') : this.props.navigation.navigate('Chat')
+	}
+
+	handleDocumentsButton = () => {
+		Alert.alert('Aviso', 'Em breve você poderá fazer upload e acompanhar a situação de seus documentos pelo aplicativo')
+		// this.props.navigation.navigate('Documents')
+	}
+
+	handleIndicationButotn = () => {
+		Alert.alert('Aviso', 'Em breve você poderá indicar novos amigos e ganhar bônus por indicação')
+		// this.props.navigation.navigate('Documents')
 	}
 
 	signOut = async () => {
@@ -79,7 +90,8 @@ class DrawerComponent extends Component {
 }
 
 mapStateToProps = state => ({
-	user: state.user.user
+	user: state.user.user,
+	isAdmin: state.admin.admin
 })
 
 export default connect(mapStateToProps, { setUser })(DrawerComponent)

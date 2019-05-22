@@ -38,8 +38,8 @@ const SideBar = props => {
 						<Thumbnail
 							large
 							source={
-								props.user.photo64 && props.user.photo64.length > 0 ?
-									{uri: `data:image/png;base64,${props.user.photo64}`} : require('../../assets/avatar.png')}
+								props.user.photo && props.user.photo.length > 0 ?
+									{uri: `${props.user.photo}`} : require('../../assets/avatar.png')}
 						/>
 					</View>
 					<View style={{ margin: 7}}>
@@ -101,7 +101,7 @@ const SideBar = props => {
 			/>
 			</Content>
 			<View style={{justifyContent: 'flex-end'}}>
-					<Text style={styles.version}>Versão 1.5.3</Text>
+					<Text style={styles.version}>Versão 1.6.0</Text>
 			</View>
 		</Container>
 	)

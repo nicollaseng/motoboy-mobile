@@ -13,9 +13,11 @@ import BonusBar from '../BonusBar'
 import Info from '../Info'
 import Refresh from '../Refresh'
 import Terms from '../Terms'
+import Privacy from '../Privacy'
 import Telephone from '../Telephone'
 import Cancel from '../Cancel'
 import Navigation from '../Navigation'
+import Documents from '../Documents'
 import Chat from '../Chat'
 
 import { connect } from 'react-redux'
@@ -201,7 +203,9 @@ class Map extends Component {
 			// ride free
 			rideFreeAvailable: false,
 
-			ridesOfRestaurant: []
+			ridesOfRestaurant: [],
+
+			motoboy: {}
 		}
 	}
 
@@ -332,6 +336,7 @@ class Map extends Component {
 			firebase.database().ref(`register/commerce/motoboyPartner/${this.props.user.id}`).on('value', async snapshot => {
 
 				let motoboy = snapshot.val()
+				this.setState({ motoboy })
 
 				// START - CHECK IF THERE IS ACTIVE RIDE FOR MOTOBOy
 				if(motoboy.activeRide && Object.values(motoboy.activeRide)){
@@ -360,6 +365,29 @@ class Map extends Component {
 				}
 				// END - CHECK IF TERMS ARE TRUE
 
+					// START - CHECK IF PHOTO
+					if(!motoboy.photo ){
+						this.props.navigation.navigate('Photo')
+					} 
+					// END - CHECK IF PHOTO
+	
+
+					// START - CHECK IF TERMS ARE TRUE
+					if(!motoboy.privacy){
+						this.setState({ openModal: true })
+					} else {
+						this.setState({ openModal: false })
+					}
+					// END - CHECK IF TERMS ARE TRUE
+
+					// START - CHECK IF TERMS ARE TRUE
+					// if(!motoboy.documents){
+					// 	this.setState({ openModal: true })
+					// } else {
+					// 	this.setState({ openModal: false })
+					// }
+					// END - CHECK IF TERMS ARE TRUE
+
 				// START - GIVE 5 REAIS FOR EACH 10 RIDES ON DAY
 				if(motoboy.earnings && Object.values(motoboy.earnings).length > 0){
 					let earnings = Object.values(motoboy.earnings)
@@ -382,12 +410,13 @@ class Map extends Component {
 						let index = _.findIndex(earnings, e => e === earningFiltered[0])
 						earnings[index].tax = earningToday
 						await firebase.database().ref(`register/commerce/motoboyPartner/${this.props.user.id}`).update({
-							bonus: bonusToday,
+							bonus: motoboy.bonusToday && motoboy.bonusToday.length > 0  ? [...motoboy.bonusToday, bonusToday] : [bonusToday],
 							earnings,
 							rating: motoboy.isRated ? motoboy.rating : [5],
 							isRated: true
 						})
-					} else if(earningToday.length > 0 && earningToday.length % 10 !== 0){
+					} 
+					else if(earningToday.length > 0 && earningToday.length % 10 !== 0){
 							this.setState({ earning: earningToday.reduce((a,b) => a+b, 0) })
 					}
 				}
@@ -966,7 +995,9 @@ class Map extends Component {
 		return (
 			<View style={{ flex: 1 }}>
 			 <Modal isVisible={this.state.openModal}>
-          <Terms />
+          {!this.state.motoboy.terms && <Terms />}
+          {!this.state.motoboy.privacy && <Privacy />}
+          {/* {!this.state.motoboy.Documents && <Documents />} */}
         </Modal>
 				{this.countDown()}
 				<MapView
@@ -1094,10 +1125,10 @@ class Map extends Component {
 						<Fragment>
 							<Menu onPress={this.handleMenu}>
 								{/* <Image source={menuImage} style={{ width: 30, height: 30, resizeMode: 'contain'}} /> */}
-								<Icon name="bars" size={30} style={{ color: 'rgba(0, 0, 0, 1)'}} />
+								<Icon name="bars" size={30} style={{ color: '#54fa2a'}} />
 							</Menu>
 							<EarningBar earning={this.state.earning} />
-							<BonusBar earning={this.state.earning} />
+							<BonusBar earning={this.state.motoboy.bonusToday && this.state.motoboy.bonusToday.length > 0 ? this.state.motoboy.bonusToday.reduce((a,b) => a+b,0) : 0} />
 							{/* <Search
 								onLocationSelected={this.handleLocationSelected}
 							/> */}
