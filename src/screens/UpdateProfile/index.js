@@ -135,7 +135,7 @@ const styles = StyleSheet.create({
   }
 });
 
-class RegisterScreen extends Component {
+class UpdateProfileScreen extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -305,10 +305,10 @@ class RegisterScreen extends Component {
         return;
       }
 
-		this.signup()
+		this.updateProfile()
 	};
 	
-	signup = async () => {
+	updateProfile = async () => {
     const { 
        email,
 			 telefone,
@@ -350,7 +350,7 @@ class RegisterScreen extends Component {
       cnhUrl,
       cnhDate,
       rideStatus: false,
-      status: 'Pendente', //if false partner is blocked to use app
+      status: 'Aprovado', //if false partner is blocked to use app
       out: true,
       rideId: false,
       ride: false,
@@ -366,55 +366,22 @@ class RegisterScreen extends Component {
     this.setState({ isLoading: true })
     await firebase.database().ref(`register/commerce/motoboyPartner`).once('value',async shot => {
       let moto = shot.val()
-      let isRegistered = _.filter(moto, e => {
-        if(e.email){
-          return e.email === email || e.email.toLowerCase().includes(email.toLowerCase())  || e.cpf === cpf
-        }
-      } )
-      if(isRegistered.length > 0){
-        this.setState({ isLoading: false })
-        this.dropdown.alertWithType('error','Atenção', 'Já existe um CPF e/ou email cadastrado no banco de dados');
-      } else {
-        firebase.auth().createUserWithEmailAndPassword(email, unMask(this.state.cpf))
-        .then(async response => {
-          if(response){
-            await firebase.database().ref(`register/commerce/motoboyPartner/${id}`).set(currentUser)
-              .then(() => {
-                  axios.post(this.props.api.email, {
-                    email,
-                    subject: `
-                      Motoboys de Plantão - Cadastro efetuado com sucesso
-                    `,
-                    content: `
-                      Parabéns por se cadastrar junto a Motoboys de Plantão, o maior grupo de motoboys do Ceará.
-                      Neste momento sua conta está passando por uma análise interna e deve levar em torno de 24horas.
-                      Você será notificado por e-mail sobre o resultado do processo. 
-                      Sua senha de acesso, uma vez sendo aprovado, é: ${unMask(this.state.cpf)}
-                    `,
-                  })
-                    this.initialState()
-                    this.setState({ isLoading: false })
-                    this.dropdown.alertWithType('success','Atenção', 'Seu cadastro foi efetuado com sucesso e passará por uma análise. Enviamos um email com algumas instruções. Verifique sua caixa de entrada ou SPAM');
-                    // this.props.navigation.navigate('Login')
-                    console.log('sucess sending email')
-                  })
-                  .catch(err => {
-                    this.dropdown.alertWithType('error','Atenção', 'Atenção E-mail inválido ou já em uso');
-                    this.setState({ isLoading: false })
-                    console.log('error set regiser new user firebase', err)
-                  })
-              } else {
-                this.dropdown.alertWithType('error','Atenção', 'Atenção E-mail já cadastrado no banco de dado');
-                this.setState({ isLoading: false })
-              }
-          })
-          .catch(error => {
-            this.dropdown.alertWithType('error','Error', error);
-            this.setState({ isLoading: false })
-            console.log('error creating user', error)
-          })
-      }
-    })
+      await firebase.database().ref(`register/commerce/motoboyPartner/${this.props.user.id}`).update({
+				...currentUser,
+			})
+				.then(() => {
+						this.initialState()
+						this.setState({ isLoading: false })
+						this.dropdown.alertWithType('success','Atenção', 'Dados atualizados com sucesso!');
+						this.props.navigation.navigate('Terms')
+						console.log('sucess sending email')
+					})
+					.catch(err => {
+						this.dropdown.alertWithType('error','Atenção', 'Atenção E-mail inválido ou já em uso');
+						this.setState({ isLoading: false })
+						console.log('error set regiser new user firebase', err)
+					})
+    	})
     }
 
   initialState = () => {
@@ -595,7 +562,7 @@ class RegisterScreen extends Component {
       <Container style={styles.container} pointerEvents={isLoading ? 'none' : 'auto'}>
         <HeaderView
           color={"#54fa2a"}
-          title={'Seja parceiro' }
+          title={'Atualizar Perfil' }
           onBack={this.onClickBackButton}
         />
         {isLoading ? (
@@ -860,5 +827,5 @@ const mapStateToProps = state => ({
 	api: state.api.api,
 })
 
-export default connect(mapStateToProps, { setUser })(withNavigation(RegisterScreen))
+export default connect(mapStateToProps, { setUser })(withNavigation(UpdateProfileScreen))
 

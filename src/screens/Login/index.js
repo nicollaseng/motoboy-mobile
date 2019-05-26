@@ -18,6 +18,7 @@ import * as firebase from 'firebase'
 import _ from 'lodash'
 import { setUser } from '../../redux/action/auth'
 import { setAdmin } from '../../redux/action/admin'
+import { setApi } from '../../redux/action/api'
 
 import IconAwesome from "react-native-vector-icons/FontAwesome5";
 
@@ -95,8 +96,16 @@ class Login extends Component {
 				} 
 				else {
 					this.setState({ loading: false })
-					alert('O seu aplicativo está desatualizado. Favor atualize seu aplicativo na Playstore')
+					this.dropdown.alertWithType('warn', 'Atenção', 'O seu aplicativo está desatualizado. Favor atualize seu aplicativo na Playstore');
+					// alert('O seu aplicativo está desatualizado. Favor atualize seu aplicativo na Playstore')
 				}
+			}
+		})
+		firebase.database().ref('api').once('value', snap => {
+			if(snap.val() !== null){
+				let api = snap.val()
+				console.log('api', api)
+				this.props.setApi(api)
 			}
 		})
 	}
@@ -159,6 +168,7 @@ class Login extends Component {
 					// console.log('user', user)
 					if(user.length > 0){
 						user.map(async user => {
+							let navigation = user.updateProfile ? 'DrawerComponent' : 'UploadProfile'
 							if(user.email.toLowerCase() === this.state.email.toLowerCase()){
 								if(latestVersion === versao || Platform.OS === 'ios'){
 									if(user.status === 'Aprovado'){
@@ -172,10 +182,10 @@ class Login extends Component {
 											.then(() => {
 												let isAdmin = user.email.toLowerCase() === 'suporte.motoboysdeplantao@gmail.com'
 												this.props.setAdmin(isAdmin)
-												// console.log('passou por aqui e user', user)
 												this.props.setUser(user)
+
 												setId(user.id)
-												this.props.navigation.navigate('DrawerComponent')
+												this.props.navigation.navigate(`DrawerComponent`)
 												this.setState({ loading: false })
 												// console.log('user', user)
 											})
@@ -191,7 +201,7 @@ class Login extends Component {
 												.then(() => {
 													this.props.setUser(user)
 													setId(user.id)
-													this.props.navigation.navigate('DrawerComponent')
+													this.props.navigation.navigate(`${navigation}`)
 													this.setState({ loading: false })
 													console.log('user', user)
 												})
@@ -209,7 +219,7 @@ class Login extends Component {
 											.then(() => {
 												this.props.setUser(user)
 												setId(user.id)
-												this.props.navigation.navigate('DrawerComponent')
+												this.props.navigation.navigate(`${navigation}`)
 												this.setState({ loading: false })
 												console.log('user', user)
 											})
@@ -291,6 +301,7 @@ class Login extends Component {
 										underlineColorAndroid='transparent'
 										onChangeText={(password) =>this.state.blocked ? '' : this.setState({password})}
 										value={this.state.password}
+										keyboardType="number-pad"
 								/>
 									<TouchableOpacity onPress={() => this.setState({ isVisible: !this.state.isVisible })}>
 										<IconAwesome
@@ -309,7 +320,7 @@ class Login extends Component {
 								<Text style={styles.register}>Cadastre-se</Text>
 							</TouchableOpacity>
 							<TouchableOpacity onPress={this.recoverPassword}>
-								<Text style={styles.register}>Esqueceu sua senha?</Text>
+								<Text style={styles.register}>Recuperar acesso</Text>
 							</TouchableOpacity>
 							<Text style={[styles.register, { textAlign: 'right'}]}>2.0.1</Text>
 					</View>
@@ -324,7 +335,7 @@ class Login extends Component {
   }
 }
 
-export default connect(null, { setUser, setAdmin })(Login)
+export default connect(null, { setUser, setAdmin, setApi })(Login)
 
 const styles = {
   container: {

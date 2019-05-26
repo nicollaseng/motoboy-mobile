@@ -365,37 +365,11 @@ class Map extends Component {
 				}
 				// END - CHECK IF THERE IS ACTIVE RIDE FOR MOTOBOy
 
-
 				// START - CHECK IF TERMS ARE TRUE
 				if(!motoboy.terms){
-					this.setState({ openModal: true })
-				} else {
-					this.setState({ openModal: false })
-				}
+					this.props.navigation.navigate('Terms')
+				} 
 				// END - CHECK IF TERMS ARE TRUE
-
-					// START - CHECK IF PHOTO
-					if(!motoboy.photo && motoboy.terms && motoboy.privacy){
-						this.props.navigation.navigate('Photo')
-					} 
-					// END - CHECK IF PHOTO
-	
-
-					// START - CHECK IF TERMS ARE TRUE
-					if(!motoboy.privacy && motoboy.terms){
-						this.setState({ openModal: true })
-					} else {
-						this.setState({ openModal: false })
-					}
-					// END - CHECK IF TERMS ARE TRUE
-
-					// START - CHECK IF TERMS ARE TRUE
-					// if(!motoboy.documents){
-					// 	this.setState({ openModal: true })
-					// } else {
-					// 	this.setState({ openModal: false })
-					// }
-					// END - CHECK IF TERMS ARE TRUE
 
 				// START - GIVE 5 REAIS FOR EACH 10 RIDES ON DAY
 				if(motoboy.earnings && Object.values(motoboy.earnings).length > 0){

@@ -11,8 +11,8 @@ import {
 } from 'native-base';
 import { colors } from "../../themes"
 
-const HeaderView = ({ title, hasTabs, onBack }) => (
-  <Header hasTabs={hasTabs} style={{ backgroundColor: colors.drawer.header }}>
+const HeaderView = ({ title, hasTabs, onBack, color }) => (
+  <Header hasTabs={hasTabs} style={{ backgroundColor: color ? color : colors.drawer.header }}>
     <Left>
       <Button transparent onPress={() => onBack()}>
         <Icon name="arrow-back" style={{ color: "#fff"}} />

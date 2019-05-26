@@ -27,7 +27,6 @@ class App extends Component {
 			OneSignal.addEventListener('ids', this.onIds);
 	  }
 	
-
 		componentDidMount() {
 			BackHandler.addEventListener('hardwareBackPress', this.handleBackButton);
 		}

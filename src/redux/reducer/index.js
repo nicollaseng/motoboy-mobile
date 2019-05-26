@@ -6,6 +6,7 @@ import { out } from './out'
 import { map } from './map'
 import { admin } from './admin'
 import { drawer } from './drawer'
+import { api } from './api'
 
 export const Reducers = combineReducers({
     user,
@@ -15,4 +16,5 @@ export const Reducers = combineReducers({
     map,
     admin,
     drawer,
+    api,
 })

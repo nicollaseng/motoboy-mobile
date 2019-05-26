@@ -10,6 +10,7 @@
     "axios": "^0.18.0",
     "firebase": "^5.10.1",
     "geolib": "^2.0.24",
+    "install": "^0.12.2",
     "lodash": "^4.17.11",
     "moment": "^2.24.0",
     "native-base": "^2.12.1",
@@ -34,6 +35,7 @@
     "react-native-onesignal": "^3.2.12",
     "react-native-push-notification": "^3.1.3",
     "react-native-sound": "^0.10.12",
+    "react-native-textinput-effects": "^0.5.1",
     "react-native-timer-countdown": "^4.1.0",
     "react-native-vector-icons": "^6.4.2",
     "react-navigation": "^3.9.1",
@@ -41,6 +43,7 @@
     "redux": "^4.0.1",
     "rn-sliding-button": "^1.1.5",
     "styled-components": "^4.2.0",
+    "uuid": "^3.3.2",
     "validator": "^10.11.0",
     "vanilla-masker": "^1.2.0"
   },

@@ -16,7 +16,7 @@ export const firebaseConfig = () => {
 		projectId: "motoboy-mobile",
 		storageBucket: "motoboy-mobile.appspot.com",
 		messagingSenderId: "357451698079",
-		appId: "1:357451698079:web:eb76ae92a97e7674"
+		appId: "1:357451698079:web:eb76ae92a97e7674",
 	  };
 	var test = {
 		apiKey: "AIzaSyDlgrMyc-e2TbkUoPpx1mvmNdp4ionzTXE",

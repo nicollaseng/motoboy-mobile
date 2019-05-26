@@ -56,9 +56,18 @@ const AppNavigator = createStackNavigator({
 	Photo: {
 		screen: screens.Photo
 	},
+	Terms: {
+		screen: screens.Terms
+	},
+	Privacy: {
+		screen: screens.Privacy
+	},
+	UploadProfile: {
+		screen: screens.UploadProfile
+	},
 },
 {
-	initialRouteName: auth ? 'DrawerComponent' : 'Login',
+	initialRouteName: 'Login',
 	headerMode: 'none',
 	navigationOptions: {
 		headerVisible: false,

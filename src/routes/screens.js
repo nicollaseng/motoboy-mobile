@@ -10,6 +10,9 @@ import Chat from '../components/Chat/Chat'
 import ChatList from '../components/Chat/ChatList'
 import Documents from '../components/Documents'
 import Photo from '../components/Photo'
+import Terms from '../screens/Terms'
+import UploadProfile from '../screens/UpdateProfile'
+import Privacy from '../screens/PrivacyPolicy'
 
 export default {
 	Login,
@@ -24,4 +27,7 @@ export default {
     ChatList,
     Documents,
     Photo,
+    Terms,
+    Privacy,
+    UploadProfile,
 }
