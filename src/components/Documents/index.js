@@ -15,15 +15,15 @@ import HeaderView from '../HeaderView';
 
 
 const options = {
-  title: 'TIRE UMA FOTO DA SUA CNH',
+  title: 'TIRE UMA FOTO DE PERFIL',
   customButtons: [{ name: 'fb', title: 'ESCOLHA DO FACEBOOK' }],
   storageOptions: {
     skipBackup: true,
     path: 'images',
 	},
-	quality: 0.5,
+	quality: 0.3,
 	// allowsEditing: false, 
-	maxWidth: 500, maxHeight: 500
+	maxWidth: 300, maxHeight: 300
 };
 
 class Cnh extends Component {

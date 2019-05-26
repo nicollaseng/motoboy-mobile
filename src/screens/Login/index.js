@@ -21,8 +21,9 @@ import { setAdmin } from '../../redux/action/admin'
 
 import IconAwesome from "react-native-vector-icons/FontAwesome5";
 
-
 import { getPixelSize, setId } from '../../utils'
+
+import DropdownAlert from 'react-native-dropdownalert';
 
 
 // import VersionCheck from 'react-native-version-check';
@@ -34,16 +35,16 @@ import { getPixelSize, setId } from '../../utils'
 import { getAppstoreAppVersion } from "react-native-appstore-version-checker";
 
 
-// let latestVersion = null
+let latestVersion = null
 
-// getAppstoreAppVersion("com.xdev.motoboysdeplantaodriver") //put any apps packageId here
-//   .then(appVersion => {
-// 		latestVersion = appVersion
-//     console.log('version of app', appVersion);
-//   })
-//   .catch(err => {
-//     console.log("error occurred get version of app", err);
-// 	});
+getAppstoreAppVersion("com.xdev.motoboysdeplantaodriver") //put any apps packageId here
+  .then(appVersion => {
+		latestVersion = appVersion
+    console.log('version of app', appVersion);
+  })
+  .catch(err => {
+    console.log("error occurred get version of app", err);
+	});
 	
 
 class Login extends Component {
@@ -66,12 +67,12 @@ class Login extends Component {
 	async componentWillMount(){
 		await firebase.database().ref('version/versao').once('value', async snap => {
 			let versao = snap.val()
-			// if(versao !== null){
+			if(versao !== null){
 				console.log('versao do app do servidor', versao)
 				this.setState({ versao })
 
-				// console.log('versao', versao, latestVersion)
-				// if(latestVersion === versao || Platform.OS === 'ios'){
+				console.log('versao', versao, latestVersion)
+				if(latestVersion === versao || Platform.OS === 'ios'){
 					try {
 					this.setState({ loading: true })
 					firebase.auth().onAuthStateChanged(user => {
@@ -91,40 +92,54 @@ class Login extends Component {
 					this.setState({ loading: false })
 					console.log(error)
 				}
-				// } 
-				// else {
-				// 	this.setState({ loading: false })
-				// 	alert('O seu aplicativo está desatualizado. Favor atualize seu aplicativo na Playstore')
-				// }
-			// }
+				} 
+				else {
+					this.setState({ loading: false })
+					alert('O seu aplicativo está desatualizado. Favor atualize seu aplicativo na Playstore')
+				}
+			}
 		})
 	}
 
 
 	login = async () => {
 		const { email, password } = this.state
-		// if(latestVersion === this.state.versao || Platform.OS === 'ios'){
+
+		if(!email.length > 0 || !password.length >0){
+			this.dropdown.alertWithType('warn', 'Atenção', 'Parece que você se esqueceu de preencher E-mail ou Senha');
+			return;
+		}
+		
+		if(latestVersion === this.state.versao || Platform.OS === 'ios'){
 			this.setState({ loading: true })
-			try {
-				await firebase.auth().signInWithEmailAndPassword(email, password)
-					.then(response => {
-						console.log(response)
-						this._setUserInfo()
-					})
-					.catch(err => {
-						Alert.alert('Atenção','Verifique seu e-mail e senha novamente. Caso o erro persista tente recuperar sua senha. Se ainda mantiver o erro entre em contato com nosso suporte')
-						console.log('Erro while login firebase', err)
-						this.setState({ loading: false })
-					})
-			}	catch (err) {	
-				this.setState({ loading: false })
-				Alert.alert('Atenção','Algo de errado aconteceu. Tente novamente em alguns instantes. Cód: login0002')
-				console.log('Error before login firebase', err)
-			}
-		// } else {
-		// 	this.setState({ loading: false })
-		// 	alert('O seu aplicativo está desatualizado. Favor atualize seu aplicativo na Playstore')
-		// }
+				firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL) // persistence 
+				.then(async () => {
+					await firebase.auth().signInWithEmailAndPassword(email, password)
+						.then(response => {
+							console.log(response)
+							this._setUserInfo()
+						})
+						.catch(err => {
+							if(err.message ===  "The password is invalid or the user does not have a password."){
+								this.dropdown.alertWithType('error', 'Atenção', 'Senha inválida. Se você tiver se esquecido sua senha nós podemos te dar uma forcinha. Clique em Recuperar Senha!');
+							} else 	if(err.message ===  "There is no user record corresponding to this identifier. The user may have been deleted."){
+								this.dropdown.alertWithType('error', 'Atenção', 'E-mail não encontrado no banco de dados. Você ainda não se cadastrou? Esperando o que, vem ser MP!');
+							} else {
+								this.dropdown.alertWithType('error', 'Atenção', 'E-mail não encontrado no banco de dados. Você ainda não se cadastrou? Esperando o que, vem ser MP!');
+							}
+							console.log('Erro while login firebase', err)
+							this.setState({ loading: false })
+						})
+				})
+				.catch((error) => {
+					// Handle Errors here.
+					var errorCode = error.code;
+					var errorMessage = error.message;
+				});
+		} else {
+			this.setState({ loading: false })
+			this.dropdown.alertWithType('warn', 'Atenção', 'Seu aplicativo está desatualizado, que tal atualizar? Basta ir na Playstore e baixar a versão mais recente.');
+		}
 	}
 
 	_setUserInfo = async key => {
@@ -135,20 +150,20 @@ class Login extends Component {
 			await firebase.database().ref(`register/commerce/motoboyPartner`).once('value', data => {
 				if(data !== null){
 					let dataJson = data.toJSON()
-					console.log('email lower case', dataJson)
+					// console.log('email lower case', dataJson)
 					let user = _.filter(Object.values(dataJson), e => {
 						if(e.email && e.email.length > 0){
 							return e.email.toLowerCase().includes(this.state.email.toLowerCase()) 
 						}
 					})
-					console.log('user', user)
+					// console.log('user', user)
 					if(user.length > 0){
 						user.map(async user => {
 							if(user.email.toLowerCase() === this.state.email.toLowerCase()){
-								// if(latestVersion === versao || Platform.OS === 'ios'){
+								if(latestVersion === versao || Platform.OS === 'ios'){
 									if(user.status === 'Aprovado'){
 										// ASSURE THAT RIDE ID AND RIDE WILL NOT BLOCK USER LOGIN IF USER HAS NOT ANY ACTIVE RIDE RUNNING
-										if(user.activeRide !== null && !Object.values(user.activeRide).length > 0){
+										if(user.activeRide && !Object.values(user.activeRide).length > 0){
 											await firebase.database().ref(`register/commerce/motoboyPartner/${user.id}`).update({
 												rideId: false,
 												ride: false,
@@ -157,12 +172,12 @@ class Login extends Component {
 											.then(() => {
 												let isAdmin = user.email.toLowerCase() === 'suporte.motoboysdeplantao@gmail.com'
 												this.props.setAdmin(isAdmin)
-												console.log('passou por aqui e user', user)
+												// console.log('passou por aqui e user', user)
 												this.props.setUser(user)
 												setId(user.id)
 												this.props.navigation.navigate('DrawerComponent')
 												this.setState({ loading: false })
-												console.log('user', user)
+												// console.log('user', user)
 											})
 											.catch(error => {
 												console.log('Error firebase login updatin motoboy', error)
@@ -181,8 +196,7 @@ class Login extends Component {
 													console.log('user', user)
 												})
 												.catch(error => {
-													console.log('Error firebase login updatin motoboy', error)
-													Alert.alert('Atenção', 'Firebase error set out false. Contate nosso suporte')
+													this.dropdown.alertWithType('warn', 'Erro', 'Nossos servidores estão temporariamente indisponíveis. Por favor tente novamente em instantes!', error);
 												})
 										}
 										if(user.droped){
@@ -200,28 +214,27 @@ class Login extends Component {
 												console.log('user', user)
 											})
 											.catch(error => {
-												console.log('Error firebase login updatin motoboy', error)
-												Alert.alert('Atenção', 'Firebase error. Contate nosso suporte')
+												this.dropdown.alertWithType('warn', 'Erro', 'Nossos servidores estão temporariamente indisponíveis. Por favor tente novamente em instantes!', error);
 											})
 										}
 									} else if(user.status === 'Bloqueado')  {
-										Alert.alert('Atenção', 'Sua conta encontra-se temporariamente bloqueada. Entre em contato com nosso suporte')
+										this.dropdown.alertWithType('warn', 'Atenção', 'Sua conta encontra-se temporariamente bloqueada. Entre em contato com nosso suporte');
 										this.setState({ loading: false })
 									} else {
-										Alert.alert('Atenção', 'Seu cadastro está em análise')
+										this.dropdown.alertWithType('warn', 'Atenção', 'Seu cadastro está em análise. Aguarde 24h e tente novamente!');
 										this.setState({ loading: false })
 									}
-								// }	else {
-								// 	this.setState({ loading: false })
-								// 	alert('O seu aplicativo está desatualizado. Favor atualize seu aplicativo na Playstore')
-								// }
+								}	else {
+									this.dropdown.alertWithType('warn', 'Atenção', 'Seu aplicativo está desatualizado, que tal atualizar? Basta ir na Playstore e baixar a versão mais recente.');
+									this.setState({ loading: false })
+								}
 							} else {
+								this.dropdown.alertWithType('error', 'Atenção', 'E-mail não encontrado no banco de dados. Você ainda não se cadastrou? Esperando o que, vem ser MP!');
 								this.setState({ loading: false })
-								alert('Email não encontrado em nosso banco de dados')
 							}
 						})
 					} else {
-						alert('Atenção, estamos enfrentando problemas técnicos na sua conta. Tente novamente em instantes')
+						this.dropdown.alertWithType('error', 'Atenção', 'Não foram encontrados registros de usuário com o email informado no banco de dados. ');
 						this.setState({ loading: false })
 					}
 				}
@@ -298,8 +311,12 @@ class Login extends Component {
 							<TouchableOpacity onPress={this.recoverPassword}>
 								<Text style={styles.register}>Esqueceu sua senha?</Text>
 							</TouchableOpacity>
-							<Text style={[styles.register, { textAlign: 'right'}]}>1.6.0</Text>
-				</View>
+							<Text style={[styles.register, { textAlign: 'right'}]}>2.0.1</Text>
+					</View>
+					<DropdownAlert
+					 ref={ref => this.dropdown = ref}
+					 closeInterval={10000}
+					/>
 				{/* <View style={{ height: 100 }} /> */}
 				</View>
       // </View>

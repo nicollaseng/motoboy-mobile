@@ -38,16 +38,15 @@ import VMasker from 'vanilla-masker'
 
 import axios from 'axios'
 
-
 const options = {
-  title: 'Selecione uma foto de perfil',
-  customButtons: [{ name: 'fb', title: 'Choose Photo from Facebook' }],
+  title: 'TIRE UMA FOTO DE PERFIL',
+  customButtons: [{ name: 'fb', title: 'ESCOLHA DO FACEBOOK' }],
   storageOptions: {
     skipBackup: true,
     path: 'images',
 	},
-	quality: 0.4,
-	allowsEditing: false, 
+	quality: 0.2,
+	// allowsEditing: false, 
 	maxWidth: 200, maxHeight: 200
 };
 
@@ -189,16 +188,11 @@ class RegisterScreen extends Component {
 				bankAgencyDigit: user.bankAgencyDigit ? user.bankAgencyDigit : '',
 				bankAccount: user.bankAccount ? user.bankAccount : '',
 				bankAccountDigit: user.bankAccountDigit ? user.bankAccountDigit : '',
-				cpf: user.cpf,
+        cpf: user.cpf,
+        photo: user.photo ? user.photo : ''
       })
     }
-    const images = firebase.storage().ref(`profile/photo/${this.props.user.id}`).child('profile_photo');
-    images.getDownloadURL().then(async (url) => { 
-      await firebase.database().ref(`register/commerce/motoboyPartner/${this.props.user.id}`).update({
-        photo: url
-      })
-      this.setState({ photo: url })
-  })
+  }
    
       // await firebase.storage().ref(`profile/photo/${this.props.user.id}`).child('profile_photo').getDownloadURL()
         // .then(url => {
@@ -212,7 +206,6 @@ class RegisterScreen extends Component {
         //       console.log('error retrieving photo from user', error)
         //     })
         // })
-  }
 
   onClickBackButton = () => {
     return this.props.navigation.goBack()
@@ -251,7 +244,7 @@ class RegisterScreen extends Component {
 
 		let validPhone = false;
 		
-    if (telefone.length >= 14) {
+    if (telefone && telefone.length >= 14) {
       validPhone = true;
 		}
 		
@@ -273,7 +266,7 @@ class RegisterScreen extends Component {
     }
 
     if (validPhone) {
-      if (!validEmail && email.length > 0) {
+      if (!validEmail && email && email.length > 0) {
         this.showWarningAlert('E-mail inválido');
         return;
       }
@@ -286,17 +279,17 @@ class RegisterScreen extends Component {
         return;
       }
 
-      if (enderecoLocalidade.length < 3) {
+      if(enderecoLocalidade && enderecoLocalidade.length < 3) {
         this.showWarningAlert('Cidade inválida');
         return;
       }
 
-      if (enderecoLogradouro.length < 5) {
+      if (enderecoLogradouro && enderecoLogradouro.length < 5) {
         this.showWarningAlert('Endereço inválido');
         return;
       }
 
-      if (enderecoNumero.length < 1) {
+      if (enderecoNumero && enderecoNumero.length < 1) {
         this.showWarningAlert('Número inválido');
         return;
       }
@@ -401,40 +394,47 @@ class RegisterScreen extends Component {
       });
 	}
 	
-	selectPhoto = async () => {
-		/**
-	 * The first arg is the options object for customization (it can also be null or omitted for default options),
-	 * The second arg is the callback which sends object: response (more info in the API Reference)
-	 */
-  this.setState({ 
-    isLoading: true
-  })
-		await ImagePicker.launchCamera(options, async (response) => {
+  selectPhoto = async () => {
+    /**
+   * The first arg is the options object for customization (it can also be null or omitted for default options),
+   * The second arg is the callback which sends object: response (more info in the API Reference)
+   */
+    await ImagePicker.launchCamera(options, async (response) => {
+      this.setState({ 
+        isLoading: true
+      })
       console.log('response da photo', response)
-			if (response.didCancel) {
-				console.log('User cancelled image picker');
-			} else if (response.error) {
-				console.log('ImagePicker Error: ', response.error);
-			} else if (response.customButton) {
-				console.log('User tapped custom button: ', response.customButton);
-			} else {
+      if (response.didCancel) {
+        this.setState({ isLoading: false })
+        console.log('User cancelled image picker');
+      } else if (response.error) {
+        this.setState({ isLoading: false })
+        console.log('ImagePicker Error: ', response.error);
+      } else if (response.customButton) {
+        this.setState({ isLoading: false })
+        console.log('User tapped custom button: ', response.customButton);
+      } else {
         const source = { uri: response.uri };
         console.log('source da photo', source)
-				this.setState({
+        this.setState({
           photo64: response.data,
           profilePhoto: source
-				});
+        });
       }
-      await firebase.storage().ref(`profile/photo/${this.props.user.id}`).child('profile_photo')
-      .putString(response.data, 'base64', {contentType: 'image/jpg'})
+      const image = `data:image/jpeg;base64,${response.data}`
+      await firebase.database().ref(`register/commerce/motoboyPartner/${this.props.user.id}`).update({
+        photo: image
+      })
         .then(() => {
+          Alert.alert('Atenção', 'Foto de perfil atualizada com sucesso')
           this.setState({ isLoading: false })
         })
         .catch(error => {
-          console.log('error uploading photo', error)
+          console.log('error saving perfil foto', error)
+          Alert.alert('Atenção', 'Houve um erro ao salvar sua foto. Tente novamente ou entre em contato com nosso suporte')
         })
     })
-	}
+  }
 
 	handleEstadoChange = (estado) => {
 		this.setState({ enderecoEstado: estado })

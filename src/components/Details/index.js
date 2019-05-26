@@ -206,7 +206,7 @@ class Details extends Component {
 						{this.state.loading ? <Spinner /> : (
 								<View style={{ flex: 1.0 ,justifyContent: 'center', alignItems: 'center', padding: 10}}>
 									<TouchableOpacity onPress={this.handleAcceptRide} style={{ alignItems: 'center', justifyContent: 'center', backgroundColor: '#54fa2a', borderRadius: 60}}>
-										<Countdown style={{ fontSize: 42, color: '#666', padding: 10, fontWeigth: '400',}} />
+										<Countdown style={{ fontSize: 50, color: '#666', padding: 10, fontWeigth: '400',}} />
 									</TouchableOpacity>
 							</View>
 						)}
@@ -216,16 +216,15 @@ class Details extends Component {
 									style={{
 										backgroundColor: '#cc2900',
 										width: 280,
-										heigth: 40,
-										padding: 10,
+										padding: 25,
 										borderRadius: 5,
 									}}
-									height={35}
+									height={50}
 									onSlidingSuccess={this.refuseRide}
 									slideDirection={SlideDirection.RIGHT}>
 									<View>
 										<Text numberOfLines={1} style={style.textSlide}>
-											DESLIZE PARA RECUSAR >
+											DESLIZE PARA RECUSAR >>>
 										</Text>
 									</View>
 								</RNSlidingButton>
@@ -255,15 +254,14 @@ class Details extends Component {
 											backgroundColor: '#363777',
 											borderRadius: 5,
 											width: 280,
-											height: 40,
-											padding: 20
+											padding: 25
 										}}
-										height={35}
+									height={50}
 										onSlidingSuccess={this.onRestaurant}
 										slideDirection={SlideDirection.RIGHT}>
 										<View>
 											<Text numberOfLines={1} style={style.textSlide}>
-												NO RESTAURANTE >
+												NO RESTAURANTE >>>
 											</Text>
 										</View>
 									</RNSlidingButton>
@@ -292,15 +290,14 @@ class Details extends Component {
 											backgroundColor: '#363777',
 											borderRadius: 5,
 											width: 280,
-											height: 40,
-											padding: 20
+											padding: 25
 										}}
-										height={35}
+									height={50}
 										onSlidingSuccess={this.startDelivery}
 										slideDirection={SlideDirection.RIGHT}>
 										<View>
 											<Text numberOfLines={1} style={style.textSlide}>
-												INICIAR ENTREGA >
+												INICIAR ENTREGA >>>
 											</Text>
 										</View>
 									</RNSlidingButton>
@@ -331,15 +328,14 @@ class Details extends Component {
 											backgroundColor: '#363777',
 											borderRadius: 5,
 											width: 280,
-											height: 40,
-											padding: 20
+											padding: 25
 										}}
-										height={35}
+									height={50}
 										onSlidingSuccess={this.startDelivery}
 										slideDirection={SlideDirection.RIGHT}>
 										<View>
 											<Text numberOfLines={1} style={style.textSlide}>
-												INICIAR ENTREGA >
+												INICIAR ENTREGA >>>
 											</Text>
 										</View>
 									</RNSlidingButton>
@@ -370,15 +366,14 @@ class Details extends Component {
 										backgroundColor: '#363777',
 										borderRadius: 5,
 										width: 280,
-										height: 40,
-										padding: 20
+										padding: 25
 									}}
-									height={35}
+								height={50}
 									onSlidingSuccess={() => !this.state.isRideCanceled ? ride.retorno ? this.wayBack() : this.finishDelivery() : false}
 									slideDirection={SlideDirection.RIGHT}>
 									<View>
 										<Text numberOfLines={1} style={style.textSlide}>
-										{ride.retorno ? 'RETORNAR RESTAURANTE >' : 'FINALIZAR >'}
+										{ride.retorno ? 'RETORNAR RESTAURANTE >>>' : 'FINALIZAR >>>'}
 										</Text>
 									</View>
 									</RNSlidingButton>
@@ -410,15 +405,14 @@ class Details extends Component {
 										backgroundColor: '#363777',
 										borderRadius: 5,
 										width: 280,
-										height: 40,
-										padding: 20
+										padding: 25
 									}}
-									height={35}
+								height={50}
 									onSlidingSuccess={() => !this.state.isRideCanceled ? this.finishDelivery() : false}
 									slideDirection={SlideDirection.RIGHT}>
 									<View>
 										<Text numberOfLines={1} style={style.textSlide}>
-										{'FINALIZAR >'}
+										{'FINALIZAR >>>'}
 										</Text>
 									</View>
 									</RNSlidingButton>
@@ -448,15 +442,14 @@ class Details extends Component {
 										backgroundColor: '#363777',
 										borderRadius: 5,
 										width: 280,
-										height: 40,
-										padding: 20
+										padding: 25
 									}}
-									height={35}
+								height={50}
 									onSlidingSuccess={this.dismiss}
 									slideDirection={SlideDirection.RIGHT}>
 									<View>
 										<Text numberOfLines={1} style={style.textSlide}>
-										{'FINALIZAR > '}
+										{'FINALIZAR >>> '}
 										</Text>
 									</View>
 									</RNSlidingButton>
@@ -486,15 +479,14 @@ class Details extends Component {
 										backgroundColor: '#363777',
 										borderRadius: 5,
 										width: 280,
-										height: 40,
-										padding: 20
+										padding: 25
 									}}
-									height={35}
+								height={50}
 									onSlidingSuccess={this.dismiss}
 									slideDirection={SlideDirection.RIGHT}>
 									<View>
 										<Text numberOfLines={1} style={style.textSlide}>
-										{'PROSSEGUIR > '}
+										{'PROSSEGUIR >>> '}
 										</Text>
 									</View>
 									</RNSlidingButton>
@@ -525,15 +517,14 @@ class Details extends Component {
 										backgroundColor: '#363777',
 										borderRadius: 5,
 										width: 280,
-										height: 40,
-										padding: 20
+										padding: 25
 									}}
-									height={35}
+								height={50}
 									onSlidingSuccess={this.dismiss}
 									slideDirection={SlideDirection.RIGHT}>
 									<View>
 										<Text numberOfLines={1} style={style.textSlide}>
-										{'FINALIZAR > '}
+										{'FINALIZAR >>> '}
 										</Text>
 									</View>
 									</RNSlidingButton>
@@ -563,15 +554,14 @@ class Details extends Component {
 										backgroundColor: '#363777',
 										borderRadius: 5,
 										width: 280,
-										height: 40,
-										padding: 20
+										padding: 25
 									}}
-									height={35}
+								height={50}
 									onSlidingSuccess={this.dismiss}
 									slideDirection={SlideDirection.RIGHT}>
 									<View>
 										<Text numberOfLines={1} style={style.textSlide}>
-										{'PROSSEGUIR > '}
+										{'PROSSEGUIR >>> '}
 										</Text>
 									</View>
 									</RNSlidingButton>
@@ -608,16 +598,6 @@ class Details extends Component {
 
 	openGoogleMaps = (lat , lng ) => {
 		console.log('latitude and longitude passing', lat, lng)
-		const { ride } = this.props
-		// const scheme = Platform.select({ ios: 'maps:0,0?q=', android: 'geo:0,0?q=' });
-		// const latLng = `${lat},${lng}`;
-		// console.log('latitude longitude maps', latLng)
-		// const label = 'Rotas para restaurante';
-		// const url = Platform.select({
-		// 	ios: `${scheme}${label}@${latLng}`,
-		// 	android: `${scheme}${latLng}(${label})`
-		// });
-		// Linking.openURL(url); 
 		const scheme = Platform.select({ ios: 'maps:0,0?q=', android: 'geo:0,0?q=' });
     const latLng = `${lat},${lng}`;
     const label = 'Destino';
@@ -932,7 +912,7 @@ const style = {
 	textSlide :{
 		color: '#fff',
 		fontSize: 16,
-		padding: 20,
+		padding: 25,
 		fontWeight: '700'
 	}
 }

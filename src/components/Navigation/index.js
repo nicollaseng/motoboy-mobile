@@ -1,5 +1,5 @@
 import React, { Component } from  'react'
-import { Platform, View, TouchableOpacity, Dimensions } from 'react-native'
+import { View, TouchableOpacity, Dimensions, Platform, Linking } from 'react-native'
 import Icon from 'react-native-vector-icons/FontAwesome5'
 import VMasker from 'vanilla-masker'
 import * as firebase from 'firebase'
@@ -16,10 +16,38 @@ class Navigation extends Component {
 		}
 	}
 
+	openGoogleMaps = (lat , lng ) => {
+		console.log('latitude and longitude passing', lat, lng)
+		const scheme = Platform.select({ ios: 'maps:0,0?q=', android: 'geo:0,0?q=' });
+    const latLng = `${lat},${lng}`;
+    const label = 'Destino';
+    const url = Platform.select({
+      ios: `https://www.google.com/maps/search/?api=1&query=${label}&center=${lat},${lng}`,
+      android: `${scheme}${latLng}(${label})`
+    });
+    Linking.canOpenURL(url)
+    .then((supported) => {
+        if (!supported) {
+            browser_url =`http://maps.google.com/maps?daddr=${lat},${lng}`
+            // "https://www.google.de/maps/@" +
+            // lat +
+            // "," +
+            // lng +
+            // "?q=" +
+            // label;
+            return Linking.openURL(browser_url);
+        } else {
+            return Linking.openURL(url);
+        }
+    })
+    .catch((err) => console.log('error', err));
+	}
+	
+
 	render(){
 		return (
 			<View style={styles.container}>
-				<TouchableOpacity onPress={() => false} style={[styles.subContainer, { backgroundColor:  '#54fa2a' }]}>
+				<TouchableOpacity onPress={() => this.openGoogleMaps(this.props.lat, this.props.lng)} style={[styles.subContainer, { backgroundColor:  '#54fa2a' }]}>
 					<Icon name="road" size={30} style={{ color: '#363777', backgroundColor: '#54fa2a'}} />
 				</TouchableOpacity>
 			</View>

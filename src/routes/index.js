@@ -2,6 +2,22 @@
 import React from 'react'
 import { createStackNavigator, createAppContainer } from 'react-navigation'
 import screens from './screens';
+import * as firebase from 'firebase'
+
+import { firebaseConfig } from '../firebase'
+
+!firebase.apps.length ? firebase.initializeApp(firebaseConfig()) : firebase.app();
+
+let auth = false
+
+firebase.auth().onAuthStateChanged(user => {
+	console.log('user', user)
+	if(user){
+		auth = true
+	} else {
+		console.log('nao autenticado')
+	}
+})
 
 const AppNavigator = createStackNavigator({
 	Login: {
@@ -42,7 +58,7 @@ const AppNavigator = createStackNavigator({
 	},
 },
 {
-	initialRouteName: 'Login',
+	initialRouteName: auth ? 'DrawerComponent' : 'Login',
 	headerMode: 'none',
 	navigationOptions: {
 		headerVisible: false,

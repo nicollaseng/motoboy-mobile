@@ -31,7 +31,7 @@ const SideBar = props => {
 		<Container style={{ backgroundColor: "#fefefe" }}>
 		<Content>
 			<View style={styles.container}>
-					<View style={{ width: '15.7%', margin: 7, marginTop: Platform.select({
+					<View style={{ width: '90%', margin: 7, flexDirection: 'row', justifyContent: 'space-between', marginTop: Platform.select({
 						ios: 40,
 						android: 10,
 					})}}>
@@ -41,6 +41,13 @@ const SideBar = props => {
 								props.user.photo && props.user.photo.length > 0 ?
 									{uri: `${props.user.photo}`} : require('../../assets/avatar.png')}
 						/>
+            <TouchableOpacity onPress={() => props.closeDrawer()}>
+              <IconAwesome
+                size={24}
+                style={{ color: "#fff" }}
+                name="arrow-right"
+              />
+            </TouchableOpacity>
 					</View>
 					<View style={{ margin: 7}}>
 						<View style={{ flexDirection: 'row', alignItems: 'center'}}>
@@ -101,7 +108,7 @@ const SideBar = props => {
 			/>
 			</Content>
 			<View style={{justifyContent: 'flex-end'}}>
-					<Text style={styles.version}>Versão 1.6.0</Text>
+					<Text style={styles.version}>Versão 2.0.1</Text>
 			</View>
 		</Container>
 	)

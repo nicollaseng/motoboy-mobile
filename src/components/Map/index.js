@@ -17,6 +17,8 @@ import Privacy from '../Privacy'
 import Telephone from '../Telephone'
 import Cancel from '../Cancel'
 import Navigation from '../Navigation'
+import RecoverUser from '../Recover'
+import Countdown from '../Countdown/Countdown'
 import Selector from '../Map/Selector'
 import Documents from '../Documents'
 import Chat from '../Chat'
@@ -27,6 +29,8 @@ import * as firebase from 'firebase'
 import { getPixelSize, getId } from '../../utils'
 
 import markerImage from '../../assets/marker.png'
+import marker2 from '../../assets/marker2.png'
+
 import backImage from '../../assets/back.png'
 import menuImage from '../../assets/menu.png'
 
@@ -130,7 +134,7 @@ BackgroundTimer.runBackgroundTimer(() => {
 	{}
 	)
 }, 
-90*1000);
+180*1000);
 
 BackgroundTimer.setInterval(() => {
 	firebase.database().ref(`register/commerce/motoboyPartner/${userId}`).once('value',async snap => {
@@ -206,7 +210,11 @@ class Map extends Component {
 
 			ridesOfRestaurant: [],
 
-			motoboy: {}
+			motoboy: {},
+
+			// for navigation purpose
+			rideLat: 0.0,
+			rideLng: 0.0
 		}
 	}
 
@@ -367,14 +375,14 @@ class Map extends Component {
 				// END - CHECK IF TERMS ARE TRUE
 
 					// START - CHECK IF PHOTO
-					if(!motoboy.photo ){
+					if(!motoboy.photo && motoboy.terms && motoboy.privacy){
 						this.props.navigation.navigate('Photo')
 					} 
 					// END - CHECK IF PHOTO
 	
 
 					// START - CHECK IF TERMS ARE TRUE
-					if(!motoboy.privacy){
+					if(!motoboy.privacy && motoboy.terms){
 						this.setState({ openModal: true })
 					} else {
 						this.setState({ openModal: false })
@@ -499,7 +507,6 @@ class Map extends Component {
 						
 						}
 					})
-
 			})
 				this.setState({
 					location,
@@ -918,6 +925,8 @@ class Map extends Component {
 					},
 					isRide: true,
 					ride,
+					rideLat: ride.delivery.latitude,
+					rideLng: ride.delivery.longitude,
 				})
 			} else if (
 				ride.status === 'onWay' ||
@@ -931,6 +940,8 @@ class Map extends Component {
 					},
 					isRide: true,
 					ride,
+					rideLat: ride.restaurant.latitude,
+					rideLng: ride.restaurant.longitude,
 				})
 			} else if(
 				ride.status === 'canceled'
@@ -990,7 +1001,7 @@ class Map extends Component {
 	}
 
 	render(){
-		console.log('map style', this.props.map)
+		console.log('map style', this.props.map, this.props.drawer)
 
 		// return <Text>Oi</Text>
 		return (
@@ -1014,7 +1025,7 @@ class Map extends Component {
             showsUserLocation={true}
             followsUserLocation={true}
 						showsCompass={true}
-						customMapStyle={this.props.map ? mapStyle : nigthMap}
+						customMapStyle={mapStyle}
 					>
 					
 					{this.state.ridesOfRestaurant.length > 0 && this.state.ridesOfRestaurant.map(ride => {
@@ -1067,7 +1078,7 @@ class Map extends Component {
 								}}
 							/>
 							<Marker
-								coordinate={this.state.destination} anchor={{ x: 0, y: 0 }} image={markerImage}
+								coordinate={this.state.destination} anchor={{ x: 0.12, y: 0.78 }} image={marker2}
 							>
 								<LocationBox>
 									<LocationText>
@@ -1076,7 +1087,7 @@ class Map extends Component {
 								</LocationBox>
 							 </Marker>
 							 <Marker
-								coordinate={this.state.region} anchor={{ x: 0, y: 0 }} image={markerImage}
+								coordinate={this.state.region} anchor={{ x: 0.12, y: 0.78 }} image={marker2}
 							>
 								<LocationBox>
 									<LocationTimeBox>
@@ -1102,6 +1113,7 @@ class Map extends Component {
 								// pedido={this.props.ride ? this.props.ride : this.state.ride}
 								pedido={this.state.ride}
 							/>
+							<Countdown time={this.state.duration} status={this.state.ride.status} ride={this.state.ride}/>
 							{}
 							{/* {this.countDown()} */}
 							<Details
@@ -1117,7 +1129,8 @@ class Map extends Component {
 								<Fragment>
 									<Cancel />
 									<Telephone telefone={this.state.ride.restaurant.celular.length > 0 ? this.state.ride.restaurant.celular : this.state.ride.restaurant.telefone}/>
-									<Navigation />
+									<Navigation lat={this.state.rideLat} lng={this.state.rideLng}/>
+									<RecoverUser />
 								</Fragment>
 							)
 						}
@@ -1128,14 +1141,15 @@ class Map extends Component {
 								{/* <Image source={menuImage} style={{ width: 30, height: 30, resizeMode: 'contain'}} /> */}
 								<Icon name="bars" size={30} style={{ color: '#54fa2a'}} />
 							</Menu>
-							<EarningBar earning={this.state.earning} />
-							<BonusBar earning={this.state.motoboy.bonusToday && this.state.motoboy.bonusToday.length > 0 ? this.state.motoboy.bonusToday.reduce((a,b) => a+b,0) : 0} />
-							{/* <Search
-								onLocationSelected={this.handleLocationSelected}
-							/> */}
-							<Refresh checkRide={this.checkRide} rideAvailable={this.state.rideFreeAvailable} isRide={this.state.isRide} />
-							<Chat />
-							<Active />
+							{!this.props.drawer && (
+								<Fragment>
+										<EarningBar earning={this.state.earning} />
+										<BonusBar earning={this.state.motoboy.bonusToday && this.state.motoboy.bonusToday.length > 0 ? this.state.motoboy.bonusToday.reduce((a,b) => a+b,0) : 0} />
+										<Refresh checkRide={this.checkRide} rideAvailable={this.state.rideFreeAvailable} isRide={this.state.isRide} />
+										<Chat />
+										<Active />
+								</Fragment>
+							)}
 							{/* <Selector /> */}
 						</Fragment>
 					)}
@@ -1187,6 +1201,7 @@ const mapStateToProps = state => ({
 	finish: state.finish.finish,
 	out: state.out.out,
 	map: state.map.map,
+	drawer: state.drawer.drawer
 })
 
 export default connect(mapStateToProps, { setUser, setRide, setOut })(withNavigation(Map))

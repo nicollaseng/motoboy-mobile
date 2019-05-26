@@ -20,9 +20,9 @@ const options = {
     skipBackup: true,
     path: 'images',
 	},
-	quality: 0.5,
+	quality: 0.3,
 	// allowsEditing: false, 
-	maxWidth: 500, maxHeight: 500
+	maxWidth: 300, maxHeight: 300
 };
 
 class Photo extends Component {

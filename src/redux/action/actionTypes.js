@@ -4,6 +4,7 @@ const FINISH = 'FINISH';
 const OUT = 'OUT';
 const MAP = 'MAP';
 const ADMIN = 'ADMIN';
+const DRAWER = 'DRAWER';
 
 export { 
 	AUTH,
@@ -12,4 +13,5 @@ export {
 	OUT,
 	MAP,
 	ADMIN,
+	DRAWER
 }

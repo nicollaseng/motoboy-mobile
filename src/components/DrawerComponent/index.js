@@ -9,16 +9,20 @@ import * as firebase from 'firebase'
 import { connect } from "react-redux"
 
 import { setUser } from '../../redux/action/auth'
+import { setDrawer } from '../../redux/action/drawer'
+
 
 
 class DrawerComponent extends Component {
 
 	closeDrawer = () => {
-    this.drawer._root.close();
+		this.drawer._root.close();
+		this.props.setDrawer(false)
   };
 
   openDrawer = () => {
-    this.drawer._root.open();
+		this.drawer._root.open();
+		this.props.setDrawer(true)
 	};
 	
 	handleUserButton = () => {
@@ -46,7 +50,7 @@ class DrawerComponent extends Component {
 		// this.props.navigation.navigate('Documents')
 	}
 
-	handleIndicationButotn = () => {
+	handleIndicationButton = () => {
 		Alert.alert('Aviso', 'Em breve você poderá indicar novos amigos e ganhar bônus por indicação')
 		// this.props.navigation.navigate('Documents')
 	}
@@ -78,7 +82,9 @@ class DrawerComponent extends Component {
 							this.drawer = ref;
 						}}
 						onClose={() => this.closeDrawer}
-						content={<SideBar user={this.props.user ? this.props.user : {}} sideBarItems={getSideBarItems(this)} />}
+						content={<SideBar user={this.props.user ? this.props.user : {}} sideBarItems={getSideBarItems(this)} closeDrawer={this.closeDrawer} />}
+						tapToClose={false}
+						acceptPan={false}
 					>
 						<Map
 							openDrawer={this.openDrawer}
@@ -94,4 +100,4 @@ mapStateToProps = state => ({
 	isAdmin: state.admin.admin
 })
 
-export default connect(mapStateToProps, { setUser })(DrawerComponent)
+export default connect(mapStateToProps, { setUser, setDrawer })(DrawerComponent)

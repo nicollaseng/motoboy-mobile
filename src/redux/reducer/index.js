@@ -5,6 +5,7 @@ import { finish } from './finish'
 import { out } from './out'
 import { map } from './map'
 import { admin } from './admin'
+import { drawer } from './drawer'
 
 export const Reducers = combineReducers({
     user,
@@ -13,4 +14,5 @@ export const Reducers = combineReducers({
     out,
     map,
     admin,
+    drawer,
 })
