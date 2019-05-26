@@ -827,6 +827,21 @@ class RegisterScreen extends Component {
               onChangeText={cnhDate => this.handleCnhDate(cnhDate)}
               value={this.state.cnhDate}
             />
+              <Fumi
+              label={'Código indicação'}
+              iconClass={FontAwesomeIcon}
+              iconName={'ticket-alt'}
+              iconColor={'#54fa2a'}
+              iconSize={20}
+              iconWidth={40}
+              inputPadding={16}
+              autoCapitalize="words"
+              returnKeyType="next"
+              autoCapitalize="none"
+              keyboardType="number-pad"
+              onChangeText={indication => this.handleCnhDate(indication)}
+              value={this.state.indication}
+            />
 						<View style={{ marginVertical: 20, justifyContent: 'center', alignItems: 'center'}}>
               <Text style={styles.subLabel}> Faça o upload da sua CNH </Text>
               <TouchableWithoutFeedback onPress={() => this.selectPhoto('cnhUrl', 'cnhImage')}>

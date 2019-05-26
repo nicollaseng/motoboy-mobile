@@ -235,23 +235,22 @@ class Map extends Component {
 
 
 	async componentWillMount(){
-		let userDeviceId;
+		// let userDeviceId;
 	
-			OneSignal.getPermissionSubscriptionState( (status) => {
-				userDeviceId =  status.userId;
-				if(!this.props.user.userDeviceId){
-				firebase.database().ref(`register/commerce/motoboyPartner/${this.props.user.id}`).update({
-					userDeviceId
-				})
-					.then(() => {
-						console.log('successfully update userDeviceId')
-					})
-					.catch((error) => {
-						console.log('error update userDeviceId', error)
-					})
-				}
-				this.setState({ userDeviceId })
-			});
+		// 	OneSignal.getPermissionSubscriptionState( (status) => {
+		// 		userDeviceId =  status.userId;
+		// 		if(!this.props.user.userDeviceId){
+		// 		firebase.database().ref(`register/commerce/motoboyPartner/${this.props.user.id}`).update({
+		// 			userDeviceId
+		// 		})
+		// 			.then(() => {
+		// 				console.log('successfully update userDeviceId')
+		// 			})
+		// 			.catch((error) => {
+		// 				console.log('error update userDeviceId', error)
+		// 			})
+		// 		}
+		// 		this.setState({ userDeviceId })
 
 			// ----------- START LOOK FOR CALOR RIDES ---------------
 

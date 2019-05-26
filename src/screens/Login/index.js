@@ -169,64 +169,80 @@ class Login extends Component {
 					if(user.length > 0){
 						user.map(async user => {
 							let navigation = user.updateProfile ? 'DrawerComponent' : 'UploadProfile'
+							console.log('NAVIGATION', navigation)
 							if(user.email.toLowerCase() === this.state.email.toLowerCase()){
 								if(latestVersion === versao || Platform.OS === 'ios'){
 									if(user.status === 'Aprovado'){
 										// ASSURE THAT RIDE ID AND RIDE WILL NOT BLOCK USER LOGIN IF USER HAS NOT ANY ACTIVE RIDE RUNNING
-										if(user.activeRide && !Object.values(user.activeRide).length > 0){
-											await firebase.database().ref(`register/commerce/motoboyPartner/${user.id}`).update({
-												rideId: false,
-												ride: false,
-												out: false,
-											})
-											.then(() => {
-												let isAdmin = user.email.toLowerCase() === 'suporte.motoboysdeplantao@gmail.com'
-												this.props.setAdmin(isAdmin)
-												this.props.setUser(user)
+										// if(user.activeRide && !Object.values(user.activeRide).length > 0){
+											// await firebase.database().ref(`register/commerce/motoboyPartner/${user.id}`).update({
+											// 	rideId: false,
+											// 	ride: false,
+											// 	// out: false,
+											// })
+											// .then(() => {
+											// 	let isAdmin = user.email.toLowerCase() === 'suporte.motoboysdeplantao@gmail.com'
+											// 	this.props.setAdmin(isAdmin)
+											// 	this.props.setUser(user)
 
-												setId(user.id)
-												this.props.navigation.navigate(`DrawerComponent`)
-												this.setState({ loading: false })
-												// console.log('user', user)
-											})
-											.catch(error => {
-												console.log('Error firebase login updatin motoboy', error)
-												Alert.alert('Atenção', 'Firebase error. Contate nosso suporte')
-											})
+											// 	setId(user.id)
+											// 	this.props.navigation.navigate(`${navigation}`)
+											// 	this.setState({ loading: false })
+											// })
+											// .catch(error => {
+											// 	console.log('Error firebase login updatin motoboy', error)
+											// 	Alert.alert('Atenção', 'Firebase error. Contate nosso suporte')
+											// })
+											let isAdmin = user.email.toLowerCase() === 'suporte.motoboysdeplantao@gmail.com'
+											this.props.setAdmin(isAdmin)
+											this.props.setUser(user)
+
+											setId(user.id)
+											this.props.navigation.navigate(`${navigation}`)
+											this.setState({ loading: false })
 											//IF ACTIVE RIDE RUNNING SO JUST PROCESSO NORMALLY BUT ASSURE THAT OUT IS FALSE
-										} else {
-											 await firebase.database().ref(`register/commerce/motoboyPartner/${user.id}`).update({
-												out: false,
-											})
-												.then(() => {
-													this.props.setUser(user)
-													setId(user.id)
-													this.props.navigation.navigate(`${navigation}`)
-													this.setState({ loading: false })
-													console.log('user', user)
-												})
-												.catch(error => {
-													this.dropdown.alertWithType('warn', 'Erro', 'Nossos servidores estão temporariamente indisponíveis. Por favor tente novamente em instantes!', error);
-												})
-										}
-										if(user.droped){
-											await firebase.database().ref(`register/commerce/motoboyPartner/${user.id}`).update({
-												ride: false,
-												rideId: false,
-												onRide: false,
-												droped: false,
-											})
-											.then(() => {
-												this.props.setUser(user)
-												setId(user.id)
-												this.props.navigation.navigate(`${navigation}`)
-												this.setState({ loading: false })
-												console.log('user', user)
-											})
-											.catch(error => {
-												this.dropdown.alertWithType('warn', 'Erro', 'Nossos servidores estão temporariamente indisponíveis. Por favor tente novamente em instantes!', error);
-											})
-										}
+										// } 
+
+										// else {
+										// 	this.props.setUser(user)
+										// 	setId(user.id)
+										// 	this.props.navigation.navigate(`${navigation}`)
+										// 	this.setState({ loading: false })
+										// 	console.log('user', user)
+										// }
+										
+										// 	 await firebase.database().ref(`register/commerce/motoboyPartner/${user.id}`).update({
+										// 		out: false,
+										// 	})
+										// 		.then(() => {
+										// 			this.props.setUser(user)
+										// 			setId(user.id)
+										// 			this.props.navigation.navigate(`${navigation}`)
+										// 			this.setState({ loading: false })
+										// 			console.log('user', user)
+										// 		})
+										// 		.catch(error => {
+										// 			this.dropdown.alertWithType('warn', 'Erro', 'Nossos servidores estão temporariamente indisponíveis. Por favor tente novamente em instantes!', error);
+										// 		})
+										// }
+										// if(user.droped){
+										// 	await firebase.database().ref(`register/commerce/motoboyPartner/${user.id}`).update({
+										// 		ride: false,
+										// 		rideId: false,
+										// 		onRide: false,
+										// 		droped: false,
+										// 	})
+										// 	.then(() => {
+										// 		this.props.setUser(user)
+										// 		setId(user.id)
+										// 		this.props.navigation.navigate(`${navigation}`)
+										// 		this.setState({ loading: false })
+										// 		console.log('user', user)
+										// 	})
+										// 	.catch(error => {
+										// 		this.dropdown.alertWithType('warn', 'Erro', 'Nossos servidores estão temporariamente indisponíveis. Por favor tente novamente em instantes!', error);
+										// 	})
+										// }
 									} else if(user.status === 'Bloqueado')  {
 										this.dropdown.alertWithType('warn', 'Atenção', 'Sua conta encontra-se temporariamente bloqueada. Entre em contato com nosso suporte');
 										this.setState({ loading: false })

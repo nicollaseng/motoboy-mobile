@@ -32,7 +32,6 @@ import applyMask, { brPhone, unMask, brCpf, brCep }  from '../../utils/maks';
 import { colors } from '../../themes'
 import { withNavigation } from 'react-navigation'
 import * as firebase from 'firebase'
-// import uuid from 'uuid/v1'
 import moment from 'moment'
 import VMasker from 'vanilla-masker'
 
@@ -42,7 +41,6 @@ import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome5';
 import { Fumi } from 'react-native-textinput-effects';
 import DropdownAlert from 'react-native-dropdownalert';
 
-import uuid from 'uuid/v1'
 
 
 const styles = StyleSheet.create({
@@ -200,7 +198,8 @@ class RegisterScreen extends Component {
           return unMask(e.cpf) === unMask(cpf) && e.cnh === cnh && e.birthday === birthday
       })
       if(isRegistered.length > 0){
-        await firebase.database().ref(`register/commerce/motoboyPartner${isRegistered[0].id}`).update({
+        console.log('é registrado', isRegistered)
+        await firebase.database().ref(`register/commerce/motoboyPartner/${isRegistered[0].id}`).update({
           activeRide: false,
           onRide: false,
           ride: false,

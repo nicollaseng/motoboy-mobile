@@ -56,8 +56,13 @@ class DrawerComponent extends Component {
 	}
 
 	signOut = async () => {
+		console.log('id do usuario', this.props.user.id)
 		await firebase.database().ref(`register/commerce/motoboyPartner/${this.props.user.id}`).update({
-			rideStatus: false
+			rideStatus: false,
+			ride: false,
+			activeRide: false,
+			onRide: false,
+			rideId: false
 		})
 			.then( async () => {
 					await firebase.auth().signOut()

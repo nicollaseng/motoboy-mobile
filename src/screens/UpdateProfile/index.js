@@ -328,10 +328,7 @@ class UpdateProfileScreen extends Component {
         photo,
        } = this.state
     
-    const id = uuid()
-
 		let currentUser = {
-      id,
       nome: name,
       photo,
 			email,
