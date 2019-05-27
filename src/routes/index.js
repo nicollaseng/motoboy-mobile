@@ -65,6 +65,9 @@ const AppNavigator = createStackNavigator({
 	UploadProfile: {
 		screen: screens.UploadProfile
 	},
+	Documents: {
+		screen: screens.Documents
+	},
 },
 {
 	initialRouteName: 'Login',

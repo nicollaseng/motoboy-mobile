@@ -26,7 +26,7 @@ class DrawerComponent extends Component {
 	};
 	
 	handleUserButton = () => {
-		this.props.navigation.navigate('Profile')
+		this.props.navigation.navigate('UpdateProfile')
 	}
 
 	handleDeliveryButton = () => {
@@ -41,12 +41,14 @@ class DrawerComponent extends Component {
 		this.signOut()
 	}
 
+
 	handleChatButton = () => {
 		this.props.isAdmin ? this.props.navigation.navigate('ChatList') : this.props.navigation.navigate('Chat')
 	}
 
 	handleDocumentsButton = () => {
-		Alert.alert('Aviso', 'Em breve você poderá fazer upload e acompanhar a situação de seus documentos pelo aplicativo')
+		this.props.navigation.navigate('Documents')
+		// Alert.alert('Aviso', 'Em breve você poderá fazer upload e acompanhar a situação de seus documentos pelo aplicativo')
 		// this.props.navigation.navigate('Documents')
 	}
 

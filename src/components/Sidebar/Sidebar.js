@@ -22,11 +22,11 @@ import IconAwesome from "react-native-vector-icons/FontAwesome5";
 import { colors } from "../../themes"
 import { connect } from "react-redux"
 import _ from "lodash"
+import axios from 'axios'
 
 import VMasker from 'vanilla-masker'
 
 const SideBar = props => {
-	console.log('sidebar', props)
 	return (
 		<Container style={{ backgroundColor: "#fefefe" }}>
 		<Content>

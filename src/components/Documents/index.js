@@ -1,18 +1,49 @@
-import React, { Component } from  'react'
-import { View, Text, Dimensions, Alert, TouchableWithoutFeedback, Image} from 'react-native'
-import * as firebase from 'firebase'
-import { connect } from 'react-redux'
-import {
-	Button,
-	Label,
-	Container,
-	Spinner,
-	Thumbnail
-} from 'native-base';
+import React, { Component } from 'react';
+import validator from 'validator';
+import _ from 'lodash';
+import { connect } from 'react-redux';
 import ImagePicker from 'react-native-image-picker';
+import {
+  Alert,
+	StyleSheet,
+	TouchableWithoutFeedback,
+	Image
+} from 'react-native';
+import { setUser } from '../../redux/action/auth'
+import {
+    View,
+    Button,
+    Item,
+    Label,
+    Input,
+    Container,
+    Content,
+    Form,
+    Text,
+    Grid,
+    Col,
+    Picker,
+    Thumbnail,
+    Spinner
+} from 'native-base';
+import Dimensions from '../../utils/dimensions';
+import HeaderView from '../../components/HeaderView';
+import estados from '../../utils/estados';
+import applyMask, { brPhone, unMask, brCpf, brCep }  from '../../utils/maks';
 import { colors } from '../../themes'
-import HeaderView from '../HeaderView';
+import { withNavigation } from 'react-navigation'
+import * as firebase from 'firebase'
+// import uuid from 'uuid/v1'
+import moment from 'moment'
+import VMasker from 'vanilla-masker'
 
+import axios from 'axios'
+
+import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome5';
+import { Fumi } from 'react-native-textinput-effects';
+import DropdownAlert from 'react-native-dropdownalert';
+
+import uuid from 'uuid/v1'
 
 const options = {
   title: 'TIRE UMA FOTO DE PERFIL',
@@ -21,121 +52,15 @@ const options = {
     skipBackup: true,
     path: 'images',
 	},
-	quality: 0.3,
+	quality: 0.8,
 	// allowsEditing: false, 
-	maxWidth: 300, maxHeight: 300
+	maxWidth: 600, maxHeight: 600
 };
 
-class Cnh extends Component {
-
-	constructor(props){
-		super(props)
-		this.state ={
-			delayRunning: false,
-			time: 0,
-			isLoading: false,
-			photo: '',
-		}
-	}
-
-
-	componentDidMount(){
-		if(this.state.photo.length > 0){
-			const images = firebase.storage().ref(`profile/photo/${this.props.user.id}`).child('cnh_photo');
-			images.getDownloadURL().then(async (url) => { 
-				if(url){
-					await firebase.database().ref(`register/commerce/motoboyPartner/${this.props.user.id}`).update({
-						photo: url
-					})
-						.then(() => {
-							this.setState({ photo: url })
-						})
-						.catch(error => {
-							console.log('error at foto', error)
-						})
-				}
-		})
-		}
-}
-
-selectPhoto = async () => {
-	/**
- * The first arg is the options object for customization (it can also be null or omitted for default options),
- * The second arg is the callback which sends object: response (more info in the API Reference)
- */
-	await ImagePicker.launchCamera(options, async (response) => {
-		this.setState({ 
-			isLoading: true
-		})
-		console.log('response da photo', response)
-		if (response.didCancel) {
-			this.setState({ isLoading: false })
-			console.log('User cancelled image picker');
-		} else if (response.error) {
-			this.setState({ isLoading: false })
-			console.log('ImagePicker Error: ', response.error);
-		} else if (response.customButton) {
-			this.setState({ isLoading: false })
-			console.log('User tapped custom button: ', response.customButton);
-		} else {
-			const source = { uri: response.uri };
-			console.log('source da photo', source)
-			this.setState({
-				photo64: response.data,
-				profilePhoto: source
-			});
-		}
-		const image = `data:image/jpeg;base64,${response.data}`
-		await firebase.database().ref(`register/commerce/motoboyPartner/${this.props.user.id}`).update({
-			cnh: image
-		})
-			.then(() => {
-				Alert.alert('Atenção', 'Foto da CNH foi salva com sucesso')
-				this.props.navigation.navigate('DrawerComponent') 
-				this.setState({ isLoading: false })
-			})
-			.catch(error => {
-				console.log('error saving perfil foto', error)
-				Alert.alert('Atenção', 'Houve um erro ao salvar sua foto. Tente novamente ou entre em contato com nosso suporte')
-			})
-	})
-}
-
-	render(){
-		return (
-			<Container style={styles.container} pointerEvents={this.state.isLoading ? 'none' : 'auto'}>
-			<HeaderView
-				title={'UPLOAD CNH' }
-				onBack={() => false}
-			/>
-			{this.state.isLoading ? (
-				<Spinner />
-			) : (
-				<View style={{ alignItems: 'center'}}> 
-						<Label style={styles.logoText}>UPLOAD DA CNH</Label>
-						<TouchableWithoutFeedback onPress={() => this.selectPhoto()}>
-              <Image
-                source={this.state.photo && this.state.photo.length > 0 ? {uri: `${this.state.photo}`} : require('../../assets/avatar.png')} style={{ width: 200, heigth: 200, resizeMode: 'contain'}}/>
-						</TouchableWithoutFeedback>
-						<Text style={styles.subLabel}> CLIQUE E FAÇA UPLOAD DE SUA CNH </Text>
-				</View>
-   	 	)
-		}	
-		</Container>
-		)
-	}
-}
-const styles = {
+const styles = StyleSheet.create({
   container: {
-		flex: 1,
     backgroundColor: '#fff'
-	},
-	photoProfile: {
-		width: 150,
-		heigth: 150,
-		resizeMode: 'contain',
-		borderRadius: 50,
-	},
+  },
   holder: {
     padding: Dimensions.padding
   },
@@ -175,8 +100,8 @@ const styles = {
     color: '#888888'
   },
   signUpButton: {
-		margin: 15,
-    backgroundColor: colors.button.primary
+    marginVertical: 20,
+    backgroundColor: "#54fa2a"
   },
   signUpButtonText: {
     color: colors.text.footer
@@ -207,51 +132,164 @@ const styles = {
 		padding: 8
   },
   cepButton: {
-    backgroundColor: colors.standardButton
+    backgroundColor: "#54fa2a"
+  }
+});
+
+class UpdateProfileScreen extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+			cnhUrl: '',
+			cnhImage: '',
+    };
+	}
+
+	async componentWillMount(){
+		if(this.props.user.cnhUrl && this.props.user.cnhUrl.length > 0){
+			await axios.get(this.props.user.cnhUrl).then(response => this.setState({ cnhImage: response.data }))
+		}
+	}
+
+  onClickBackButton = () => {
+    return this.props.navigation.goBack()
+  };
+
+  validateFieldsAndRegister = () => {
+    const {
+      cnhImage,
+    } = this.state;
+
+    if (cnhImage.length === 0) {
+      this.dropdown.alertWithType('error','Atenção', 'É necessário fazer upload de sua foto CNH');
+      return;
+    }
+
+		this.updateProfile()
+	};
+	
+	updateProfile = async () => {
+  
+    this.setState({ isLoading: true })
+		await firebase.database().ref(`register/commerce/motoboyPartner/${this.props.user.id}`).update({
+			cnhUrl: this.state.cnhUrl,
+		})
+			.then(() => {
+					this.initialState()
+					this.setState({ isLoading: false })
+					this.dropdown.alertWithType('success','Atenção', 'CNH atualizada com sucesso!');
+					// this.props.navigation.navigate('Terms')
+					// console.log('sucess sending email')
+				})
+				.catch(err => {
+					this.dropdown.alertWithType('error','Atenção', 'Servidor ocupado no momento. Tente novamente em instantes');
+					this.setState({ isLoading: false })
+					console.log('error set regiser new user firebase', err)
+				})
+    }
+
+  initialState = () => {
+    this.setState({
+      cnhUrl: '',
+    })
+  }
+	
+  selectPhoto = async (param, key) => {
+    await ImagePicker.launchCamera(options, async (response) => {
+      this.setState({ 
+        isLoading: true
+      })
+      console.log('response da photo', response)
+      if (response.didCancel) {
+        this.setState({ isLoading: false })
+        console.log('User cancelled image picker');
+      } else if (response.error) {
+        this.setState({ isLoading: false })
+        console.log('ImagePicker Error: ', response.error);
+      } else if (response.customButton) {
+        this.setState({ isLoading: false })
+        console.log('User tapped custom button: ', response.customButton);
+      } else {
+        const source = { uri: response.uri };
+        this.setState({
+          photo64: response.data,
+          profilePhoto: source
+        });
+      }
+      const image = `data:image/jpeg;base64,${response.data}`
+      console.log('api que vai', this.props.api.users, image)
+      axios.post(this.props.api.users, {
+        file: image,
+        id: Math.random(),
+        fileType: 'ProfilePhoto'
+      })
+      .then(async response => {
+        this.setState({ isLoading: false })
+        this.dropdown.alertWithType('success', 'Atenção', 'O upload da sua foto foi efetuado com sucesso');
+        this.setState({ [param]: response.data[1].Location, [key]: image })
+      })
+      .catch((error) =>  {
+        this.setState({ isLoading: false })
+        this.dropdown.alertWithType('error', 'Atenção', 'Erro ao fazer upload da foto de perfil. Tente novamente. ');
+        console.log('error ao fazer upload da foto', error);
+      });
+    })
+  }
+
+	handleEstadoChange = (estado) => {
+		this.setState({ enderecoEstado: estado })
+  }
+
+  render() {
+    console.log('props and state', this.state, this.props.api, this.props.api.users)
+    const { isLoading } = this.state;
+    return (
+      <Container style={styles.container} pointerEvents={isLoading ? 'none' : 'auto'}>
+        <HeaderView
+          color={"#54fa2a"}
+          title={'Documentos' }
+          onBack={this.onClickBackButton}
+        />
+        {isLoading ? (
+          <Spinner />
+        ) : (
+          <Content style={styles.holder} keyboardShouldPersistTaps="handled">
+					<View style={{ alignItems: 'center'}}> 
+						<Text style={styles.subLabel}> Verifique abaixo a photo de sua CNH. Caso necessite atualizar, clique na photo para fazer upload de um nova foto.
+							Lembre-se: é importante manter seus dados e documentos sempre em dia.
+						 </Text>
+					</View>
+				  <View>
+						<View style={{ marginVertical: 20, justifyContent: 'center', alignItems: 'center'}}>
+              <Text style={styles.subLabel}> Faça o upload da sua CNH </Text>
+              <TouchableWithoutFeedback onPress={() => this.selectPhoto('cnhUrl', 'cnhImage')}>
+                <Image
+                  source={this.state.cnhImage && this.state.cnhImage.length > 0 ? {uri: `${this.state.cnhImage}`} : require('../../assets/upload.png')} style={{ width: 250, height: 250, resizeMode: 'contain'}} />
+              </TouchableWithoutFeedback>
+            </View>
+            <Button
+              block
+              style={styles.signUpButton}
+              onPress={this.validateFieldsAndRegister}
+            >
+              <Text>Atualizar</Text>
+            </Button>
+          </View>
+        </Content>
+        )}
+        <DropdownAlert
+					 ref={ref => this.dropdown = ref}
+					 closeInterval={15000}
+					/>
+      </Container>
+    );
   }
 }
 
-// const styles = {
-// 	container: {
-// 		// heigth: Dimensions.get('window').heigth/2,
-// 		position: 'absolute',
-// 		top: Platform.select({
-// 			ios: Dimensions.get('window').height/2.3, android: Dimensions.get('window').height/2.3
-// 		}),
-// 		justifyContent: 'flex-end',
-// 		alignItems: 'flex-end',
-// 		right: 13,
-// 		// bottom: Platform.select({
-// 		// 	ios: 100, android: 80
-// 		// }),
-// 		// width: '40%',
-// 		alignSelf: 'flex-end',
-// 	},
-// 	subContainer: {
-// 		borderRadius: 35,
-// 		backgroundColor: '#fff',
-// 		padding: 10,
-// 		elevation: 10,
-// 		shadowColor: '#000',
-// 		shadowOpacity: 0.2,
-// 		shadowOffset: { x: 0, y: 0},
-// 		shadowRadius: 19,
-// 	},
-// 	title: {
-// 		textAlign: 'center',
-// 		color: '#222',
-// 		fontSize: 14,
-// 	},
-// 	description: {
-// 		textAlign: 'center',
-// 		color: '#666',
-// 		fontSize: 22,
-// 	}
-// }
-
 const mapStateToProps = state => ({
 	user: state.user.user,
-	ride: state.ride.ride,
+	api: state.api.api,
 })
 
-export default connect(mapStateToProps)(Cnh)
+export default connect(mapStateToProps, { setUser })(withNavigation(UpdateProfileScreen))
+

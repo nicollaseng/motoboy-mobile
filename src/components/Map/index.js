@@ -59,6 +59,8 @@ import Modal from "react-native-modal";
 import BackgroundTimer from 'react-native-background-timer';
 import { getAppstoreAppVersion } from "react-native-appstore-version-checker";
 
+import axios from 'axios'
+
 // The generated json object
 mapStyle = require('./day.json')
 nigthMap = require('./nigth.json')
@@ -419,7 +421,17 @@ class Map extends Component {
 				// }
 				// // END - MAKE SURE THAT IS RIDE AND RIDE ARE SET ON A RIDE
 
-				this.props.setUser(motoboy)
+				if(this.props.user.photo && this.props.user.photo.length > 0){
+					axios.get(this.props.user.photo)
+					.then(response => {
+						this.props.setUser({
+							...motoboy,
+							photo: response.data
+						})
+					})
+				} else {
+					this.props.setUser(motoboy)
+				}
 
 				// START - CHECK IF THERE IS A RIDE AVAILABLE FOR MOTOBOY
 
