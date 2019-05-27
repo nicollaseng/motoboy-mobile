@@ -1,5 +1,5 @@
 import React, { Component } from  'react'
-import { Platform, View, Text } from 'react-native'
+import { Platform, View, Text, Dimensions } from 'react-native'
 import VMasker from 'vanilla-masker'
 
 class EarningBar extends Component {
@@ -11,8 +11,8 @@ class EarningBar extends Component {
 		return (
 				<View style={styles.container}>
 					<View style={styles.subContainer}>
-						<Text style={styles.title}>Ganhos Hoje:</Text>
-						<Text style={styles.description}>R$ {VMasker.toMoney(this.props.earning*100)}</Text>
+						{/* <Text style={styles.title}>Ganhos Hoje:</Text>
+						<Text style={styles.description}>R$ {VMasker.toMoney(this.props.earning*100)}</Text> */}
 					</View>
 				</View>
     )
@@ -23,15 +23,16 @@ const styles = {
 	container: {
 		position: 'absolute',
 		top: Platform.select({
-			ios: 60, android: 70
+			ios: 60, android: 20
 		}),
 		right: 13,
-		width: '40%',
-		alignSelf: 'flex-end',
+		width: '90%',
+		height: '5%',
+		// alignSelf: 'flex-end',
 	},
 	subContainer: {
 		backgroundColor: '#fff',
-		padding: 10,
+		// padding: 10,
 		elevation: 10,
 		shadowColor: '#000',
 		shadowOpacity: 0.2,

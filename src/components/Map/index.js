@@ -17,11 +17,13 @@ import Privacy from '../Privacy'
 import Telephone from '../Telephone'
 import Cancel from '../Cancel'
 import Navigation from '../Navigation'
+import CircularButton from '../CircularButton'
 import RecoverUser from '../Recover'
 import Countdown from '../Countdown/Countdown'
 import Selector from '../Map/Selector'
 import Documents from '../Documents'
 import Chat from '../Chat'
+import Location from '../Location'
 
 import { connect } from 'react-redux'
 import * as firebase from 'firebase'
@@ -46,12 +48,9 @@ import geolib from 'geolib'
 import _ from 'lodash'
 import moment from 'moment'
 
-import OneSignal from 'react-native-onesignal'; // Import package from node modules
-import PushNotification from 'react-native-push-notification'
-import Notification from 'react-native-android-local-notification';
+import ActionButton from 'react-native-circular-action-menu';
 
-import { ONE_SIGNAL_ID, ONE_SIGNAL_TEST } from '../../utils/constants'
-import { isTest } from '../../firebase/test'
+import PushNotification from 'react-native-push-notification'
 
 import TimerCountdown from "react-native-timer-countdown";
 import Sound from 'react-native-sound'
@@ -193,6 +192,8 @@ class Map extends Component {
 	
 			//earning
 			earning: 0,
+			indication: 0,
+			bonus: 0,
 	
 			//foreground
 			appState: AppState.currentState,
@@ -214,7 +215,10 @@ class Map extends Component {
 
 			// for navigation purpose
 			rideLat: 0.0,
-			rideLng: 0.0
+			rideLng: 0.0,
+
+			// circular menu
+			circular: false,
 		}
 	}
 
@@ -973,6 +977,38 @@ class Map extends Component {
 		this.props.openDrawer()
 	}
 
+	_getLocation = async () => {
+    await navigator.geolocation.getCurrentPosition(position => {
+      // this.setState({ coords: position.coords, loading: false });
+      const region = {
+        latitude: position.coords.latitude,
+        longitude: position.coords.longitude,
+				latitudeDelta: 0.0143,
+				longitudeDelta: 0.0134
+      };
+      this.mapView.animateToRegion(region, 500);
+    });
+  };
+
+	circularMenu = () => {
+		if(this.state.circular){
+			return (
+				<Fragment>
+					<Refresh checkRide={this.checkRide} rideAvailable={this.state.rideFreeAvailable} isRide={this.state.isRide} />
+					<Location getLocation={this._getLocation}/>
+					<Chat />
+					<Active />
+				</Fragment>
+			)
+		} else {
+			return <Fragment />
+		}
+	}
+
+	handleCircle = () => {
+		this.setState({ circular: !this.state.circular })
+	}
+
 	render(){
 		console.log('map style', this.props.map, this.props.drawer)
 
@@ -998,9 +1034,9 @@ class Map extends Component {
             showsUserLocation={true}
             followsUserLocation={true}
 						showsCompass={true}
+						showsMyLocationButton={false}
 						customMapStyle={mapStyle}
 					>
-					
 					{this.state.ridesOfRestaurant.length > 0 && this.state.ridesOfRestaurant.map(ride => {
 						const { rideColor } = ride
 
@@ -1116,11 +1152,24 @@ class Map extends Component {
 							</Menu>
 							{!this.props.drawer && (
 								<Fragment>
-										<EarningBar earning={this.state.earning} />
-										<BonusBar earning={this.state.motoboy.bonusToday && this.state.motoboy.bonusToday.length > 0 ? this.state.motoboy.bonusToday.reduce((a,b) => a+b,0) : 0} />
-										<Refresh checkRide={this.checkRide} rideAvailable={this.state.rideFreeAvailable} isRide={this.state.isRide} />
-										<Chat />
-										<Active />
+										{/* <EarningBar earning={this.state.earning} /> */}
+										<BonusBar earning={this.state.earning} bonus={this.state.motoboy.bonusToday && this.state.motoboy.bonusToday.length > 0 ? this.state.motoboy.bonusToday.reduce((a,b) => a+b,0) : 0} indication={this.state.indication} />
+										{this.circularMenu()}
+										<CircularButton 
+											handleCircle={this.handleCircle}
+											circular={this.state.circular}
+										/>
+										{/* <ActionButton
+										 icon={<Icon name="plus" size={25} style={{ color: "#54fa2a"}} />}
+										 buttonColor='rgba(62, 65, 126, 0.9)'
+										 btnOutRange='rgba(62, 65, 126, 0.9)'
+										 outRangeScale={0.8}
+										 radius={0}
+										 onPress={() => this.setState({ circular: !this.state.circular })}
+										>
+											<ActionButton.Item buttonColor='transparent' title="New Task" onPress={() => false }>
+											</ActionButton.Item>
+									</ActionButton> */}
 								</Fragment>
 							)}
 							{/* <Selector /> */}

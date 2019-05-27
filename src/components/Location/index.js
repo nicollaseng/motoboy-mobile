@@ -1,13 +1,12 @@
 import React, { Component } from  'react'
-import { Platform, View, Text, TouchableOpacity, Dimensions, Alert } from 'react-native'
+import { View, TouchableOpacity, Dimensions, Platform, Linking } from 'react-native'
 import Icon from 'react-native-vector-icons/FontAwesome5'
 import VMasker from 'vanilla-masker'
 import * as firebase from 'firebase'
 import { connect } from 'react-redux'
 import Sound from 'react-native-sound'
-import { withNavigation } from 'react-navigation'
 
-class ChatIcon extends Component {
+class Location extends Component {
 
 	constructor(props){
 		super(props)
@@ -18,16 +17,13 @@ class ChatIcon extends Component {
 	}
 
 	render(){
-		let divider = this.props.user.rideStatus ? 4 : 2.55
 		return (
-			<View style={[styles.container, {
-				marginRight: Dimensions.get('window').width/divider,
-			}]}>
-				<TouchableOpacity onPress={() => this.props.navigation.navigate('Chat')} style={[styles.subContainer, { backgroundColor:  '#54fa2a' }]}>
-					<Icon name="comment-dots" size={30} style={{ color: '#363777', backgroundColor: '#54fa2a'}} />
+			<View style={styles.container}>
+				<TouchableOpacity onPress={this.props.getLocation} style={[styles.subContainer, { backgroundColor:  '#363777' }]}>
+					<Icon name="compass" size={30} style={{ color: '#54fa2a', backgroundColor: '#363777'}} />
 				</TouchableOpacity>
 			</View>
-   	 	)
+    	)
 	}	
 }
 
@@ -36,19 +32,20 @@ const styles = {
 		// heigth: Dimensions.get('window').heigth/2,
 		position: 'absolute',
 		top: Platform.select({
-			ios: Dimensions.get('window').height/1.3, android: Dimensions.get('window').height/1.4
+			ios: Dimensions.get('window').height/1.3, android: Dimensions.get('window').height/1.19
 		}),
-		justifyContent: 'flex-end',
-		alignItems: 'flex-end',
+		marginRight: Dimensions.get('window').width/7,
+		justifyContent: 'flex-start',
+		alignItems: 'flex-start',
 		right: 13,
 		// bottom: Platform.select({
 		// 	ios: 100, android: 80
 		// }),
 		// width: '40%',
-		alignSelf: 'flex-end',
+		alignSelf: 'flex-start',
 	},
 	subContainer: {
-		borderRadius: 35,
+		borderRadius: 45,
 		backgroundColor: '#fff',
 		padding: 10,
 		elevation: 10,
@@ -73,4 +70,4 @@ const mapStateToProps = state => ({
 	user: state.user.user,
 })
 
-export default connect(mapStateToProps)(withNavigation(ChatIcon))
+export default connect(mapStateToProps)(Location)

@@ -88,6 +88,12 @@ class Refresh extends Component {
 					</TouchableOpacity>
 				)}
 			</View>
+
+// 	<View style={styles.container}>
+// 	<TouchableOpacity onPress={this.props.getLocation} style={[styles.subContainer, { backgroundColor:  '#363777' }]}>
+// 		<Icon name="compass" size={30} style={{ color: '#54fa2a', backgroundColor: '#363777'}} />
+// 	</TouchableOpacity>
+// </View>
     )
 	}	
 }
@@ -97,8 +103,9 @@ const styles = {
 		// heigth: Dimensions.get('window').heigth/2,
 		position: 'absolute',
 		top: Platform.select({
-			ios: 200, android: Dimensions.get('window').height/2.2
+			ios: Dimensions.get('window').height/1.3, android: Dimensions.get('window').height/1.4
 		}),
+		marginRight: Dimensions.get('window').width/2,
 		justifyContent: 'flex-end',
 		alignItems: 'flex-end',
 		right: 13,

@@ -1,9 +1,12 @@
 import React, { Component } from  'react'
-import { Platform, TouchableOpacity, Text, Alert } from 'react-native'
+import { Platform, TouchableOpacity, Text, Alert, Dimensions, View } from 'react-native'
 import { setUser } from '../../redux/action/auth'
 import { connect } from 'react-redux'
 import { Spinner } from 'native-base'
 import * as firebase from 'firebase'
+
+import Icon from 'react-native-vector-icons/FontAwesome5'
+
 
 const refresh = Math.floor((Math.random() * 100000000000) + 1)
 const updateId = '71c457d0-7294-11e9-94cb-eb86a10ade79'
@@ -52,10 +55,12 @@ class Active extends Component {
 
 	render(){
 		return (
-			<TouchableOpacity style={[styles.container, { backgroundColor: this.state.status ? "#54fa2a" : "#363777"}]} onPress={this.changeStatus}>
-				{this.state.loading ? <Spinner /> : <Text style={styles.text}>{this.state.status ? "ONLINE" : "OFFLINE"}</Text>}
-			</TouchableOpacity>
-    )
+			<View style={styles.container}>
+				<TouchableOpacity onPress={this.changeStatus} style={[styles.subContainer, {  backgroundColor: this.state.status ? "#54fa2a" : "#cc2900" }]}>
+					<Icon name="power-off" size={30} style={{ color: '#fff' }} /> 
+				</TouchableOpacity>
+			</View>
+    	)
 	}	
 }
 
@@ -65,32 +70,30 @@ const mapStateToProps = state => ({
 
 const styles = {
 	container: {
-		// position: 'absolute',
-		// top: Platform.select({
-		// 	ios: 60, android: 40
+		// heigth: Dimensions.get('window').heigth/2,
+		position: 'absolute',
+		top: Platform.select({
+			ios: Dimensions.get('window').height/1.3, android: Dimensions.get('window').height/1.19
+		}),
+		marginRight: Dimensions.get('window').width/1.55,
+		justifyContent: 'flex-end',
+		alignItems: 'flex-end',
+		right: 13,
+		// bottom: Platform.select({
+		// 	ios: 100, android: 80
 		// }),
-		// width: '30%',
-		// // height: 54,
-		// margin: 0,
-		// borderRadius: 0,
-		// paddingTop: 0,
-		// paddingBottom: 0,
-		// paddingLeft: 20,
-		// paddingRight: 20,
-		// marginTop: 65,
-		// marginLeft: 0,
-		// marginRight: 0,
-		// elevation: 5,
-		// shadowColor: '#000',
-		// shadowOpacity: 0.1,
-		// shadowOffset: { x:0, y:0},
-		// shadowRadius: 20,
-		// borderWidth: 1,
-		// borderColor: '#DDD',
-		// borderTopStartRadius: 10,
-		// boderTopEndRadius: 10,
-		backgroundColor: 'red',
-		// alignSelf: 'flex-end'
+		// width: '40%',
+		alignSelf: 'flex-end',
+	},
+	subContainer: {
+		borderRadius: 45,
+		backgroundColor: '#fff',
+		padding: 10,
+		elevation: 10,
+		shadowColor: '#000',
+		shadowOpacity: 0.2,
+		shadowOffset: { x: 0, y: 0},
+		shadowRadius: 19,
 	},
 	text: {
 		color: '#fff',
