@@ -162,24 +162,23 @@ class RegisterScreen extends Component {
     const {
       cpf,
       cnh,
-      birthday,
+      // birthday,
     } = this.state;
 
     if(!this.validateCpf(unMask(cpf))){
       this.dropdown.alertWithType('error','Atenção', 'CPF inválido');
       return;
     }
-		
 
-    if (cnh.length < 4) {
-      this.dropdown.alertWithType('error','Atenção', 'CNH inválida');
-      return;
-    }
+    // if (cnh.length < 4) {
+    //   this.dropdown.alertWithType('error','Atenção', 'CNH inválida');
+    //   return;
+    // }
 
-    if (birthday.length < 4) {
-      this.dropdown.alertWithType('error','Atenção', 'Data inválida');
-      return;
-    }
+    // if (birthday.length < 4) {
+    //   this.dropdown.alertWithType('error','Atenção', 'Data inválida');
+    //   return;
+    // }
 
 		this.recover()
 	};
@@ -193,12 +192,13 @@ class RegisterScreen extends Component {
 
     this.setState({ isLoading: true })
     await firebase.database().ref(`register/commerce/motoboyPartner`).once('value',async shot => {
-      let moto = shot.val()
+      let moto = Object.values(shot.val())
       let isRegistered = _.filter(moto, e => {
-          return unMask(e.cpf) === unMask(cpf) && e.cnh === cnh && e.birthday === birthday
+          return unMask(e.cpf) == unMask(cpf)
       })
+      console.log('é registrado', isRegistered)
+
       if(isRegistered.length > 0){
-        console.log('é registrado', isRegistered)
         await firebase.database().ref(`register/commerce/motoboyPartner/${isRegistered[0].id}`).update({
           activeRide: false,
           onRide: false,
@@ -207,24 +207,32 @@ class RegisterScreen extends Component {
           password: unMask(cpf),
         })
           .then(async () => {
-            axios.post(this.props.api.uid,{
+            if(isRegistered[0].email){
+            await axios.post('http://192.168.15.2:8000/user_uid',{
               email: isRegistered[0].email
             })
-              .then(res => {
+              .then(async res => {
                 console.log('response, uid do usuario', res)
-                axios.post(this.props.api.recoverPassword, {
-                  uid: res.data.uid,
-                  cpf: unMask(cpf)
-                })
+                  await axios.post('http://192.168.15.2:8000/recover_password', {
+                    uid: res.data.uid,
+                    cpf: unMask(cpf)
+                  })
                   .then((res_2) => {
                     console.log('updated password success', res_2)
                     this.setState({ isLoading: false, motoboy: isRegistered[0], password: unMask(cpf), isRegistered: true })
                   })
+                  .catch(err => {
+                    this.setState({ isLoading: false })
+                    console.log(err)
+                  })
               })
               .catch(err => {
                 this.setState({ isLoading: false })
-                console.log(err)
+                console.log(err.message, err)
               })
+            }
+
+          
           })
           .catch(error => {
             this.setState({ isLoading: false })
@@ -485,7 +493,7 @@ class RegisterScreen extends Component {
                   value={this.state.cpf}
                   keyboardType="number-pad"
                 />
-                <Fumi
+                {/* <Fumi
                   label={'Data de nascimento'}
                   iconClass={FontAwesomeIcon}
                   iconName={'calendar'}
@@ -499,8 +507,8 @@ class RegisterScreen extends Component {
                   keyboardType="number-pad"
                   onChangeText={birthday => this.handleBirthday(birthday)}
                   value={this.state.birthday}
-                />
-                <Fumi
+                /> */}
+                {/* <Fumi
                   label={'CNH'}
                   iconClass={FontAwesomeIcon}
                   iconName={'id-badge'}
@@ -513,7 +521,7 @@ class RegisterScreen extends Component {
                   onChangeText={(cnh ) => this.setState({ cnh })}
                   value={this.state.cnh}
                   keyboardType="number-pad"
-                />
+                /> */}
                 <Button
                   block
                   style={styles.signUpButton}

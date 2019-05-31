@@ -1,8 +1,9 @@
 import React, { Component, Fragment } from  'react'
-import { View, TouchableOpacity, Platform, Linking, PushNotificationIOS, Image, Alert, Text} from 'react-native'
-import { Thumbnail, Spinner } from 'native-base'
+import { View, TouchableOpacity, Platform, Linking, Alert, Text} from 'react-native'
+import axios from 'axios'
+import { Spinner } from 'native-base'
 import { 
-	Container, TypeTitle, TypeDescription, TypeImage, RequestButton, RequestButtonText, RestaurantButton
+	Container, TypeTitle, TypeDescription
  } from './style'
 import * as firebase from 'firebase'
 import { connect } from 'react-redux'
@@ -15,40 +16,13 @@ import Countdown from '../Countdown'
 
 import _ from 'lodash'
 import moment from 'moment'
-import VMasker from 'vanilla-masker'
 
 import Sound from 'react-native-sound'
-import PushNotification from 'react-native-push-notification'
-
-import TimerCountdown from "react-native-timer-countdown";
-import Icon from 'react-native-vector-icons/FontAwesome5'
 
 import {RNSlidingButton, SlideDirection} from 'rn-sliding-button';
 
 const today = moment().format('DD/MM/YYYY')
 
-PushNotification.configure({
-
-	// (required) Called when a remote or local notification is opened or received
-	onNotification: function(notification) {
-			console.log( 'NOTIFICATION:', notification );
-			// process the notification
-			// required on iOS only (see fetchCompletionHandler docs: https://facebook.github.io/react-native/docs/pushnotificationios.html)
-			notification.finish(PushNotificationIOS.FetchResult.NoData);
-	},
-
-	// Should the initial notification be popped automatically
-	// default: true
-	popInitialNotification: true,
-
-	/**
-		* (optional) default: true
-		* - Specified if permissions (ios) and token (android and ios) will requested or not,
-		* - if not, you must call PushNotificationsHandler.requestPermissions() later
-		*/
-	requestPermissions: true,
-	foreground: false,
-});
 
 var alert = new Sound('alert.mp3', Sound.MAIN_BUNDLE, (error) => {
   if (error) {
@@ -74,8 +48,6 @@ class Details extends Component {
 
 	async componentDidMount(){
 		if(!this.props.user.onRide && this.props.isRide && this.props.user.rideStatus){
-		// const timeout = setTimeout(() => this.refuseRide(), 10*2000);
-			// this.setState({ timeout })
 			alert.play((success) => {
 				if (success) {
 					console.log('successfully finished playing');
@@ -93,15 +65,6 @@ class Details extends Component {
 				} else {
 					this.setState({ ride })
 				}
-				// if(ride.motoboy && Object.values(ride.motoboy).length > 0 && ride.motoboy.id !== this.props.user.id){
-				// 	this.props.setUser({
-				// 		...this.props.user,
-				// 		onRide: false,
-				// 		activeRide: false,
-				// 	})
-				// 	this.setState({ loading: false })
-					// return this.props.setRide(false)
-				// }
 			}
 		})
 	}
@@ -133,7 +96,7 @@ class Details extends Component {
 							status: 'onWay',
 							motoboy: {
 								nome: this.props.user.nome,
-								telefone: this.props.user.celular,
+								telefone: this.props.user.telefone,
 								id: this.props.user.id
 							}
 						})
@@ -164,10 +127,6 @@ class Details extends Component {
 					})
 			}
 		})
-	}
-
-	cancelOut = () => {
-		// this.props.setOut(false)
 	}
 
 
@@ -224,7 +183,7 @@ class Details extends Component {
 									slideDirection={SlideDirection.RIGHT}>
 									<View>
 										<Text numberOfLines={1} style={style.textSlide}>
-											DESLIZE PARA RECUSAR >>>
+											RECUSAR >>>
 										</Text>
 									</View>
 								</RNSlidingButton>
@@ -377,11 +336,6 @@ class Details extends Component {
 										</Text>
 									</View>
 									</RNSlidingButton>
-							{/* <Fragment>
-								<RestaurantButton onPress={() => !this.state.isRideCanceled ? ride.retorno ? this.wayBack() : this.finishDelivery() : false}>
-									<RequestButtonText>{ride.retorno ? 'Retornar Restaurante' : 'Finalizar'}</RequestButtonText>
-								</RestaurantButton>
-							</Fragment> */}
 						</Fragment>
 					)		
 				}
@@ -391,14 +345,7 @@ class Details extends Component {
 				} else {
 					return (
 						<Fragment>
-							{/* <TypeTitle>Clique na imagem abaixo para iniciar uma navegação externa</TypeTitle> */}
-							{/* <TypeDescription>Clique em finalizar somente após retornar ao restaurante</TypeDescription> */}
 							<View style={{ flex: 1.0 ,justifyContent: 'center', alignItems: 'center', padding: 10}}>
-								{/* <TouchableOpacity onPress={() => {
-									this.openGoogleMaps(restaurantLat, restaurantLong)
-									}}>
-										<Icon name="route" size={55} style={{ color: '#54fa2a'}} />
-									</TouchableOpacity> */}
 							</View>
 							<RNSlidingButton
 									style={{
@@ -416,11 +363,6 @@ class Details extends Component {
 										</Text>
 									</View>
 									</RNSlidingButton>
-							{/* <Fragment>
-								<RestaurantButton onPress={() => !this.state.isRideCanceled ? this.finishDelivery() : false}>
-									<RequestButtonText>{'Finalizar'}</RequestButtonText>
-								</RestaurantButton>
-							</Fragment> */}
 						</Fragment>
 					)		
 				}
@@ -431,11 +373,7 @@ class Details extends Component {
 				} else {
 					return (
 						<Fragment>
-							{/* <TypeTitle>Obrigado por essa viagem</TypeTitle>
-							<TypeDescription>Receba do estabelecimento o valor abaixo</TypeDescription> */}
 							<View style={{ flex: 0.8, justifyContent: 'center', alignItems: 'center'}}>
-							{/* <Text style={{ fontSize: 50, color: '#fff', marginBottom: 10, marginTop: 10,  fontWeigth: '400'}}>R$ {ride.taxMotoboy.toString().includes('.') ? `${ride.taxMotoboy.toString().replace('.',',')}0` : `${ride.taxMotoboy.toString().replace('.',',')},00`}</Text> */}
-								{/* <TypeTitle>R$ {ride.taxMotoboy.toString().replace('.',',')}0</TypeTitle> */}
 							</View>
 							<RNSlidingButton
 									style={{
@@ -453,12 +391,6 @@ class Details extends Component {
 										</Text>
 									</View>
 									</RNSlidingButton>
-								{/* <Fragment>
-									<View style={{ flexDirection: 'row', justifyContent: 'space-around'}} />
-									<RestaurantButton onPress={this.dismiss}>
-										<RequestButtonText>{'PROSSEGUIR'}</RequestButtonText>
-									</RestaurantButton>
-								</Fragment> */}
 						</Fragment>
 					)		
 				}
@@ -468,11 +400,7 @@ class Details extends Component {
 				} else {
 					return (
 						<Fragment>
-							{/* <TypeTitle>Obrigado por essa viagem</TypeTitle>
-							<TypeDescription>Receba do estabelecimento o valor abaixo</TypeDescription> */}
 							<View style={{ flex: 0.8, justifyContent: 'center', alignItems: 'center'}}>
-							{/* <Text style={{ fontSize: 50, color: '#fff', marginBottom: 10, marginTop: 10,  fontWeigth: '400'}}>R$ {ride.taxMotoboy.toString().includes('.') ? `${ride.taxMotoboy.toString().replace('.',',')}0` : `${ride.taxMotoboy.toString().replace('.',',')},00`}</Text> */}
-								{/* <TypeTitle>R$ {ride.taxMotoboy.toString().replace('.',',')}0</TypeTitle> */}
 							</View>
 							<RNSlidingButton
 									style={{
@@ -490,12 +418,6 @@ class Details extends Component {
 										</Text>
 									</View>
 									</RNSlidingButton>
-								{/* <Fragment>
-									<View style={{ flexDirection: 'row', justifyContent: 'space-around'}} />
-									<RestaurantButton onPress={this.dismiss}>
-										<RequestButtonText>{'PROSSEGUIR'}</RequestButtonText>
-									</RestaurantButton>
-								</Fragment> */}
 						</Fragment>
 					)		
 				}
@@ -506,11 +428,7 @@ class Details extends Component {
 				} else {
 					return (
 						<Fragment>
-							{/* <TypeTitle>Obrigado por essa viagem</TypeTitle>
-							<TypeDescription>Receba do estabelecimento o valor abaixo</TypeDescription> */}
 							<View style={{ flex: 0.8, justifyContent: 'center', alignItems: 'center'}}>
-							{/* <Text style={{ fontSize: 50, color: '#fff', marginBottom: 10, marginTop: 10,  fontWeigth: '400'}}>R$ {ride.taxMotoboy.toString().includes('.') ? `${ride.taxMotoboy.toString().replace('.',',')}0` : `${ride.taxMotoboy.toString().replace('.',',')},00`}</Text> */}
-								{/* <TypeTitle>R$ {ride.taxMotoboy.toString().replace('.',',')}0</TypeTitle> */}
 							</View>
 							<RNSlidingButton
 									style={{
@@ -528,12 +446,6 @@ class Details extends Component {
 										</Text>
 									</View>
 									</RNSlidingButton>
-								{/* <Fragment>
-									<View style={{ flexDirection: 'row', justifyContent: 'space-around'}} />
-									<RestaurantButton onPress={this.dismiss}>
-										<RequestButtonText>{'PROSSEGUIR'}</RequestButtonText>
-									</RestaurantButton>
-								</Fragment> */}
 						</Fragment>
 					)		
 				}
@@ -543,11 +455,7 @@ class Details extends Component {
 				} else {
 					return (
 						<Fragment>
-							{/* <TypeTitle>Obrigado por essa viagem</TypeTitle>
-							<TypeDescription>Receba do estabelecimento o valor abaixo</TypeDescription> */}
 							<View style={{ flex: 0.8, justifyContent: 'center', alignItems: 'center'}}>
-							{/* <Text style={{ fontSize: 50, color: '#fff', marginBottom: 10, marginTop: 10,  fontWeigth: '400'}}>R$ {ride.taxMotoboy.toString().includes('.') ? `${ride.taxMotoboy.toString().replace('.',',')}0` : `${ride.taxMotoboy.toString().replace('.',',')},00`}</Text> */}
-								{/* <TypeTitle>R$ {ride.taxMotoboy.toString().replace('.',',')}0</TypeTitle> */}
 							</View>
 							<RNSlidingButton
 									style={{
@@ -565,39 +473,14 @@ class Details extends Component {
 										</Text>
 									</View>
 									</RNSlidingButton>
-								{/* <Fragment>
-									<View style={{ flexDirection: 'row', justifyContent: 'space-around'}} />
-									<RestaurantButton onPress={this.dismiss}>
-										<RequestButtonText>{'PROSSEGUIR'}</RequestButtonText>
-									</RestaurantButton>
-								</Fragment> */}
 						</Fragment>
 					)		
 				}
 			}
 		} 
-		// else if (ride.status === undefined) {
-		// 	const { taxCanceled } = this.state
-		// 	return (
-		// 		<Fragment>
-		// 			<TypeTitle>Viagem cancelada pelo estabelecimento</TypeTitle>
-		// 			<TypeDescription>Você será pago pelo seu deslocamento. Confira em seus pagamentos.</TypeDescription>
-		// 			<View style={{ flex: 0.8, justifyContent: 'center', alignItems: 'center'}}>
-		// 				<TypeTitle>R$ {VMasker.toMoney(taxCanceled)}</TypeTitle>
-		// 			</View>
-		// 				<Fragment>
-		// 					<View style={{ flexDirection: 'row', justifyContent: 'space-around'}} />
-		// 					<RestaurantButton onPress={this.dismiss}>
-		// 						<RequestButtonText>{'PROSSEGUIR'}</RequestButtonText>
-		// 					</RestaurantButton>
-		// 				</Fragment>
-		// 		</Fragment>	
-		// 	)
-		// }
 	}
 
 	openGoogleMaps = (lat , lng ) => {
-		console.log('latitude and longitude passing', lat, lng)
 		const scheme = Platform.select({ ios: 'maps:0,0?q=', android: 'geo:0,0?q=' });
     const latLng = `${lat},${lng}`;
     const label = 'Destino';
@@ -623,92 +506,16 @@ class Details extends Component {
     .catch((err) => console.log('error', err));
 	}
 
-	// transferRide = async (ride) => {
-	// 	console.log('ride a ser transferido', ride)
-	// 	const { latitude, longitude } = ride.restaurant
-	// 	await firebase.database().ref(`register/commerce/motoboyPartner`).once('value', async snap => {
-	// 		if(snap.val() !== null){
-	// 			let motoboys = Object.values(snap.val())
-	// 			let motoboyActive =  _.filter(Object.values(motoboys), e => {
-	// 				if(e.latitude && e.longitude){
-	// 					return !e.onRide  &&  e.rideStatus && !e.pendingRideId && e.id !== this.props.user.id &&geolib.getDistance(
-	// 						{ latitude: e.latitude, longitude: e.longitude },
-	// 						{ latitude, longitude }
-	// 					 ) <= 4000 //if another motoboy has accept nothing must happen
-	// 				}
-	// 			})
-	// 			if(motoboyActive &&  motoboyActive.length > 0){
-	// 				let motoboySelected = _.sample(motoboyActive)
-	// 				console.log('MOTOBOY SELECIONADO DEPOIS DE CLICAR EM RECUSAR', motoboySelected, motoboySelected.id, ride.id)
-	// 				await firebase.database().ref(`register/commerce/motoboyPartner/${motoboySelected.id}`).update({
-	// 					pendingRideId: ride.id,
-	// 					ride: ride
-	// 				})
-	// 					.then(() => {
-	// 						console.log('SUCCESS TRANSFER RIDE FOR ANOTHER MOTOBOY AFTER CLICK ON RECUSAR')
-	// 					})
-	// 					.catch(error => {
-	// 						console.log('ERROR TRANSFER RIDE FOR ANOTHER MOTOBOY AFTER CLICK ON RECUSAR', error)
-	// 					})
-	// 			} else {
-	// 				this.props.setFinish(false)
-	// 				await firebase.database().ref(`rides/${ride.id}`).update({
-	// 					motoboyId: false,
-	// 					free: true
-	// 				})
-	// 			}
-	// 		}
-	// 	})
-	// }
-
 	refuseRide = async () => {
-		this.setState({ loading: true, time: 10 })
-
-		this.props.setFinish(true) // CLEAR COUNTDOWN
-
-		await firebase.database().ref(`register/commerce/motoboyPartner/${this.props.user.id}`).once('value', async snapshot => {
-			let user = snapshot.val()
-			if(this.state.ride.id){
-				await firebase.database().ref(`rides/${this.state.ride.id}`).update({
-					refusedBy: [this.props.user.id],
-					pendingMotoboyId: false,
-					free: true,
-					pendingMotboyId: false,
-					motoboyId: false,
-				})
-					.then(async () => {
-							await firebase.database().ref(`register/commerce/motoboyPartner/${this.props.user.id}`).update({
-								ridesRefused: user.ridesRefused ? [...user.ridesRefused, this.state.ride.id] : [this.state.ride.id],
-									onRide: false,
-									activeRide: false,
-									pendingRideId: false,
-									ride: false,
-									rideId: false, 
-							})
-								.then(() => {
-									// console.log('ride que sera trasnferido', this.state.ride)
-									// this.transferRide(this.state.ride)
-									this.props.setUser({
-										...this.props.user,
-										onRide: false,
-										activeRide: false,
-									})
-									this.setState({ loading: false })
-									this.props.setFinish(false)
-									return this.props.setRide(false)
-								})
-								.catch(error => {
-									this.props.setFinish(false)
-									this.setState({ loading: false })
-									console.log('error refusing ride', error)
-								})
-					})
-					.catch(error => {
-						this.props.setFinish(false)
-						console.log('error updating ride with refused id', error)
-					})
-			}
+		await axios.post(this.props.api.transferRide, {
+			motoboy: JSON.stringify(this.props.user),
+			ride: JSON.stringify(this.props.ride)
 		})
+			.then((response) => {
+				Alert.alert('Atenção', 'Você está atrasado e isto impactará em sua avaliação')
+				console.log(response)
+			})
+			.catch(err => console.log(err))
 	}
 
 	onRestaurant = async () => {
@@ -838,68 +645,11 @@ class Details extends Component {
 	
 	dismiss = async () => {
 		this.props.setFinish(false)
-		// const { taxCanceled, isRideCanceled, ride } = this.state
-		// await firebase.database().ref(`register/commerce/motoboyPartner/${this.props.user.id}`).once('value', async snap => {
-		// 	let motoboy = snap.val()
-		// 	let index;
-		// 	let motoboyEarning = []
-		// 	let motoboyEarningManutencao = []
-		// 		if(motoboy.earnings && Object.values(motoboy.earnings).length > 0){
-		// 			motoboyEarning = Object.values(motoboy.earnings)
-		// 			index = _.findIndex(motoboyEarning, e => e.date === today)
-		// 			if(index !== -1){
-		// 				motoboyEarning[index] = { date: today, tax: [...motoboyEarning[index].tax, isRideCanceled ? taxCanceled : this.state.ride.taxMotoboy]}
-		// 			} else {
-		// 				motoboyEarning.push({ date: today, tax: [isRideCanceled ? taxCanceled : this.state.ride.taxMotoboy]}) 
-		// 			}
-		// 		} else {
-		// 			motoboyEarning.push({ date: today, tax: [isRideCanceled ? taxCanceled : this.state.ride.taxMotoboy]})
-		// 		}
-
-		// 		if(motoboy.earningsManutencao && Object.values(motoboy.earningsManutencao).length > 0){
-		// 			motoboyEarningManutencao = Object.values(motoboy.earningsManutencao)
-		// 			index = _.findIndex(motoboyEarningManutencao, e => e.date === today)
-		// 			if(index !== -1){
-		// 				motoboyEarningManutencao[index] = { date: today, tax: [...motoboyEarningManutencao[index].tax, isRideCanceled ? taxCanceled : this.state.ride.taxManutencao]}
-		// 			} else {
-		// 				motoboyEarningManutencao.push({ date: today, tax: [isRideCanceled ? taxCanceled : this.state.ride.taxManutencao]}) 
-		// 			}
-		// 		} else {
-		// 			motoboyEarningManutencao.push({ date: today, tax: [isRideCanceled ? taxCanceled : this.state.ride.taxManutencao]})
-		// 		}
-
-		// 		await firebase.database().ref(`register/commerce/motoboyPartner/${this.props.user.id}`).update({
-		// 			earnings: motoboyEarning,
-		// 			earningsManutencao: motoboyEarningManutencao,
-		// 			rides: this.props.user.rides ? [...Object.values(this.props.user.rides), isRideCanceled ? ride : this.state.ride] : [isRideCanceled ? ride : this.state.ride],
-		// 			// onRide: false,
-		// 			// activeRide: false,
-		// 			// pendingRideId: false,
-		// 			// ride: false,
-		// 			// rideId: false,
-		// 			// awaiting: false,
-		// 		})
-		// 			.then(async () => {
-		// 				this.props.setFinish(false)
-		// 				this.setState({ loading: false})
-		// 				console.log('successfully set earning and rite for motoboy')
-		// 				// return this.props.setRide(false)
-		// 				}
-		// 			)
-		// 			.catch(error => {
-		// 				this.props.setFinish(false)
-		// 				// this.props.setRide(false)
-		// 				this.setState({ loading: false})
-		// 				console.log('error set earning and rite for motoboy', error)
-		// 			})
-		// })
 		this.setState({ loading: false})
-		console.log('successfully finished ride')
 	}
 
 	render(){
 		const { ride } = this.props
-		console.log('is ride canceled', this.state.isRideCanceled)
 		return (
 			<Container status={this.state.isRideCanceled ? this.state.ride.status : ride.status}>
 				{this.handleRide(this.state.isRideCanceled ? this.state.ride : ride)}
@@ -919,6 +669,7 @@ const style = {
 
 const mapStateToProps = state => ({
 	user: state.user.user,
+	api: state.api.api,
 })
 
 export default connect(mapStateToProps, { setRide, setUser, setFinish, setOut })(Details)

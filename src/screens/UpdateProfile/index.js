@@ -53,7 +53,7 @@ const options = {
 	},
 	quality: 0.8,
 	// allowsEditing: false, 
-	maxWidth: 600, maxHeight: 600
+	maxWidth: 800, maxHeight: 800
 };
 
 const styles = StyleSheet.create({
@@ -161,6 +161,7 @@ class UpdateProfileScreen extends Component {
       enderecoCep: "",
       cnh: '', 
       cnhDate: '', 
+      cnhUrl: '',
       cnhImage: "",
       photo:  "",
 
@@ -221,17 +222,17 @@ class UpdateProfileScreen extends Component {
     }
 
 
-    if ( photo.length === 0) {
-      this.dropdown.alertWithType('error','Atenção', 'É necessário fazer upload de sua foto de perfil');
-      // this.showWarningAlert('Número inválido');
-      return;
-    }
+    // if ( photo.length === 0) {
+    //   this.dropdown.alertWithType('error','Atenção', 'É necessário fazer upload de sua foto de perfil');
+    //   // this.showWarningAlert('Número inválido');
+    //   return;
+    // }
 
-    if (cnhImage.length === 0) {
-      this.dropdown.alertWithType('error','Atenção', 'É necessário fazer upload de sua foto CNH');
-      // this.showWarningAlert('Número inválido');
-      return;
-    }
+    // if (cnhImage.length === 0) {
+    //   this.dropdown.alertWithType('error','Atenção', 'É necessário fazer upload de sua foto CNH');
+    //   // this.showWarningAlert('Número inválido');
+    //   return;
+    // }
 
 		let validPhone = false;
 		
@@ -459,11 +460,7 @@ class UpdateProfileScreen extends Component {
 	}
 	
   selectPhoto = async (param, key) => {
-    /**
-   * The first arg is the options object for customization (it can also be null or omitted for default options),
-   * The second arg is the callback which sends object: response (more info in the API Reference)
-   */
-    await ImagePicker.launchCamera(options, async (response) => {
+    await ImagePicker.showImagePicker(options, async (response) => {
       this.setState({ 
         isLoading: true
       })
@@ -486,21 +483,26 @@ class UpdateProfileScreen extends Component {
       }
       const image = `data:image/jpeg;base64,${response.data}`
       console.log('api que vai', this.props.api.users, image)
-      axios.post(this.props.api.users, {
-        file: image,
-        id: Math.random(),
-        fileType: 'ProfilePhoto'
-      })
-      .then(async response => {
-        this.setState({ isLoading: false })
-        this.dropdown.alertWithType('success', 'Atenção', 'O upload da sua foto foi efetuado com sucesso');
-        this.setState({ [param]: response.data[1].Location, [key]: image })
-      })
-      .catch((error) =>  {
-        this.setState({ isLoading: false })
-        this.dropdown.alertWithType('error', 'Atenção', 'Erro ao fazer upload da foto de perfil. Tente novamente. ');
-        console.log('error ao fazer upload da foto', error);
-      });
+      if(image){
+        axios.post(this.props.api.users, {
+          file: image,
+          id: Math.random(),
+          fileType: 'ProfilePhoto'
+        })
+        .then(async response => {
+          this.setState({ isLoading: false })
+          this.dropdown.alertWithType('success', 'Atenção', 'O upload da sua foto foi efetuado com sucesso');
+          this.setState({ [param]: response.data[1].Location, [key]: image })
+        })
+        .catch((error) =>  {
+          this.setState({ isLoading: false })
+          this.dropdown.alertWithType('error', 'Error', error);
+          console.log('error ao fazer upload da foto', error);
+        });
+      } else {
+        this.dropdown.alertWithType('error', 'Atenção', 'No momento não possível fazer o upload da foto, mas você pode continuar a se cadastrar normalmente');
+        this.setState({ isLoading: false, [param]: 'http://direitodetodos.com.br/wp-content/uploads/2014/04/idade-m%C3%ADnima-para-trabalhar-motoboy.png', [key]: 'data:image/jpeg;base64,kjdlkfahi23k4h2lk3j4kl23j4l2' })
+      }
     })
   }
 

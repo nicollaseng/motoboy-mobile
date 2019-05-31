@@ -1,5 +1,5 @@
 import React, { Component, Fragment} from 'react'
-import { Alert } from 'react-native'
+import { Alert, Linking } from 'react-native'
 import { Drawer } from 'native-base'
 import SideBar from '../Sidebar/Sidebar'
 import getSideBarItems from '../Sidebar/SidebarItems'
@@ -10,8 +10,6 @@ import { connect } from "react-redux"
 
 import { setUser } from '../../redux/action/auth'
 import { setDrawer } from '../../redux/action/drawer'
-
-
 
 class DrawerComponent extends Component {
 
@@ -26,7 +24,7 @@ class DrawerComponent extends Component {
 	};
 	
 	handleUserButton = () => {
-		this.props.navigation.navigate('UpdateProfile')
+		this.props.navigation.navigate('UploadProfile')
 	}
 
 	handleDeliveryButton = () => {
@@ -43,7 +41,18 @@ class DrawerComponent extends Component {
 
 
 	handleChatButton = () => {
-		this.props.isAdmin ? this.props.navigation.navigate('ChatList') : this.props.navigation.navigate('Chat')
+		Linking.openURL(`whatsapp://send?text=${'Olá, sou parceiro MP. Você poderia me ajudar?'}&phone=${+5585999533410}`);
+		// this.props.isAdmin ? this.props.navigation.navigate('ChatList') : this.props.navigation.navigate('Chat')
+	}
+
+	handleYoutubeButton = () => {
+		Linking.openURL('https://www.youtube.com/channel/UCpqVcxnwAtDn1oWBHRt-IdA');
+		// this.props.isAdmin ? this.props.navigation.navigate('ChatList') : this.props.navigation.navigate('Chat')
+	}
+
+	handleWhatsappButton = () => {
+		Linking.openURL('https://chat.whatsapp.com/BuLnExgUnJHLgNG0Mhj5LD');
+		// this.props.isAdmin ? this.props.navigation.navigate('ChatList') : this.props.navigation.navigate('Chat')
 	}
 
 	handleDocumentsButton = () => {
@@ -53,7 +62,8 @@ class DrawerComponent extends Component {
 	}
 
 	handleIndicationButton = () => {
-		Alert.alert('Aviso', 'Em breve você poderá indicar novos amigos e ganhar bônus por indicação')
+		this.props.navigation.navigate('Indication')
+		// Alert.alert('Aviso', 'Em breve você poderá indicar novos amigos e ganhar bônus por indicação')
 		// this.props.navigation.navigate('Documents')
 	}
 

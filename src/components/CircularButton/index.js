@@ -1,10 +1,7 @@
 import React, { Component } from  'react'
 import { View, TouchableOpacity, Dimensions, Platform, Linking } from 'react-native'
 import Icon from 'react-native-vector-icons/FontAwesome5'
-import VMasker from 'vanilla-masker'
-import * as firebase from 'firebase'
 import { connect } from 'react-redux'
-import Sound from 'react-native-sound'
 
 class Navigation extends Component {
 

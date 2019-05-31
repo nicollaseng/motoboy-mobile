@@ -18,7 +18,7 @@ class ChatIcon extends Component {
 	}
 
 	render(){
-		let divider = this.props.user.rideStatus ? 4 : 2.55
+		let divider =  4 
 		return (
 			<View style={[styles.container, {
 				marginRight: Dimensions.get('window').width/divider,

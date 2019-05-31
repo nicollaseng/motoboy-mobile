@@ -68,6 +68,9 @@ const AppNavigator = createStackNavigator({
 	Documents: {
 		screen: screens.Documents
 	},
+	Indication: {
+		screen: screens.Indication
+	},
 },
 {
 	initialRouteName: 'Login',

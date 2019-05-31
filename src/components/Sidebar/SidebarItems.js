@@ -5,6 +5,8 @@ function getSideBarItems (context, currentUser) {
 	let chat
 	let documents
 	let indication
+	let whatsapp
+	let video
 
 	users = {
 		title: 'Meus dados',
@@ -29,7 +31,7 @@ function getSideBarItems (context, currentUser) {
 	}
 	chat = {
 		title: 'Suporte',
-		icon: 'comment-dots',
+		icon: 'mobile',
 		useAwesome: true,
 		admin: true,
 		action: context.handleChatButton
@@ -48,6 +50,20 @@ function getSideBarItems (context, currentUser) {
 		admin: false,
 		action: context.handleIndicationButton
 	}
+	whatsapp = {
+		title: 'Grupo',
+		icon: 'comments',
+		useAwesome: true,
+		admin: false,
+		action: context.handleWhatsappButton
+	}
+	video = {
+		title: 'Vídeos',
+		icon: 'video',
+		useAwesome: true,
+		admin: false,
+		action: context.handleYoutubeButton
+	}
 	// help = {
 	// 	title: 'Ajuda',
 	// 	icon: 'question-circle',
@@ -59,9 +75,11 @@ function getSideBarItems (context, currentUser) {
 		users,
 		delivery,
 		payment,
-		chat,
 		documents,
 		indication,
+		chat,
+		whatsapp,
+		video,
 		// help,
 		{
 			title: 'Sair',

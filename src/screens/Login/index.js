@@ -46,7 +46,7 @@ getAppstoreAppVersion("com.xdev.motoboysdeplantaodriver") //put any apps package
   .catch(err => {
     console.log("error occurred get version of app", err);
 	});
-	
+
 
 class Login extends Component {
 
@@ -61,19 +61,26 @@ class Login extends Component {
 
 			isVisible: true,
 
-			versao: 0
+			versao: 0,
+			support: {}
     }
-  }
-
+	}
+	
 	async componentWillMount(){
-		await firebase.database().ref('version/versao').once('value', async snap => {
-			let versao = snap.val()
-			if(versao !== null){
-				console.log('versao do app do servidor', versao)
-				this.setState({ versao })
+		await firebase.database().ref('status').on('value', snapShot => {
+			console.log('support', snapShot.val())
+			this.setState({ support: snapShot.val() })
+		})
+	}
 
-				console.log('versao', versao, latestVersion)
-				if(latestVersion === versao || Platform.OS === 'ios'){
+	async componentDidMount(){
+		if(this.state.support.status){
+			this.dropdown.alertWithType('error', 'Atenção', `Atenção, estamos em MANUTENÇÃO. Previsão de liberação: ${this.state.support.time}. `);
+      this.setState({ loading: false })
+      return;
+    }
+		await firebase.database().ref('version/versao').once('value', async snap => {
+				// if(latestVersion === versao || Platform.OS === 'ios'){
 					try {
 					this.setState({ loading: true })
 					firebase.auth().onAuthStateChanged(user => {
@@ -93,14 +100,9 @@ class Login extends Component {
 					this.setState({ loading: false })
 					console.log(error)
 				}
-				} 
-				else {
-					this.setState({ loading: false })
-					this.dropdown.alertWithType('warn', 'Atenção', 'O seu aplicativo está desatualizado. Favor atualize seu aplicativo na Playstore');
-					// alert('O seu aplicativo está desatualizado. Favor atualize seu aplicativo na Playstore')
-				}
-			}
 		})
+
+
 		firebase.database().ref('api').once('value', snap => {
 			if(snap.val() !== null){
 				let api = snap.val()
@@ -114,12 +116,18 @@ class Login extends Component {
 	login = async () => {
 		const { email, password } = this.state
 
+		if(this.state.support.status){
+			this.dropdown.alertWithType('error', 'Atenção', `Atenção, estamos em MANUTENÇÃO. Previsão de liberação: ${this.state.support.time}.`);
+      this.setState({ loading: false })
+      return;
+    }
+
 		if(!email.length > 0 || !password.length >0){
-			this.dropdown.alertWithType('warn', 'Atenção', 'Parece que você se esqueceu de preencher E-mail ou Senha');
+			this.dropdown.alertWithType('error', 'Atenção', 'Parece que você se esqueceu de preencher E-mail ou Senha');
 			return;
 		}
 		
-		if(latestVersion === this.state.versao || Platform.OS === 'ios'){
+		// if(latestVersion === this.state.versao || Platform.OS === 'ios'){
 			this.setState({ loading: true })
 				firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL) // persistence 
 				.then(async () => {
@@ -129,12 +137,12 @@ class Login extends Component {
 							this._setUserInfo()
 						})
 						.catch(err => {
-							if(err.message ===  "The password is invalid or the user does not have a password."){
+							if(err.code ===  "auth/invalid-password"){
 								this.dropdown.alertWithType('error', 'Atenção', 'Senha inválida. Se você tiver se esquecido sua senha nós podemos te dar uma forcinha. Clique em Recuperar Senha!');
-							} else 	if(err.message ===  "There is no user record corresponding to this identifier. The user may have been deleted."){
+							} else 	if(err.code ===  "auth/user-not-found"){
 								this.dropdown.alertWithType('error', 'Atenção', 'E-mail não encontrado no banco de dados. Você ainda não se cadastrou? Esperando o que, vem ser MP!');
 							} else {
-								this.dropdown.alertWithType('error', 'Atenção', 'E-mail não encontrado no banco de dados. Você ainda não se cadastrou? Esperando o que, vem ser MP!');
+								this.dropdown.alertWithType('error', 'Atenção', err);
 							}
 							console.log('Erro while login firebase', err)
 							this.setState({ loading: false })
@@ -145,10 +153,11 @@ class Login extends Component {
 					var errorCode = error.code;
 					var errorMessage = error.message;
 				});
-		} else {
-			this.setState({ loading: false })
-			this.dropdown.alertWithType('warn', 'Atenção', 'Seu aplicativo está desatualizado, que tal atualizar? Basta ir na Playstore e baixar a versão mais recente.');
-		}
+		// } 
+		// else {
+		// 	this.setState({ loading: false })
+		// 	this.dropdown.alertWithType('warn', 'Atenção', 'Seu aplicativo está desatualizado, que tal atualizar? Basta ir na Playstore e baixar a versão mais recente.');
+		// }
 	}
 
 	_setUserInfo = async key => {
@@ -171,7 +180,7 @@ class Login extends Component {
 							let navigation = user.updateProfile ? 'DrawerComponent' : 'UploadProfile'
 							console.log('NAVIGATION', navigation)
 							if(user.email.toLowerCase() === this.state.email.toLowerCase()){
-								if(latestVersion === versao || Platform.OS === 'ios'){
+								// if(latestVersion === versao || Platform.OS === 'ios'){
 									if(user.status === 'Aprovado'){
 										// ASSURE THAT RIDE ID AND RIDE WILL NOT BLOCK USER LOGIN IF USER HAS NOT ANY ACTIVE RIDE RUNNING
 										// if(user.activeRide && !Object.values(user.activeRide).length > 0){
@@ -246,14 +255,16 @@ class Login extends Component {
 									} else if(user.status === 'Bloqueado')  {
 										this.dropdown.alertWithType('warn', 'Atenção', 'Sua conta encontra-se temporariamente bloqueada. Entre em contato com nosso suporte');
 										this.setState({ loading: false })
-									} else {
+									} 
+									else {
 										this.dropdown.alertWithType('warn', 'Atenção', 'Seu cadastro está em análise. Aguarde 24h e tente novamente!');
 										this.setState({ loading: false })
 									}
-								}	else {
-									this.dropdown.alertWithType('warn', 'Atenção', 'Seu aplicativo está desatualizado, que tal atualizar? Basta ir na Playstore e baixar a versão mais recente.');
-									this.setState({ loading: false })
-								}
+								// }	
+								// else {
+								// 	this.dropdown.alertWithType('warn', 'Atenção', 'Seu aplicativo está desatualizado, que tal atualizar? Basta ir na Playstore e baixar a versão mais recente.');
+								// 	this.setState({ loading: false })
+								// }
 							} else {
 								this.dropdown.alertWithType('error', 'Atenção', 'E-mail não encontrado no banco de dados. Você ainda não se cadastrou? Esperando o que, vem ser MP!');
 								this.setState({ loading: false })
@@ -336,9 +347,9 @@ class Login extends Component {
 								<Text style={styles.register}>Cadastre-se</Text>
 							</TouchableOpacity>
 							<TouchableOpacity onPress={this.recoverPassword}>
-								<Text style={styles.register}>Recuperar acesso</Text>
+								<Text style={[styles.register, { color: '#54fa2a'}]}>Recuperar acesso</Text>
 							</TouchableOpacity>
-							<Text style={[styles.register, { textAlign: 'right'}]}>2.0.1</Text>
+							<Text style={[styles.register, { textAlign: 'right'}]}>2.1.2</Text>
 					</View>
 					<DropdownAlert
 					 ref={ref => this.dropdown = ref}

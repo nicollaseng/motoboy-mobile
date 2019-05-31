@@ -59,7 +59,7 @@ const SideBar = props => {
 									fontWeight: '700',
 									marginLeft: 1,
 									fontSize: 14
-								}}>{props.user.rating ? ((Object.values(props.user.rating).reduce((a,b) => a+b,0))/(Object.values(props.user.rating).length)).toFixed(2) : 'Carregando...'}</Text>
+								}}>{props.user.rating ? ((parseFloat((Object.values(props.user.rating).reduce((a,b) => parseFloat(a)+parseFloat(b),0)))/(Object.values(props.user.rating).length))).toFixed(2) : 'Carregando...'}</Text>
 							</View>
 						</View>
 						<Text style={[styles.headerText, { fontWeight: '200'}]}>{props.user.email}</Text>
@@ -108,7 +108,7 @@ const SideBar = props => {
 			/>
 			</Content>
 			<View style={{justifyContent: 'flex-end'}}>
-					<Text style={styles.version}>Versão 2.0.1</Text>
+					<Text style={styles.version}>Versão 2.1.2</Text>
 			</View>
 		</Container>
 	)
