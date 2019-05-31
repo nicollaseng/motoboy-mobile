@@ -83,7 +83,6 @@ getId().then(async id => {
 BackgroundTimer.runBackgroundTimer(() => { 
 	navigator.geolocation.getCurrentPosition(
 		async	({ coords: { latitude, longitude } }) => {
-		console.log('latitude e longitude no background', latitude, longitude)
 		firebase.database().ref(`register/commerce/motoboyPartner/${userId}`).once('value',async snap => {
 			if(snap.val() !== null){
 				let motoboy = snap.val()
@@ -206,7 +205,6 @@ class Map extends Component {
 
 		navigator.geolocation.getCurrentPosition(
 		async	({ coords: { latitude, longitude } }) => {
-			console.log('latitude e longitude sendo pega', latitude, longitude)
 			const response = await Geocoder.from({ latitude, longitude })
 			const address = response.results[0].formatted_address
 			const location = address.substring(0, address.indexOf(','))
@@ -229,7 +227,6 @@ class Map extends Component {
 				// START - CHECK IF THERE IS ACTIVE RIDE FOR MOTOBOy
 				if(motoboy.rideId && Object.values(motoboy.ride)){
 					firebase.database().ref(`rides/${motoboy.rideId}`).once('value', snap => {
-						console.log('tem ride do motoboy', snap.val())
 						this.setState({
 							isRide: true,
 							ride: snap.val()
@@ -332,7 +329,6 @@ class Map extends Component {
 								this.setState({ rideFreeAvailable: false })
 								alert.play((success) => {
 									if (success) {
-										console.log('SET RIDE FREE SUCCESS');
 									} else {
 										console.log('playback failed due to audio decoding errors');
 									}
@@ -357,7 +353,6 @@ class Map extends Component {
 							if(rideFree.length > 0  && this.props.user.rideStatus){
 								rideAlert.play((success) => {
 								if (success) {
-									console.log('SET RIDE FREE SUCCESS');
 								} else {
 									console.log('playback failed due to audio decoding errors');
 								}
@@ -392,7 +387,6 @@ class Map extends Component {
 		const { latitude, longitude } = this.state.region
 		await firebase.database().ref(`rides`).once('value',async snapshot => {
 			if(snapshot.val() !== null){
-				console.log('RIDES FREE', Object.values(snapshot.val()) )
 				let rides = snapshot.val()
 				let rideFree =  _.filter(Object.values(rides), e => {
 						return  e.free && e.status === 'pending' && e.motoboyId === false && geolib.getDistance(
@@ -425,13 +419,10 @@ class Map extends Component {
 	}
 
 	delayRide = (diff) => {
-		console.log('finish', !this.props.finish)
-		console.log('diff', diff)
 		if(diff < 10){
 			this.setState({ diff })
 		} else
 		if (diff === 10 && !this.props.finish){
-			console.log('diff', diff)
 			this.refuseRide()
 		}
 	}
@@ -442,7 +433,7 @@ class Map extends Component {
 				<View style={[styles.countdowncontainer]}>
 					<TimerCountdown
 						initialMilliseconds={this.state.ride && this.state.ride.status !== 'pending' ? 0 : this.state.initialMilliseconds}
-						onTick={(milliseconds) => console.log(milliseconds)}
+						onTick={(milliseconds) => false}
 						onExpire={() => {
 							this.setState({ delay: false })
 							this.props.finish ? false : this.refuseRide()
@@ -475,7 +466,6 @@ class Map extends Component {
 		})
 			.then(async (response) => {
 				this.updateRating()
-				console.log(response)
 			})
 			.catch(err => console.log(err))
 	}
@@ -489,7 +479,6 @@ class Map extends Component {
 					...this.props.ride,
 					status: 'pending'
 				})
-				console.log(response)
 			})
 			.catch(err => console.log(err))
 	}
@@ -642,7 +631,6 @@ class Map extends Component {
 	}
 
 	render(){
-		console.log('map style', this.props.map, this.props.drawer)
 
 		return (
 			<View style={{ flex: 1 }}>
@@ -764,7 +752,7 @@ class Map extends Component {
 									<Cancel />
 									<Telephone telefone={this.state.ride.restaurant.celular.length > 0 ? this.state.ride.restaurant.celular : this.state.ride.restaurant.telefone}/>
 									<Navigation lat={this.state.rideLat} lng={this.state.rideLng}/>
-									<RecoverUser />
+									{/* <RecoverUser /> */}
 								</Fragment>
 							)
 						}

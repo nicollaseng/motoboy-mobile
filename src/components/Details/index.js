@@ -21,8 +21,6 @@ import Sound from 'react-native-sound'
 
 import {RNSlidingButton, SlideDirection} from 'rn-sliding-button';
 
-const today = moment().format('DD/MM/YYYY')
-
 var alert = new Sound('alert.mp3', Sound.MAIN_BUNDLE, (error) => {
   if (error) {
     console.log('failed to load the sound', error);
@@ -49,7 +47,6 @@ class Details extends Component {
 		if(!this.props.user.onRide && this.props.isRide && this.props.user.rideStatus){
 			alert.play((success) => {
 				if (success) {
-					console.log('successfully finished playing');
 				} else {
 					console.log('playback failed due to audio decoding errors');
 				}
@@ -81,7 +78,6 @@ class Details extends Component {
 			status: 'onWay'
 		})
 			.then((response) => {
-				console.log(response)
 				this.props.setFinish(true)
 					this.props.setRide({
 						...this.state.ride,
@@ -98,67 +94,10 @@ class Details extends Component {
 					this.setState({ loading: false })
 			})
 			.catch(err => console.log(err))
-
-
-
-
-		// // 1 - check if there is motoboy record at ride choosed if true refuse ride not on server
-		// await firebase.database().ref(`rides/${this.state.ride.id}`).once('value', async snapRide => {
-		// 	if(snapRide.val().motoboy && Object.values(snapRide.val().motoboy).length > 0){
-		// 		this.props.setUser({
-		// 			...this.props.user,
-		// 			onRide: false,
-		// 			activeRide: false,
-		// 		})
-		// 		this.setState({ loading: false })
-		// 		return this.props.setRide(false)
-		// 	} else { 
-		// 		// if not motoboy then proceed to accept ride
-		// 		await firebase.database().ref(`register/commerce/motoboyPartner/${this.props.user.id}`).update({
-		// 			onRide: true,
-		// 			activeRide: this.state.ride,
-		// 		})
-		// 			.then(async () => {
-		// 				await firebase.database().ref(`rides/${this.state.ride.id}`).update({
-		// 					status: 'onWay',
-		// 					motoboy: {
-		// 						nome: this.props.user.nome,
-		// 						telefone: this.props.user.telefone,
-		// 						id: this.props.user.id
-		// 					}
-		// 				})
-		// 					.then(() => {
-		// 						this.props.setRide({
-		// 							...this.state.ride,
-		// 							status: 'onWay'
-		// 						})
-		// 						this.props.setUser({
-		// 							...this.props.user,
-		// 							onRide: true,
-		// 							activeRide: this.state.ride,
-		// 							earnings: this.props.user.earnings ? [ ...Object.values(this.props.user.earnings) ,{ date: this.state.ride.createdAt, tax: this.state.ride.taxMotoboy }] : [{ date: this.state.ride.createdAt, tax: this.state.ride.taxMotoboy }],
-		// 							earningsManutencao: this.props.user.earnings ? [ ...Object.values(this.props.user.earnings) ,{ date: this.state.ride.createdAt, tax: this.state.ride.taxManutencao }] : [{ date: this.state.ride.createdAt, tax: this.state.ride.taxManutencao }],
-		// 							rides: this.props.user.rides ? [...Object.values(this.props.user.rides), this.state.ride] : [this.state.ride]
-		// 						})
-		// 						this.setState({ loading: false })
-		// 					})
-		// 					.catch(error => {
-		// 						this.setState({ loading: false })
-		// 						console.log('error updating ride status', error)
-		// 					})
-		// 			})
-		// 			.catch(error => {
-		// 				console.log('error updating motoboy', error)
-		// 				Alert.alert('Atenção', 'Houve uma falha, favor tente novamente em instantes')
-		// 				this.setState({ loading: false })
-		// 			})
-		// 	}
-		// })
 	}
 
 
 	handleRide = (ride) => {
-		console.log(ride.status)
 
 		if(ride && ride.status && ride.status.length > 0){
 
@@ -169,21 +108,6 @@ class Details extends Component {
 
 			if(ride.status === 'pending'){
 				return (
-					// <Fragment>
-					// 	<TypeTitle>Obrigado por essa viagem</TypeTitle>
-					// 	<TypeDescription>Receba do estabelecimento o valor abaixo</TypeDescription>
-					// 	<View style={{ flex: 0.8, justifyContent: 'center', alignItems: 'center'}}>
-					// 	<Text style={{ fontSize: 50, color: '#fff', marginBottom: 10, marginTop: 10,  fontWeigth: '400'}}>R$ {ride.taxMotoboy.toString().includes('.') ? `${ride.taxMotoboy.toString().replace('.',',')}0` : `${ride.taxMotoboy.toString().replace('.',',')},00`}</Text>
-					// 		{/* <TypeTitle>R$ {ride.taxMotoboy.toString().replace('.',',')}0</TypeTitle> */}
-					// 	</View>
-					// 		<Fragment>
-					// 			<View style={{ flexDirection: 'row', justifyContent: 'space-around'}} />
-					// 			<RestaurantButton onPress={this.dismiss}>
-					// 				<RequestButtonText>{'PROSSEGUIR'}</RequestButtonText>
-					// 			</RestaurantButton>
-					// 		</Fragment>
-					// </Fragment>
-					
 					<View style={{ flex: 1, alignItems: 'center', justifyContent: 'space-between'}}>
 						<Fragment>
 							<TypeTitle>Você tem uma entrega disponível</TypeTitle>
@@ -214,9 +138,6 @@ class Details extends Component {
 										</Text>
 									</View>
 								</RNSlidingButton>
-								{/* <RequestButton onPress={this.refuseRide}>
-										<RequestButtonText>Recusar</RequestButtonText>
-									</RequestButton> */}
 							</Fragment>
 					</View>
 				)
@@ -226,13 +147,7 @@ class Details extends Component {
 				} else {
 					return (
 						<Fragment>
-							{/* <TypeTitle>Clique no ícone abaixo para iniciar uma navegação externa</TypeTitle> */}
 								<View style={{ flex: 1.0 ,justifyContent: 'center', alignItems: 'center', padding: 10}}>
-									{/* <TouchableOpacity onPress={() => {
-											this.openGoogleMaps(restaurantLat, restaurantLong)
-										}}>
-											<Icon name="route" size={55} style={{ color: '#54fa2a'}} />
-										</TouchableOpacity> */}
 								</View>
 								<Fragment>
 								<RNSlidingButton
@@ -251,9 +166,6 @@ class Details extends Component {
 											</Text>
 										</View>
 									</RNSlidingButton>
-									{/* <RestaurantButton onPress={this.onRestaurant}>
-										<RequestButtonText> NO RESTAURANTE </RequestButtonText>
-									</RestaurantButton> */}
 								</Fragment>
 						</Fragment>
 					)		
@@ -264,10 +176,7 @@ class Details extends Component {
 				} else { 
 					return(
 						<Fragment>
-							{/* <TypeTitle>Essa viagem não tem retorno</TypeTitle> */}
-							{/* <Text style={{ fontSize: 14, textAlign: 'center', marginBottom: 10, color: '#fff', padding: 5 }}>Antes de prosseguir receba do estabelecimento a sua taxa de entrega</Text> */}
 							<View style={{ flex: 0.8, justifyContent: 'center', alignItems: 'center'}}>
-							{/* <Text style={{ fontSize: 50, color: '#fff', marginBottom: 10, marginTop: 10,  fontWeigth: '400'}}>R$ {ride.taxMotoboy.toString().includes('.') ? `${ride.taxMotoboy.toString().replace('.',',')}0` : `${ride.taxMotoboy.toString().replace('.',',')},00`}</Text> */}
 							</View>
 							<Fragment>
 								<View style={{ flexDirection: 'row', justifyContent: 'space-around'}} />
@@ -287,9 +196,6 @@ class Details extends Component {
 											</Text>
 										</View>
 									</RNSlidingButton>
-								{/* <RestaurantButton onPress={this.startDelivery}>
-									<RequestButtonText>{'Iniciar Entrega'}</RequestButtonText>
-								</RestaurantButton> */}
 							</Fragment>
 					</Fragment>
 					)
@@ -301,13 +207,7 @@ class Details extends Component {
 				} else {
 					return (
 						<Fragment>
-								{/* <TypeTitle>Clique na imagem abaixo para iniciar uma navegação externa</TypeTitle> */}
 								<View style={{ flex: 1.0 ,justifyContent: 'center', alignItems: 'center', padding: 10}}>
-									{/* <TouchableOpacity onPress={() => {
-										this.openGoogleMaps(deliveryLat, deliveryLong)
-										}}>
-											<Icon name="route" size={55} style={{ color: '#54fa2a'}} />
-										</TouchableOpacity> */}
 								</View>
 								<RNSlidingButton
 										style={{
@@ -325,11 +225,6 @@ class Details extends Component {
 											</Text>
 										</View>
 									</RNSlidingButton>
-								{/* <Fragment>
-									<RestaurantButton onPress={this.startDelivery}>
-										<RequestButtonText>Iniciar entrega</RequestButtonText>
-									</RestaurantButton>
-								</Fragment> */}
 						</Fragment>
 					)		
 				}
@@ -339,13 +234,7 @@ class Details extends Component {
 				} else {
 					return (
 						<Fragment>
-							{/* <TypeTitle>Clique na imagem abaixo para iniciar uma navegação externa</TypeTitle> */}
 							<View style={{ flex: 1.0 ,justifyContent: 'center', alignItems: 'center', padding: 10}}>
-								{/* <TouchableOpacity onPress={() => {
-									this.openGoogleMaps(restaurantLat, restaurantLong)
-									}}>
-										<Icon name="route" size={55} style={{ color: '#54fa2a'}} />
-									</TouchableOpacity> */}
 							</View>
 							<RNSlidingButton
 									style={{
@@ -534,21 +423,30 @@ class Details extends Component {
 	}
 
 	refuseRide = async () => {
+		this.setState({ loading: true})
 		await axios.post(this.props.api.transferRide, {
 			motoboy: JSON.stringify(this.props.user),
 			ride: JSON.stringify(this.props.ride)
 		})
 			.then((response) => {
+				this.setState({ loading: false})
 				Alert.alert('Atenção', 'Você está atrasado e isto impactará em sua avaliação')
 				console.log(response)
 			})
-			.catch(err => console.log(err))
+			.catch(err => {
+				this.setState({ loading: false})
+				console.log(err)
+			})
 	}
 
 	onRestaurant = async () => {
-		this.setState({ loading: true })
+		this.setState({ loading: true})
 		if(!this.state.isRideCanceled){
-			await firebase.database().ref(`rides/${this.state.ride.id}`).update({
+			await axios.post(this.props.api.updateRide, {
+				ride: JSON.stringify(this.state.ride),
+				motoboy: JSON.stringify(this.props.user),
+				time: this.props.time,
+				time: this.props.time,
 				status: 'onRestaurant'
 			})
 				.then(() => {
@@ -558,9 +456,9 @@ class Details extends Component {
 					})
 					this.setState({ loading: false})
 				})
-				.catch(error => {
+				.catch(err => {
 					this.setState({ loading: false})
-					console.log('error updating ride status', error)
+					console.log(err)
 				})
 		} else {
 			this.setState({ loading: false })
@@ -568,8 +466,12 @@ class Details extends Component {
 	}
 
 	startDelivery = async () => {
-		this.setState({ loading: true })
-		await firebase.database().ref(`rides/${this.state.ride.id}`).update({
+		this.setState({ loading: true})
+	await	axios.post(this.props.api.updateRide, {
+			ride: JSON.stringify(this.state.ride),
+			motoboy: JSON.stringify(this.props.user),
+			time: this.props.time,
+			time: this.props.time,
 			status: 'onDelivery'
 		})
 			.then(() => {
@@ -579,15 +481,19 @@ class Details extends Component {
 				})
 				this.setState({ loading: false})
 			})
-			.catch(error => {
+			.catch(err => {
 				this.setState({ loading: false})
-				console.log('error updating ride status', error)
+				console.log(err)
 			})
 	}
 
 	wayBack = async () => {
-		this.setState({ loading: true })
-		await firebase.database().ref(`rides/${this.state.ride.id}`).update({
+		this.setState({ loading: true})
+		await axios.post(this.props.api.updateRide, {
+			ride: JSON.stringify(this.state.ride),
+			motoboy: JSON.stringify(this.props.user),
+			time: this.props.time,
+			time: this.props.time,
 			status: 'onBackWay'
 		})
 			.then(() => {
@@ -597,75 +503,29 @@ class Details extends Component {
 				})
 				this.setState({ loading: false})
 			})
-			.catch(error => {
+			.catch(err => {
 				this.setState({ loading: false})
-				console.log('error updating ride status', error)
+				console.log(err)
 			})
 	}
 
 	finishDelivery = async () => {
-		this.setState({ loading: true })
-		const { isRideCanceled } = this.state
-		await firebase.database().ref(`rides/${this.state.ride.id}`).update({
-			status: 'finished',
-			motoboyId: false,
+		this.setState({ loading: true})
+		await axios.post(this.props.api.finishRide, {
+			ride: JSON.stringify(this.state.ride),
+			motoboy: JSON.stringify(this.props.user),
+			isRideCanceled: this.state.isRideCanceled
 		})
-			.then(async () => {
-
-				await firebase.database().ref(`register/commerce/motoboyPartner/${this.props.user.id}`).once('value', async snap => {
-					let motoboy = snap.val()
-					let index;
-					let motoboyEarning = []
-					let motoboyEarningManutencao = []
-						if(motoboy.earnings && Object.values(motoboy.earnings).length > 0){
-							motoboyEarning = Object.values(motoboy.earnings)
-							index = _.findIndex(motoboyEarning, e => e.date === today)
-							if(index !== -1){
-								motoboyEarning[index] = { date: today, tax: [...motoboyEarning[index].tax, isRideCanceled ? taxCanceled : this.state.ride.taxMotoboy]}
-							} else {
-								motoboyEarning.push({ date: today, tax: [isRideCanceled ? taxCanceled : this.state.ride.taxMotoboy]}) 
-							}
-						} else {
-							motoboyEarning.push({ date: today, tax: [isRideCanceled ? taxCanceled : this.state.ride.taxMotoboy]})
-						}
-		
-						if(motoboy.earningsManutencao && Object.values(motoboy.earningsManutencao).length > 0){
-							motoboyEarningManutencao = Object.values(motoboy.earningsManutencao)
-							index = _.findIndex(motoboyEarningManutencao, e => e.date === today)
-							if(index !== -1){
-								motoboyEarningManutencao[index] = { date: today, tax: [...motoboyEarningManutencao[index].tax, isRideCanceled ? taxCanceled : this.state.ride.taxManutencao]}
-							} else {
-								motoboyEarningManutencao.push({ date: today, tax: [isRideCanceled ? taxCanceled : this.state.ride.taxManutencao]}) 
-							}
-						} else {
-							motoboyEarningManutencao.push({ date: today, tax: [isRideCanceled ? taxCanceled : this.state.ride.taxManutencao]})
-						}
-						await firebase.database().ref(`register/commerce/motoboyPartner/${this.props.user.id}`).update({
-							pendingRideId: false,
-							ride: false,
-							onRide: false,
-							rideId: false,
-							activeRide: false,
-							earnings: motoboyEarning,
-							earningsManutencao: motoboyEarningManutencao,
-							rides: this.props.user.rides ? [...Object.values(this.props.user.rides), isRideCanceled ? ride : this.state.ride] : [isRideCanceled ? ride : this.state.ride],
-						})
-							.then(() => {
-								this.setState({ loading: false })
-							})
-							.catch(error => {
-								this.setState({ loading: false })
-								console.log('error updating user withou ride finished', error)
-							})
-					})
+			.then(() => {
 				this.props.setRide({
 					...this.state.ride,
 					status: 'finished'
 				})
-			})
-			.catch(error => {
 				this.setState({ loading: false})
-				console.log('error updating ride status', error)
+			})
+			.catch(err => {
+				this.setState({ loading: false})
+				console.log(err)
 			})
 	}
 
