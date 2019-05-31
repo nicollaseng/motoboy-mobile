@@ -15,7 +15,6 @@ import { setOut } from '../../redux/action/out'
 import Countdown from '../Countdown'
 
 import _ from 'lodash'
-import moment from 'moment'
 
 import Sound from 'react-native-sound'
 

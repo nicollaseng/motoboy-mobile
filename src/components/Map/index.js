@@ -194,7 +194,29 @@ class Map extends Component {
 				.catch(err => console.log(err))
 			}
 		})
+		
+			// -- get earnings, bonus and indication at backend --// 
+			await axios.post(this.state.api.getEarning, {
+				motoboy: JSON.stringify(this.props.user),
+			})
+				.then(async response => {
+					axios.post(this.state.api.getIndication, {
+						motoboy: JSON.stringify(this.props.user),
+					})
+						.then(res => {
+							console.log('indication', res)
+							this.setState({ indication: parseFloat(res.data.indication) })
+						})
+						.catch(err => {
+							console.log(err)
+						})
+					if(response){
+						this.setState({ earning: response.data.earning })
+					}
+				})
+				.catch(err => console.log(err))
 	}
+		// -- END: get earnings, bonus and indication at backend --// 
 
 	async componentDidMount(){
 		this.updateMap()
@@ -247,53 +269,7 @@ class Map extends Component {
 					this.props.navigation.navigate('Terms')
 				} 
 				// END - CHECK IF TERMS ARE TRUE
-	
-				// // START - GIVE 5 REAIS FOR EACH 10 RIDES ON DAY
-				// if(motoboy.earnings && Object.values(motoboy.earnings).length > 0){
-				// 	let earnings = Object.values(motoboy.earnings)
-				// 	let momentToday = moment().format('DD/MM/YYYY')
-				// 	bonusToday = []
-				// 	let earningToday = []
-				// 	let toPay = []
-				// 	let payToday = []
-	
-				// 	let earningFiltered = _.filter(earnings, e => e.date.substring(0,10) === momentToday)
-	
-				// 	earningFiltered.map(earning => {
-				// 		earning.tax.map(earn => {
-				// 			return earningToday = [...earningToday, earn]
-				// 		})
-				// 	})
-	
-				// 	if(earningToday.length > 0 && earningToday.length % 10 === 0){
-				// 		bonusToday.push(5) 
-				// 		let index = _.findIndex(earnings, e => e === earningFiltered[0])
-				// 		earnings[index].tax = earningToday
-				// 		await firebase.database().ref(`register/commerce/motoboyPartner/${this.props.user.id}`).update({
-				// 			bonus: motoboy.bonusToday && motoboy.bonusToday.length > 0  ? [...motoboy.bonusToday, bonusToday] : [bonusToday],
-				// 			earnings,
-				// 			rating: motoboy.isRated ? motoboy.rating : [5],
-				// 			isRated: true
-				// 		})
-				// 	} 
-				// 	else if(earningToday.length > 0 && earningToday.length % 10 !== 0){
-				// 			this.setState({ earning: earningToday.reduce((a,b) => a+b, 0) })
-				// 	}
-				// }
-	
-				// END - GIVE 5 REAIS FOR EACH 10 RIDES ON DAY
-	
-				// // START - MAKE SURE THAT IS RIDE AND RIDE ARE SET ON A RIDE
-				// if(motoboy.onRide && motoboy.rideStatus){
-				//  firebase.database().ref(`rides/${motoboy.activeRide.id}`).once('value', snap => {
-				// 	 if(snap.val() !== null){
-				// 		console.log('CORRIDA PERDIDA', snap.val())
-				// 		this.setState({ isRide: true, ride: snap.val()})
-				// 	 }
-				//  })
-				// }
-				// // END - MAKE SURE THAT IS RIDE AND RIDE ARE SET ON A RIDE
-	
+				
 				if(this.props.user.photo && this.props.user.photo.length > 0){
 					axios.get(this.props.user.photo)
 					.then(response => {
