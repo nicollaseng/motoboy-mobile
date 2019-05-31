@@ -19,13 +19,13 @@ export const firebaseConfig = () => {
 		appId: "1:357451698079:web:eb76ae92a97e7674",
 	  };
 	var test = {
-		apiKey: "AIzaSyDlgrMyc-e2TbkUoPpx1mvmNdp4ionzTXE",
-		authDomain: "motoboy-teste.firebaseapp.com",
-		databaseURL: "https://motoboy-teste.firebaseio.com",
-		projectId: "motoboy-teste",
-		storageBucket: "motoboy-teste.appspot.com",
-		messagingSenderId: "957945046455",
-		appId: "1:957945046455:web:1cd16085ed7f9d84"
+		apiKey: "AIzaSyCO7eGRAN_oebD4V58di8hBezhs16sfNPs",
+		authDomain: "motoboy-teste2.firebaseapp.com",
+		databaseURL: "https://motoboy-teste2.firebaseio.com",
+		projectId: "motoboy-teste2",
+		storageBucket: "",
+		messagingSenderId: "896134286660",
+		appId: "1:896134286660:web:42ba05fb03bc75e1"
 	}
 	var database = isTest ? test : config
 	return database

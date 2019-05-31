@@ -23,7 +23,6 @@ import {RNSlidingButton, SlideDirection} from 'rn-sliding-button';
 
 const today = moment().format('DD/MM/YYYY')
 
-
 var alert = new Sound('alert.mp3', Sound.MAIN_BUNDLE, (error) => {
   if (error) {
     console.log('failed to load the sound', error);
@@ -69,64 +68,92 @@ class Details extends Component {
 		})
 	}
 
+
 	handleAcceptRide = async () => {
-
 		this.props.setFinish(true)
-
 		this.setState({ loading: true })
 
-		// 1 - check if there is motoboy record at ride choosed if true refuse ride not on server
-		await firebase.database().ref(`rides/${this.state.ride.id}`).once('value', async snapRide => {
-			if(snapRide.val().motoboy && Object.values(snapRide.val().motoboy).length > 0){
-				this.props.setUser({
-					...this.props.user,
-					onRide: false,
-					activeRide: false,
-				})
-				this.setState({ loading: false })
-				return this.props.setRide(false)
-			} else { 
-				// if not motoboy then proceed to accept ride
-				await firebase.database().ref(`register/commerce/motoboyPartner/${this.props.user.id}`).update({
-					onRide: true,
-					activeRide: this.state.ride,
-				})
-					.then(async () => {
-						await firebase.database().ref(`rides/${this.state.ride.id}`).update({
-							status: 'onWay',
-							motoboy: {
-								nome: this.props.user.nome,
-								telefone: this.props.user.telefone,
-								id: this.props.user.id
-							}
-						})
-							.then(() => {
-								this.props.setRide({
-									...this.state.ride,
-									status: 'onWay'
-								})
-								this.props.setUser({
-									...this.props.user,
-									onRide: true,
-									activeRide: this.state.ride,
-									earnings: this.props.user.earnings ? [ ...Object.values(this.props.user.earnings) ,{ date: this.state.ride.createdAt, tax: this.state.ride.taxMotoboy }] : [{ date: this.state.ride.createdAt, tax: this.state.ride.taxMotoboy }],
-									earningsManutencao: this.props.user.earnings ? [ ...Object.values(this.props.user.earnings) ,{ date: this.state.ride.createdAt, tax: this.state.ride.taxManutencao }] : [{ date: this.state.ride.createdAt, tax: this.state.ride.taxManutencao }],
-									rides: this.props.user.rides ? [...Object.values(this.props.user.rides), this.state.ride] : [this.state.ride]
-								})
-								this.setState({ loading: false })
-							})
-							.catch(error => {
-								this.setState({ loading: false })
-								console.log('error updating ride status', error)
-							})
-					})
-					.catch(error => {
-						console.log('error updating motoboy', error)
-						Alert.alert('Atenção', 'Houve uma falha, favor tente novamente em instantes')
-						this.setState({ loading: false })
-					})
-			}
+		axios.post(this.props.api.updateRide, {
+			ride: JSON.stringify(this.state.ride),
+			motoboy: JSON.stringify(this.props.user),
+			time: this.props.time,
+			time: this.props.time,
+			status: 'onWay'
 		})
+			.then((response) => {
+				console.log(response)
+				this.props.setFinish(true)
+					this.props.setRide({
+						...this.state.ride,
+						status: 'onWay'
+					})
+					this.props.setUser({
+						...this.props.user,
+						onRide: true,
+						activeRide: this.state.ride,
+						earnings: this.props.user.earnings ? [ ...Object.values(this.props.user.earnings) ,{ date: this.state.ride.createdAt, tax: this.state.ride.taxMotoboy }] : [{ date: this.state.ride.createdAt, tax: this.state.ride.taxMotoboy }],
+						earningsManutencao: this.props.user.earnings ? [ ...Object.values(this.props.user.earnings) ,{ date: this.state.ride.createdAt, tax: this.state.ride.taxManutencao }] : [{ date: this.state.ride.createdAt, tax: this.state.ride.taxManutencao }],
+						rides: this.props.user.rides ? [...Object.values(this.props.user.rides), this.state.ride] : [this.state.ride]
+					})
+					this.setState({ loading: false })
+			})
+			.catch(err => console.log(err))
+
+
+
+
+		// // 1 - check if there is motoboy record at ride choosed if true refuse ride not on server
+		// await firebase.database().ref(`rides/${this.state.ride.id}`).once('value', async snapRide => {
+		// 	if(snapRide.val().motoboy && Object.values(snapRide.val().motoboy).length > 0){
+		// 		this.props.setUser({
+		// 			...this.props.user,
+		// 			onRide: false,
+		// 			activeRide: false,
+		// 		})
+		// 		this.setState({ loading: false })
+		// 		return this.props.setRide(false)
+		// 	} else { 
+		// 		// if not motoboy then proceed to accept ride
+		// 		await firebase.database().ref(`register/commerce/motoboyPartner/${this.props.user.id}`).update({
+		// 			onRide: true,
+		// 			activeRide: this.state.ride,
+		// 		})
+		// 			.then(async () => {
+		// 				await firebase.database().ref(`rides/${this.state.ride.id}`).update({
+		// 					status: 'onWay',
+		// 					motoboy: {
+		// 						nome: this.props.user.nome,
+		// 						telefone: this.props.user.telefone,
+		// 						id: this.props.user.id
+		// 					}
+		// 				})
+		// 					.then(() => {
+		// 						this.props.setRide({
+		// 							...this.state.ride,
+		// 							status: 'onWay'
+		// 						})
+		// 						this.props.setUser({
+		// 							...this.props.user,
+		// 							onRide: true,
+		// 							activeRide: this.state.ride,
+		// 							earnings: this.props.user.earnings ? [ ...Object.values(this.props.user.earnings) ,{ date: this.state.ride.createdAt, tax: this.state.ride.taxMotoboy }] : [{ date: this.state.ride.createdAt, tax: this.state.ride.taxMotoboy }],
+		// 							earningsManutencao: this.props.user.earnings ? [ ...Object.values(this.props.user.earnings) ,{ date: this.state.ride.createdAt, tax: this.state.ride.taxManutencao }] : [{ date: this.state.ride.createdAt, tax: this.state.ride.taxManutencao }],
+		// 							rides: this.props.user.rides ? [...Object.values(this.props.user.rides), this.state.ride] : [this.state.ride]
+		// 						})
+		// 						this.setState({ loading: false })
+		// 					})
+		// 					.catch(error => {
+		// 						this.setState({ loading: false })
+		// 						console.log('error updating ride status', error)
+		// 					})
+		// 			})
+		// 			.catch(error => {
+		// 				console.log('error updating motoboy', error)
+		// 				Alert.alert('Atenção', 'Houve uma falha, favor tente novamente em instantes')
+		// 				this.setState({ loading: false })
+		// 			})
+		// 	}
+		// })
 	}
 
 
