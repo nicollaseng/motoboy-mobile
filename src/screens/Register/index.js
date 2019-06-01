@@ -215,7 +215,6 @@ class RegisterScreen extends Component {
       photo,
     } = this.state;
 
-    console.log('procurando undefined', this.state.photo.length, this.state.cnhImage.length)
 
     if(!this.validateCpf(unMask(this.state.cpf))){
       this.dropdown.alertWithType('error','Atenção', 'CPF inválido');
@@ -414,8 +413,7 @@ class RegisterScreen extends Component {
                   })
                     this.initialState()
                     this.setState({ isLoading: false })
-                    this.dropdown.alertWithType('success','Atenção', 'Seu cadastro foi efetuado com sucesso e passará por uma análise. Enviamos um email com algumas instruções. Verifique sua caixa de entrada ou SPAM');
-                    // this.props.navigation.navigate('Login')
+                    this.dropdown.alertWithType('success','Atenção', 'Seu cadastro efetuado com sucesso. Verifique a caixa de entrada de seu email ou SPAM');
                     console.log('sucess sending email')
                   })
                   .catch(err => {
@@ -457,15 +455,20 @@ class RegisterScreen extends Component {
 			enderecoLocalidade: '',
 			enderecoComplemento: '',
       enderecoEstado: '',
+      enderecoCep: "",
       cnh: '', 
       cnhDate: '', 
+      cnhUrl: '',
+      cnhImage: "",
+      photo:  "",
+      indication: "",
 
 			//bank data
 			bank: '',
 			bankAgency: '',
 			bankAgencyDigit: '',
 			bankAccount: '',
-			bankAccountDigit: '',
+      bankAccountDigit: '',
 
 			// flags
       terms: false,
@@ -541,7 +544,6 @@ class RegisterScreen extends Component {
         });
       }
       const image = `data:image/jpeg;base64,${response.data}`
-      console.log('api que vai', this.props.api.users, image)
       if(image){
         axios.post(this.props.api.users, {
           file: image,
@@ -614,7 +616,6 @@ class RegisterScreen extends Component {
   }
 
   render() {
-    console.log('props and state', this.state, this.props.api, this.props.api.users)
     const { isLoading } = this.state;
     return (
       <Container style={styles.container} pointerEvents={isLoading ? 'none' : 'auto'}>

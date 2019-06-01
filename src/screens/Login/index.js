@@ -41,7 +41,6 @@ let latestVersion = null
 getAppstoreAppVersion("com.xdev.motoboysdeplantaodriver") //put any apps packageId here
   .then(appVersion => {
 		latestVersion = appVersion
-    console.log('version of app', appVersion);
   })
   .catch(err => {
     console.log("error occurred get version of app", err);
@@ -68,7 +67,6 @@ class Login extends Component {
 	
 	async componentWillMount(){
 		await firebase.database().ref('status').on('value', snapShot => {
-			console.log('support', snapShot.val())
 			this.setState({ support: snapShot.val() })
 		})
 	}
@@ -84,9 +82,7 @@ class Login extends Component {
 					try {
 					this.setState({ loading: true })
 					firebase.auth().onAuthStateChanged(user => {
-						console.log('user', user)
 						if(user){
-							console.log('USER ON AUTH STATE CHANGE', user.toJSON())
 							this.setState({ email: user.toJSON().email })
 							this._setUserInfo()
 							if(user.toJSON().email === 'suporte.motoboysdeplantao@gmail.com'){
@@ -106,7 +102,6 @@ class Login extends Component {
 		firebase.database().ref('api').once('value', snap => {
 			if(snap.val() !== null){
 				let api = snap.val()
-				console.log('api', api)
 				this.props.setApi(api)
 			}
 		})
@@ -133,7 +128,6 @@ class Login extends Component {
 				.then(async () => {
 					await firebase.auth().signInWithEmailAndPassword(email, password)
 						.then(response => {
-							console.log(response)
 							this._setUserInfo()
 						})
 						.catch(err => {
@@ -178,7 +172,6 @@ class Login extends Component {
 					if(user.length > 0){
 						user.map(async user => {
 							let navigation = user.updateProfile ? 'DrawerComponent' : 'UploadProfile'
-							console.log('NAVIGATION', navigation)
 							if(user.email.toLowerCase() === this.state.email.toLowerCase()){
 								// if(latestVersion === versao || Platform.OS === 'ios'){
 									if(user.status === 'Aprovado'){
@@ -290,7 +283,6 @@ class Login extends Component {
 
   render() {
 		const { loading } = this.state
-		console.log('email', this.state.email)
     return (
       <View style={styles.container}>
         <View>

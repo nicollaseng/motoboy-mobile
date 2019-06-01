@@ -190,7 +190,9 @@ class Map extends Component {
 				this.setState({ api: snap.val()})
 
 				await	axios.get(api.calor)
-				.then(response => this.setState({ ridesOfRestaurant: response.data }))
+				.then(response => {
+					this.setState({ ridesOfRestaurant: response.data })
+				})
 				.catch(err => console.log(err))
 			}
 		})

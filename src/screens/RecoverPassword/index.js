@@ -208,12 +208,12 @@ class RegisterScreen extends Component {
         })
           .then(async () => {
             if(isRegistered[0].email){
-            await axios.post('http://192.168.15.2:8000/user_uid',{
+            await axios.post(this.props.api.uid,{
               email: isRegistered[0].email
             })
               .then(async res => {
                 console.log('response, uid do usuario', res)
-                  await axios.post('http://192.168.15.2:8000/recover_password', {
+                  await axios.post(this.props.api.recoverPassword, {
                     uid: res.data.uid,
                     cpf: unMask(cpf)
                   })
