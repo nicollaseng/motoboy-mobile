@@ -73,7 +73,6 @@ class Details extends Component {
 			ride: JSON.stringify(this.state.ride),
 			motoboy: JSON.stringify(this.props.user),
 			time: this.props.time,
-			time: this.props.time,
 			status: 'onWay'
 		})
 			.then((response) => {
