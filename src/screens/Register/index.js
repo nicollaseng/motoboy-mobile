@@ -853,7 +853,7 @@ class RegisterScreen extends Component {
               value={this.state.cnhDate}
             />
               <Fumi
-              label={'Código indicação'}
+              label={'Código indicação (Opcional)'}
               iconClass={FontAwesomeIcon}
               iconName={'ticket-alt'}
               iconColor={'#54fa2a'}

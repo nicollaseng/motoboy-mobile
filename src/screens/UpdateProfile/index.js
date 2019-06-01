@@ -178,6 +178,27 @@ class UpdateProfileScreen extends Component {
     };
 	}
 
+  async componentDidMount(){
+    const { user } = this.props
+    this.setState({
+			cpf: user.cpf,
+      birthday: user.birthday,
+			telefone: user.telefone,
+			email: user.email,
+			name: user.nome,
+			enderecoLogradouro: user.endereco,
+			enderecoNumero:  user.numero,
+			enderecoBairro: user.bairro,
+			enderecoLocalidade: user.cidade,
+			enderecoComplemento:  user.complemento,
+      enderecoEstado: user.estado,
+      enderecoCep:  user.cep,
+      cnh: user.cnh,
+      cnhDate: user.cnhDate,
+      image: user.photo,
+    })
+  }
+
   onClickBackButton = () => {
     return this.props.navigation.goBack()
   };
@@ -305,7 +326,6 @@ class UpdateProfileScreen extends Component {
         // this.showWarningAlert('Número inválido');
         return;
       }
-
 		this.updateProfile()
 	};
 	
@@ -362,24 +382,22 @@ class UpdateProfileScreen extends Component {
     }
 
     this.setState({ isLoading: true })
-    await firebase.database().ref(`register/commerce/motoboyPartner`).once('value',async shot => {
-      let moto = shot.val()
       await firebase.database().ref(`register/commerce/motoboyPartner/${this.props.user.id}`).update({
 				...currentUser,
 			})
 				.then(() => {
 						this.initialState()
-						this.setState({ isLoading: false })
+            this.setState({ isLoading: false })
+            this.props.setUser(currentUser)
 						this.dropdown.alertWithType('success','Atenção', 'Dados atualizados com sucesso!');
-						this.props.navigation.navigate('Terms')
+            this.props.navigation.navigate('DrawerComponent')
 						console.log('sucess sending email')
 					})
 					.catch(err => {
-						this.dropdown.alertWithType('error','Atenção', 'Atenção E-mail inválido ou já em uso');
+						this.dropdown.alertWithType('error','Atenção', err);
 						this.setState({ isLoading: false })
 						console.log('error set regiser new user firebase', err)
 					})
-    	})
     }
 
   initialState = () => {
@@ -807,7 +825,7 @@ class UpdateProfileScreen extends Component {
               style={styles.signUpButton}
               onPress={this.validateFieldsAndRegister}
             >
-              <Text>Enviar</Text>
+              <Text>Atualizar</Text>
             </Button>
           </View>
         </Content>
