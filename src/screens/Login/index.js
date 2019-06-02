@@ -341,7 +341,7 @@ class Login extends Component {
 							<TouchableOpacity onPress={this.recoverPassword}>
 								<Text style={[styles.register, { color: '#54fa2a'}]}>Recuperar acesso</Text>
 							</TouchableOpacity>
-							<Text style={[styles.register, { textAlign: 'right'}]}>2.1.0003</Text>
+							<Text style={[styles.register, { textAlign: 'right', fontSize: 9 }]}>2.001.0004</Text>
 					</View>
 					<DropdownAlert
 					 ref={ref => this.dropdown = ref}

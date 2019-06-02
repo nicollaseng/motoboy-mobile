@@ -68,10 +68,12 @@ class Details extends Component {
 	handleAcceptRide = async () => {
 		this.props.setFinish(true)
 		this.setState({ loading: true })
-
 		axios.post(this.props.api.updateRide, {
 			ride: JSON.stringify(this.state.ride),
 			motoboy: JSON.stringify(this.props.user),
+			// latitude: this.props.user.latitude,
+			// longitude: this.props.user.longitude,
+			// localizacao: this.props.user.localizacao,
 			time: this.props.time,
 			status: 'onWay'
 		})

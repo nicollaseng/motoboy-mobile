@@ -232,14 +232,28 @@ class Map extends Component {
 			const response = await Geocoder.from({ latitude, longitude })
 			const address = response.results[0].formatted_address
 			const location = address.substring(0, address.indexOf(','))
-
+			console.log(	JSON.stringify(this.props.user),
+			latitude,
+			longitude,
+			address,
+			location,)
 			// UPDATE FIREBASE WITH MOTOBOY POSITION
 			await axios.post(this.state.api.setPosition, {
 				motoboy: JSON.stringify(this.props.user),
 				latitude,
-				longitude
+				longitude,
+				localizacao: address,
+				location,
 			})
-				.	then((response) => console.log(response) )
+				.	then((response) => {
+					this.props.setUser({
+						...this.props.user,
+						latitude,
+						longitude,
+						localizacao: address,
+						location,
+					})
+				})
 				.	catch((err) => console.log(err) )
 			// END FIREBASE WITH MOTOBOY POSITION
 
